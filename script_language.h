@@ -46,7 +46,7 @@ public:
 	virtual Dictionary _validate(const String& p_script, const String& p_path, bool p_validate_functions, bool p_validate_errors, bool p_validate_warnings, bool p_validate_safe_lines) const override;
 	virtual String _validate_path(const String& p_path) const override;
 	virtual Object* _create_script() const override;
-	virtual bool _has_named_classes() const override;
+	virtual bool _has_named_classes() const;
 	virtual bool _supports_builtin_mode() const override;
 	virtual bool _supports_documentation() const override;
 	virtual bool _can_inherit_from_file() const override;
@@ -123,7 +123,7 @@ public:
 	virtual Dictionary _validate(const String& p_script, const String& p_path, bool p_validate_functions, bool p_validate_errors, bool p_validate_warnings, bool p_validate_safe_lines) const override;
 	virtual String _validate_path(const String& p_path) const override;
 	virtual Object* _create_script() const override;
-	virtual bool _has_named_classes() const override;
+	virtual bool _has_named_classes() const;
 	virtual bool _supports_builtin_mode() const override;
 	virtual bool _supports_documentation() const override;
 	virtual bool _can_inherit_from_file() const override;

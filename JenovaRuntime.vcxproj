@@ -73,7 +73,7 @@ xcopy ".\Jenova.Runtime.gdextension" "$(BuildPath)" /Y
 xcopy "$(TargetDir)$(TargetName).lib" "$(BuildPath)JenovaSDK" /Y
 if exist "$(BuildPath)JenovaSDK\Jenova.SDK.x64.lib" del "$(BuildPath)JenovaSDK\Jenova.SDK.x64.lib"
 ren "$(BuildPath)JenovaSDK\$(TargetName).lib" "Jenova.SDK.x64.lib"
-rundll32.exe "$(TargetPath)",Deploy --command increment-build-number /in:"$(SolutionDir)jenova.hpp"</Command>
+:: rundll32.exe "$(TargetPath)",Deploy --command increment-build-number /in:"$(SolutionDir)jenova.hpp"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

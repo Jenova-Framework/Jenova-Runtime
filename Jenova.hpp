@@ -127,8 +127,6 @@
 #include <godot_cpp/classes/timer.hpp>
 #include <godot_cpp/classes/shader.hpp>
 #include <godot_cpp/classes/shader_material.hpp>
-#include <godot_cpp/classes/standard_material3d.hpp>
-#include <godot_cpp/classes/mesh_instance3d.hpp>
 #include <godot_cpp/classes/font.hpp>
 #include <godot_cpp/classes/font_file.hpp>
 #include <godot_cpp/classes/font_variation.hpp>
@@ -139,7 +137,7 @@
 #include <godot_cpp/classes/input_event_key.hpp>
 #include <godot_cpp/classes/animation.hpp>
 #include <godot_cpp/classes/scene_tree.hpp>
-#include <godot_cpp/classes/packed_scene.hpp>
+#include <godot_cpp/classes/component.hpp>
 #include <godot_cpp/classes/tween.hpp>
 #include <godot_cpp/classes/property_tweener.hpp>
 #include <godot_cpp/classes/color_rect.hpp>
@@ -170,9 +168,7 @@
 #include <godot_cpp/classes/editor_debugger_session.hpp>
 #include <godot_cpp/classes/editor_debugger_plugin.hpp>
 #include <godot_cpp/classes/editor_inspector_plugin.hpp>
-#include <godot_cpp/classes/editor_scene_post_import_plugin.hpp>
 #include <godot_cpp/classes/editor_resource_conversion_plugin.hpp>
-#include <godot_cpp/classes/editor_feature_profile.hpp>
 #include <godot_cpp/classes/packed_data_container.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/classes/grid_container.hpp>

@@ -5576,7 +5576,7 @@ namespace jenova
 
 		// Internal Functions
 		std::function<void(Node*, jenova::ResourceCollection&)> CollectScriptsFromNodes;
-		auto CollectEmbeddedScriptsFromScene = [&](Ref<PackedScene> scene, jenova::ResourceCollection& collectedResources)
+		auto CollectEmbeddedScriptsFromScene = [&](Ref<Component> scene, jenova::ResourceCollection& collectedResources)
 		{
 			Node* root = scene->instantiate();
 			if (!root) return;
@@ -5632,7 +5632,7 @@ namespace jenova
 				// Check for Scene files (.tscn or .scn)
 				if (file_name.get_extension() == "tscn" || file_name.get_extension() == "scn")
 				{
-					Ref<PackedScene> scene = ResourceLoader::get_singleton()->load(full_path);
+					Ref<Component> scene = ResourceLoader::get_singleton()->load(full_path);
 					if (scene.is_valid())
 					{
 						CollectEmbeddedScriptsFromScene(scene, collectedResources);

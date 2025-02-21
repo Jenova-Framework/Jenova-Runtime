@@ -35,7 +35,7 @@
 #include <godot_cpp/classes/theme.hpp>
 #include <godot_cpp/classes/window.hpp>
 #include <godot_cpp/classes/scene_tree.hpp>
-#include <godot_cpp/classes/packed_scene.hpp>
+#include <godot_cpp/classes/component.hpp>
 #include <godot_cpp/classes/resource_saver.hpp>
 #include <godot_cpp/classes/resource_loader.hpp>
 #include <godot_cpp/classes/texture2d.hpp>
@@ -57,7 +57,7 @@ struct NodeBackup
 	godot::String nodeName;
 	godot::String nodeClass;
 	godot::String scenePath;
-	godot::PackedScene* nodeBackup = nullptr;
+	godot::Component* nodeBackup = nullptr;
 	godot::Node* dummyNode = nullptr;
 	godot::Node* sceneRoot = nullptr;
 };
@@ -320,7 +320,7 @@ namespace jenova::sdk
 					godot::Node* classNodeClone = classNode->duplicate();
 
 					// Pack Current Scene
-					nodebackup.nodeBackup = memnew(godot::PackedScene);
+					nodebackup.nodeBackup = memnew(godot::Component);
 					nodebackup.nodeBackup->pack(classNodeClone);
 					memdelete(classNodeClone); // classNodeClone->queue_free();
 
@@ -377,7 +377,7 @@ namespace jenova::sdk
 				}
 
 				// Restore Nodes From Backup
-				godot::Node* originalNode = nodeBackup.nodeBackup->instantiate(godot::PackedScene::GenEditState::GEN_EDIT_STATE_DISABLED);
+				godot::Node* originalNode = nodeBackup.nodeBackup->instantiate(godot::Component::GenEditState::GEN_EDIT_STATE_DISABLED);
 				if (originalNode)
 				{
 					nodeBackup.dummyNode->replace_by(originalNode, true);
