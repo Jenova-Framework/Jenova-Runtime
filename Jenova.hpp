@@ -141,6 +141,7 @@
 #include <classes/color_rect.hpp>
 #include <classes/window.hpp>
 #include <classes/shortcut.hpp>
+#include <classes/config_file.hpp>
 #include <variant/node_path.hpp>
 #include <classes/label.hpp>
 #include <classes/rich_text_label.hpp>
@@ -157,6 +158,7 @@
 #include <classes/editor_interface.hpp>
 #include <classes/editor_settings.hpp>
 #include <classes/editor_selection.hpp>
+#include <classes/editor_paths.hpp>
 #include <classes/editor_plugin.hpp>
 #include <classes/editor_plugin_registration.hpp>
 #include <classes/editor_export_platform.hpp>
@@ -183,6 +185,7 @@
 #include <classes/sub_viewport.hpp>
 #include <classes/sub_viewport_container.hpp>
 #include <classes/tab_bar.hpp>
+#include <classes/code_edit.hpp>
 #include <templates/list.hpp>
 #include <templates/pair.hpp>
 #include <classes/marshalls.hpp>

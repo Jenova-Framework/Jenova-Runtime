@@ -1447,6 +1447,72 @@ namespace jenova
 					preprocessorSettings["PreprocessorDefinitions"] = preprocessorDefinitions;
 				}
 
+
+				CodeEdit* codeEditor = (CodeEdit*)EditorInterface::get_singleton()->get_script_editor()->get_current_editor()->get_base_editor();
+				auto breakpoints = codeEditor->get_breakpointed_lines();
+				for (size_t i = 0; i < breakpoints.size(); i++)
+				{
+					jenova::Output("CodeEditor Breakpoint %d = Line %d", i, breakpoints[i]);
+				}
+
+				auto breakpoints_str = this->_get_breakpoints();
+				for (const auto& breakpoint : breakpoints_str)
+				{
+					jenova::Output("EditorPlugin Breakpoint %s", AS_C_STRING(breakpoint));
+				}
+
+				// Collect Scripts Breakpoints
+				String scriptEditorCache = EditorInterface::get_singleton()->get_editor_paths()->get_project_settings_dir().path_join("script_editor_cache.cfg");
+				// this->get_editor_interface()->get_editor_paths()->get_project_settings_dir().path_join("script_editor_cache.cfg"); // Alternative
+				Ref<ConfigFile> scriptEditorConfig;
+				scriptEditorConfig.instantiate();
+				scriptEditorConfig->load(scriptEditorCache);
+
+				// Serialize Breakpoints
+				try
+				{
+					nlohmann::json scriptBreakpointsSerializer;
+					scriptBreakpointsSerializer["Breakpoints"]["Scripts"] = nlohmann::json::object();
+					for (const String& scriptFile : scriptEditorConfig->get_sections())
+					{
+						Dictionary state = scriptEditorConfig->get_value(scriptFile, "state");
+						if (!state.has("breakpoints")) continue;
+
+						// Get the breakpoints array
+						PackedInt32Array breakpoints = state["breakpoints"];
+						if (breakpoints.size() == 0) continue;
+						std::string uid = AS_STD_STRING(jenova::GenerateStandardUIDFromPath(scriptFile));
+						nlohmann::json& scriptEntry = scriptBreakpointsSerializer["Breakpoints"]["Scripts"][uid];
+						if (scriptEntry.is_null()) 
+						{
+							scriptEntry = 
+							{
+								{"Path", AS_STD_STRING(scriptFile)},
+								{"FullPath", AS_STD_STRING(ProjectSettings::get_singleton()->globalize_path(scriptFile))},
+								{"Lines", nlohmann::json::array()}
+							};
+						}
+						for (int i = 0; i < breakpoints.size(); ++i)
+						{
+							int line = breakpoints[i];
+							scriptEntry["Lines"].push_back(line);
+						}
+					}
+					std::string breakpointsConfigFile = AS_STD_STRING(jenova::GetJenovaCacheDirectory() + "Jenova.Breakpoints.json");
+					if (!jenova::WriteStdStringToFile(breakpointsConfigFile, scriptBreakpointsSerializer.dump(2)))
+					{
+						jenova::Error("Jenova Builder", "Failed Generate Breakpoint Database File.");
+						DisposeCompiler();
+						return false;
+					};
+				}
+				catch (const std::exception& error)
+				{
+					jenova::Error("Jenova Builder", "Failed to Serialize Breakpoints to Database File, Error : %s", error.what());
+					DisposeCompiler();
+					return false;
+				}
+
 				// Collect Scripts & Preprocess Them
 				jenova::Output("Preparing ([color=#53b5ab]%lld[/color]) C++ Script Resource From Project...", cppResources.size());
 				scriptModules.clear();
@@ -1462,6 +1528,33 @@ namespace jenova
 						jenova::Output("Preprocessing C++ Script Resource ([color=#70a9d4]%s[/color]) [[color=#91b553]%s[/color]] [%s]",
 							AS_C_STRING(scriptResource->get_path()), AS_C_STRING(scriptResource->GetScriptIdentity()), 
 							isUsedScript ? "[color=#24ed49]Used[/color]" : "[color=#ed2456]Unused[/color]");
+
+						// Collect Breakpoints
+						jenova::Output("Collecting Breakpoints in Source Codes...");
+						if (scriptEditorConfig->has_section(scriptResource->get_path()))
+						{
+							String breakPointsFilePath = jenova::GetJenovaCacheDirectory() + scriptResource->get_path().get_file().get_basename() + "_" + scriptResource->GetScriptIdentity() + ".breaks";
+							jenova::Output("Found Breakpoints in Source Code [color=#91b553]%s[/color]", AS_C_STRING(scriptResource->get_path()));
+							Dictionary state = scriptEditorConfig->get_value(scriptResource->get_path(), "state");
+							if (!state.has("breakpoints")) 
+							{ 
+								jenova::Output("Script [color=#91b553]%s[/color] Has no Breakpoints, Skipped.", AS_C_STRING(scriptResource->get_path()));
+								WriteStringToFile(breakPointsFilePath, "<No-BreakPoint-Found>");
+								continue;
+							}
+							PackedInt32Array breakpoints = state["breakpoints"];
+							PackedStringArray breakpointStrings;
+							for (int i = 0; i < breakpoints.size(); ++i) 
+							{
+								int line = breakpoints[i];
+								String breakpointString = ProjectSettings::get_singleton()->globalize_path(scriptResource->get_path()) + "|" + scriptResource->get_path() + "|" + String::num(line);
+								breakpointStrings.push_back(breakpointString);
+							}
+
+							String breakPointsFile;
+							for (const auto& breakpointData : breakpointStrings) breakPointsFile += breakpointData + String("\n");
+							WriteStringToFile(breakPointsFilePath, breakPointsFile);
+						}
 
 						// Set Per-Script Preprocessor Settings
 						preprocessorSettings["PropertyMetadata"] = jenova::GetJenovaCacheDirectory() + scriptResource->get_path().get_file().get_basename() + "_" + scriptResource->GetScriptIdentity() + ".props";
@@ -4016,6 +4109,34 @@ namespace jenova
 			{
 				// Rise Events
 				for (const auto& runtimeCallback : runtimeCallbacks) runtimeCallback(RuntimeEvent::Ready, nullptr, 0);
+
+				//jenova::ResourceCollection cppResources;
+				//if (jenova::CollectScriptsFromFileSystemAndScenes("res://", "cpp", cppResources))
+				//{
+				//	for (const auto& cppResource : cppResources)
+				//	{
+				//		if (cppResource->is_class(jenova::GlobalSettings::JenovaScriptType))
+				//		{
+				//			// Get C++ Script Object
+				//			Ref<CPPScript> scriptResource = Object::cast_to<CPPScript>(cppResource.ptr());
+				//			String sourceCode = scriptResource->get_source_code();
+				//			int lineCount = 1;
+				//			for (size_t i = 0; i < sourceCode.length(); i++) {
+				//				if (sourceCode[i] == '\n') {
+				//					lineCount++;
+				//				}
+				//			}
+				//			jenova::Warning("", "Debug Check for %d Lines in %s", lineCount, AS_C_STRING(scriptResource->get_path()));
+				//			for (size_t i = 0; i < lineCount; i++)
+				//			{
+				//				if (EngineDebugger::get_singleton()->is_breakpoint(i, scriptResource->get_path()))
+				//				{
+				//					jenova::Warning("", "Breakpoint Found at %d in %s", i, AS_C_STRING(scriptResource->get_path()));
+				//				};
+				//			}
+				//		}
+				//	}
+				//}
 			}
 			void _process(double p_delta) override
 			{
@@ -9044,6 +9165,12 @@ namespace jenova
 			functionLine = 0;
 		}
 		SymCleanup(process);
+
+		// Check for Breakpoint
+		if (exceptionInfo->ExceptionRecord->ExceptionCode == EXCEPTION_BREAKPOINT)
+		{
+			GetSceneTree()->set_pause(true);
+		}
 
 		// Print Access Violation Error
 		std::string errorMessage = jenova::Format("Jenova Runtime Execution Error :: %s", jenova::GetExceptionDescription(exceptionInfo).c_str());
