@@ -3568,7 +3568,6 @@ namespace jenova
 				);
 				description->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 				description->add_theme_font_size_override("font_size", SCALED(16));
-				jenova::Output("Line Space : %lf", SCALED(3));
 				description->add_theme_constant_override("line_spacing", SCALED(3));
 				jenova_about_ui->add_child(description);
 
