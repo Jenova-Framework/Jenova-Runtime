@@ -336,11 +336,6 @@ namespace jenova::sdk
 	jenova::sdk::EngineMode JenovaSDK::GetEngineMode()
 	{
 		return jenova::sdk::EngineMode(jenova::GlobalStorage::CurrentEngineMode);
-		jenova::sdk::EngineMode engineMode;
-		if (OS::get_singleton()->is_debug_build()) engineMode = jenova::sdk::EngineMode::Debug;
-		else engineMode = jenova::sdk::EngineMode::Runtime;
-		if (Engine::get_singleton()->is_editor_hint()) engineMode = jenova::sdk::EngineMode::Editor;
-		return engineMode;
 	}
 	bool JenovaSDK::CreateDirectoryMonitor(const String& directoryPath)
 	{
