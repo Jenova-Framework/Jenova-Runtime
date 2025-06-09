@@ -365,8 +365,12 @@ MigrationBackup/
 FodyWeavers.xsd
 
 # Build System Files
+/MacOS
+/Demo
 /Win64
 /Linux64
 /Libs
 /Dependencies
 /Toolchain
+.DS_Store
+.vscode/settings.json

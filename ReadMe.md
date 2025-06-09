@@ -113,6 +113,20 @@ Jenova Runtime source code is fully compatible with both Clang++ (18+) and G++ (
 
 > **Note :** Code::Blocks project files have been deprecated and removed following the significant update to Jenova Builder.
 
+## macOS
+
+Install deps:
+
+```sh
+brew install llvm cmake ninja
+```
+
+Then run:
+
+```sh
+python3 ./Jenova.Builder.py --compiler mac-clang
+```
+
 ### Builder Prerequisites
 
 Before using **Jenova Builder** you need to install following prerequisites on both Windows and Linux.

@@ -97,6 +97,22 @@
 #include <cxxabi.h>
 #endif
 
+// macOS SDK
+#ifdef TARGET_PLATFORM_MACOS
+	#include <sys/stat.h>
+	#include <sys/wait.h>
+	#include <sys/mman.h>
+	#include <sys/types.h>
+	#include <utime.h>
+	#include <fcntl.h>
+	#include <dlfcn.h>
+	#include <unistd.h>
+	#include <pwd.h>
+	#include <grp.h>
+	#include <limits.h>
+	#include <cxxabi.h>
+#endif
+
 // C++ SDK
 #include <stddef.h>
 #include <stdarg.h>
@@ -418,6 +434,9 @@ namespace jenova
 		#ifdef TARGET_PLATFORM_LINUX
 		GNUCompiler,
 		ClangCompiler,
+		#endif
+		#ifdef TARGET_PLATFORM_MACOS
+		AppleClangCompiler,
 		#endif
 		Unspecified
 	};
