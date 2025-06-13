@@ -3043,7 +3043,7 @@ namespace jenova
 
 					// Create VSCode Settings
 					jenova::json_t excludeConfig;
-					std::string filesExclude = ".godot|.vs|.vscode|Jenova|*.cfg|*.tscn|*.scn|*.sln|*.vcxproj*|vc*.pdb|project.godot";
+					std::string filesExclude = ".godot|.vs|.vscode|Jenova|*.cfg|*.tscn|*.scn|*.sln|*.vcxproj*|vc*.pdb|**/*.uid|project.godot";
 					excludeConfig["files.exclude"] = CreateJsonObjectFromDelimitedString(filesExclude, '|');
 
 					// Serialize & Write VSCode Settings to File
@@ -5819,6 +5819,10 @@ namespace jenova
 	}
 	std::string GetExecutablePath()
 	{
+		// Use Engine Function First
+		String exePath = OS::get_singleton()->get_executable_path();
+		if (!exePath.is_empty()) return AS_STD_STRING(exePath);
+
 		// Windows Implementation
 		#ifdef TARGET_PLATFORM_WINDOWS
 
