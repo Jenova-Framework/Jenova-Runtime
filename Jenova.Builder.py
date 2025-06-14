@@ -113,6 +113,7 @@ def get_toolchain_name(buildMode):
     if buildMode == "win-clangcl": return "msvc-llvm"
     if buildMode == "win-clang": return "mingw-llvm"
     if buildMode == "linux-clang": return "llvm"
+    if buildMode == "mac-clang": return "clang++"
     if buildMode == "linux-gcc": return "gnu"
 def print_banner():
     banner = r"""
@@ -140,6 +141,8 @@ def get_compiler_choice():
     rgb_print("#fff06e", "\n------------------ Linux x64 ------------------")
     print("5. LLVM Clang (linux-clang) [Recommended]")
     print("6. GNU Compiler Collection (linux-gcc)")
+    rgb_print("#ff6666", "\n------------------- macOS -------------------")
+    print("7. Mac Clang (mac-clang) [Recommended]")
     rgb_print("#ff6666", f"\nYou are currently running {get_os_name()} using ({os.cpu_count()} Cores)") 
     rgb_print("#666666", "\nEnter Build Mode: ")
     choice = input("")
@@ -155,6 +158,8 @@ def get_compiler_choice():
         build_linux("clang++", "clang++", "linux-clang", "LLVM Clang")
     elif choice == '6':
         build_linux("g++", "g++", "linux-gcc", "GNU Compiler Collection")
+    elif choice == '7':
+        build_mac("clang++", "clang++", "mac-clang", "Mac Clang")
     else:
         rgb_print("#e02626", "[ x ] Error : Invalid Choice.")
         exit(-1)
@@ -244,7 +249,8 @@ def install_dependencies():
     os.remove("Jenova-Runtime-Dependencies-Universal.jnvpkg")
 def build_with_ninja(buildPath):
     if platform.system() == "Windows": subprocess.run(["ninja.exe", "-C", buildPath, "-j", f"{os.cpu_count()}"], check=True)
-    if platform.system() == "Linux": subprocess.run(["ninja", "-C", buildPath, "-j", f"{os.cpu_count()}"], check=True)
+    else: subprocess.run(["ninja", "-C", buildPath, "-j", f"{os.cpu_count()}"], check=True)
+    
 def create_distribution_package(package_files, output_archive):
 
     # Initialize Archive
@@ -271,7 +277,6 @@ def create_distribution_package(package_files, output_archive):
                 file_name = os.path.basename(src_path)
                 if file_name != ".gitignore": rgb_print("#764be3", f"[ * ] Packing File {file_name}...")
                 archive.write(src_path, os.path.join(dst_path, file_name))
-
     # Verbose Success
     rgb_print("#38f227", "[ √ ] Jenova Runtime Distribution Package Created.")
 def clean_up_build(deepMode):
@@ -575,6 +580,344 @@ def build_linux(compilerBinary, linkerBinary, buildMode, buildSystem):
     os.makedirs(f"{outputDir}/Distribution", exist_ok=True)
     toolchainName = get_toolchain_name(buildMode)
     create_distribution_package(packageFiles, f"{outputDir}/Distribution/Jenova-Framework-Linux64-{toolchainName}.7z")
+
+# macOS Build Functions
+# Jenova Runtime Build System Script
+# Developed by Hamid.Memar (2024-2025)
+# Usage : python3 ./Jenova.Builder.py --compiler mac-clang --skip-banner
+# Use python3 ./Jenova.Builder.py --help For More Information.
+
+# [Previous imports and shared code remain the same until the build functions]
+
+# Mac Build Functions
+def initialize_toolchain_mac():
+    # Check if required tools are installed
+    required_tools = ['clang++', 'cmake', 'ninja']
+    missing_tools = []
+    
+    for tool in required_tools:
+        if not shutil.which(tool):
+            missing_tools.append(tool)
+    
+    if missing_tools:
+        rgb_print("#e02626", f"[ x ] Error: Missing required tools: {', '.join(missing_tools)}")
+        rgb_print("#e02626", "[ x ] Please install them using Homebrew: brew install llvm cmake ninja")
+        exit(1)
+        
+    # Set macOS-specific environment variables
+    os.environ['MACOSX_DEPLOYMENT_TARGET'] = '10.15'  # Catalina or newer
+    os.environ['SDKROOT'] = subprocess.getoutput('xcrun --show-sdk-path')
+    
+    rgb_print("#38f227", "[ √ ] macOS toolchain configured successfully")
+
+def build_dependencies_mac(buildMode, cacheDir):
+    # Install Dependencies
+    install_dependencies()
+
+    # Create Library directory
+    os.makedirs("Libs", exist_ok=True)
+    shutil.copytree("./Dependencies/libjenova", "./Libs", dirs_exist_ok=True)
+
+    # Set compiler/linker configuration
+    os.environ['CC'] = 'clang'
+    os.environ['CXX'] = 'clang++'
+    os.environ['CFLAGS'] = '-fPIC -w -arch arm64'
+    os.environ['CXXFLAGS'] = '-std=c++20 -w -fPIC -arch arm64'
+    os.environ['LDFLAGS'] = '-static-libstdc++ -static-libgcc -Wl,-Bstatic -lssl -lcrypto -Wl,-Bdynamic -ldl -lrt -arch arm64'
+    os.environ['C_COMPILER'] = 'clang'
+    os.environ['CXX_COMPILER'] = 'clang++'
+
+    # Build AsmJIT
+    if not os.path.exists("./Libs/libasmjit-static-universal.a"):
+        buildPath = cacheDir + "/Dependencies/asmjit"
+        if os.path.exists(buildPath): shutil.rmtree(buildPath)
+        subprocess.run([
+            "cmake",
+            "-S", "./Dependencies/libasmjit",
+            "-B", buildPath,
+            "-G", "Ninja",
+            "-DCMAKE_BUILD_TYPE=MinSizeRel",
+            "-DBUILD_SHARED_LIBS=OFF",
+            "-DASMJIT_STATIC=ON",
+            "-DCMAKE_OSX_ARCHITECTURES=arm64"
+        ], check=True)
+        build_with_ninja(buildPath)
+        shutil.copyfile(buildPath + "/libasmjit.a", "./Libs/libasmjit-static-universal.a")
+        rgb_print("#38f227", "[ √ ] Jenova Runtime Dependency 'AsmJIT' Compiled Successfully.")
+
+    # Build Curl
+    if not os.path.exists("./Libs/libcurl-static-universal.a"):
+        buildPath = cacheDir + "/Dependencies/curl"
+        if os.path.exists(buildPath): shutil.rmtree(buildPath)
+        subprocess.run([
+            "cmake",
+            "-S", "./Dependencies/libcurl",
+            "-B", buildPath,
+            "-G", "Ninja",
+            "-DCMAKE_BUILD_TYPE=MinSizeRel",
+            "-DBUILD_SHARED_LIBS=OFF",
+            "-DCURL_BROTLI=OFF",
+            "-DCURL_USE_LIBPSL=OFF",
+            "-DCMAKE_OSX_ARCHITECTURES=arm64"
+        ], check=True)
+        build_with_ninja(buildPath)
+        shutil.copyfile(buildPath + "/lib/libcurl.a", "./Libs/libcurl-static-universal.a")
+        rgb_print("#38f227", "[ √ ] Jenova Runtime Dependency 'Curl' Compiled Successfully.")
+
+    # Build LZMA
+    if not os.path.exists("./Libs/liblzma-static-universal.a"):
+        buildPath = cacheDir + "/Dependencies/lzma"
+        if os.path.exists(buildPath): shutil.rmtree(buildPath)
+        subprocess.run([
+            "cmake",
+            "-S", "./Dependencies/liblzma",
+            "-B", buildPath,
+            "-G", "Ninja",
+            "-DCMAKE_BUILD_TYPE=MinSizeRel",
+            "-DBUILD_SHARED_LIBS=OFF",
+            "-DCMAKE_OSX_ARCHITECTURES=arm64"
+        ], check=True)
+        build_with_ninja(buildPath)
+        shutil.copyfile(buildPath + "/liblzma.a", "./Libs/liblzma-static-universal.a")
+        rgb_print("#38f227", "[ √ ] Jenova Runtime Dependency 'LZMA' Compiled Successfully.")
+
+    # Build Archive
+    if not os.path.exists("./Libs/libarchive-static-universal.a"):
+        buildPath = cacheDir + "/Dependencies/archive"
+        lzmaInclude = os.path.abspath('./Dependencies/liblzma/src/liblzma/api')
+        if os.path.exists(buildPath): shutil.rmtree(buildPath)
+        subprocess.run([
+            "cmake",
+            "-S", "./Dependencies/libarchive",
+            "-B", buildPath,
+            "-G", "Ninja",
+            "-DCMAKE_BUILD_TYPE=MinSizeRel",
+            "-DBUILD_SHARED_LIBS=OFF",
+            "-DENABLE_LZMA=ON",
+            "-DHAVE_LZMA_H=ON",
+            "-DBUILD_TESTING=OFF",
+            "-DENABLE_TEST=OFF",
+            "-DENABLE_TAR=OFF",
+            "-DENABLE_CAT=OFF",
+            "-DENABLE_CPIO=OFF",
+            "-DENABLE_EXPAT=OFF",
+            "-DENABLE_BZip2=OFF",
+            "-DENABLE_TEST=OFF",
+            "-DCMAKE_OSX_ARCHITECTURES=arm64",
+            f"-DCMAKE_C_FLAGS={os.environ['CFLAGS'] + ' -DLZMA_API_STATIC ' + f'-I{guard_path(lzmaInclude)}'}"
+        ], check=True)
+        build_with_ninja(buildPath)
+        shutil.copyfile(buildPath + "/libarchive/libarchive.a", "./Libs/libarchive-static-universal.a")
+        rgb_print("#38f227", "[ √ ] Jenova Runtime Dependency 'Archive' Compiled Successfully.")
+
+    # Build XML2
+    if not os.path.exists("./Libs/libxml2-static-universal.a"):
+        buildPath = cacheDir + "/Dependencies/xml2"
+        if os.path.exists(buildPath): shutil.rmtree(buildPath)
+        subprocess.run([
+            "cmake",
+            "-S", "./Dependencies/libxml2",
+            "-B", buildPath,
+            "-G", "Ninja",
+            "-DCMAKE_BUILD_TYPE=MinSizeRel",
+            "-DBUILD_SHARED_LIBS=OFF",
+            "-DLIBXML2_WITH_MODULES=OFF",
+            "-DLIBXML2_WITH_PYTHON=OFF",
+            "-DLIBXML2_WITH_TESTS=OFF",
+            "-DLIBXML2_WITH_ICONV=OFF",
+            "-DCMAKE_OSX_ARCHITECTURES=arm64"
+        ], check=True)
+        build_with_ninja(buildPath)
+        shutil.copyfile(buildPath + "/libxml2.a", "./Libs/libxml2-static-universal.a")
+        rgb_print("#38f227", "[ √ ] Jenova Runtime Dependency 'XML2' Compiled Successfully.")
+
+    # Build ZLIB
+    # Add macOS-specific defines for zlib
+    zlib_defines = "-DZ_HAVE_UNISTD_H -D_DARWIN_C_SOURCE"
+    if not os.path.exists("./Libs/libzlib-static-universal.a"):
+        buildPath = cacheDir + "/Dependencies/zlib"
+        if os.path.exists(buildPath): shutil.rmtree(buildPath)
+        os.makedirs(buildPath)
+        subprocess.run([
+            "cmake",
+            "-S", "./Dependencies/libzlib",
+            "-B", buildPath,
+            "-G", "Ninja",
+            "-DCMAKE_BUILD_TYPE=MinSizeRel",
+            "-DBUILD_SHARED_LIBS=OFF",
+            "-DZLIB_BUILD_TESTING=OFF",
+            "-DZLIB_BUILD_SHARED=OFF",
+            "-DZLIB_BUILD_STATIC=ON",
+            "-DCMAKE_OSX_ARCHITECTURES=arm64",
+            f"-DCMAKE_C_FLAGS={os.environ['CFLAGS']} {zlib_defines}"
+        ], check=True)
+        build_with_ninja(buildPath)
+        shutil.copyfile(buildPath + "/libz.a", "./Libs/libzlib-static-universal.a")
+        rgb_print("#38f227", "[ √ ] Jenova Runtime Dependency 'ZLIB' Compiled Successfully.")
+
+    # Build TinyCC
+    if not os.path.exists("./Libs/libtcc-static-universal.a"):
+        buildPath = cacheDir + "/Dependencies/tinycc"
+        if os.path.exists(buildPath): shutil.rmtree(buildPath)
+        subprocess.run([
+            "cmake",
+            "-S", "./Dependencies/libtinycc",
+            "-B", buildPath,
+            "-G", "Ninja",
+            "-DCMAKE_BUILD_TYPE=MinSizeRel",
+            "-DBUILD_SHARED_LIBS=OFF",
+            "-DCMAKE_OSX_ARCHITECTURES=arm64"
+        ], check=True)
+        build_with_ninja(buildPath)
+        shutil.copyfile(buildPath + "/liblibtcc.a", "./Libs/libtcc-static-universal.a")
+        rgb_print("#38f227", "[ √ ] Jenova Runtime Dependency 'TinyCC' Compiled Successfully.")
+
+    # Build GodotSDK
+    if not os.path.exists("./Libs/libgodotcpp-static-universal.a"):
+        buildPath = cacheDir + "/Dependencies/godotcpp"
+        sdkPath = "./Libs/GodotSDK"
+        if os.path.exists(buildPath): shutil.rmtree(buildPath)
+        subprocess.run([
+            "cmake",
+            "-S", "./Dependencies/libgodot",
+            "-B", buildPath,
+            "-G", "Ninja",
+            "-DCMAKE_BUILD_TYPE=MinSizeRel",
+            "-DGODOT_ENABLE_HOT_RELOAD=ON",
+            "-DBUILD_SHARED_LIBS=OFF",
+            "-DCMAKE_OSX_ARCHITECTURES=arm64"
+        ], check=True)
+        build_with_ninja(buildPath)
+        shutil.copyfile(buildPath + "/bin/libgodot-cpp.darwin.minsizerel.64.a", "./Libs/libgodotcpp-static-universal.a")
+        if os.path.exists(sdkPath): shutil.rmtree(sdkPath)
+        os.makedirs(sdkPath, exist_ok=True)
+        shutil.copyfile("./Dependencies/libgodot/gdextension/gdextension_interface.h", sdkPath + "/gdextension_interface.h")
+        shutil.copytree("./Dependencies/libgodot/include", sdkPath, dirs_exist_ok=True)
+        shutil.copytree(buildPath + "/gen/include", sdkPath, dirs_exist_ok=True)
+        rgb_print("#38f227", "[ √ ] Jenova Runtime Dependency 'GodotSDK' Compiled Successfully.")
+
+def build_mac(compilerBinary, linkerBinary, buildMode, buildSystem):
+    # Verbose Build
+    rgb_print("#ff6666", f"[ > ] Building Jenova Runtime for macOS using {buildSystem} Toolchain...")
+
+    # Dependencies
+    libs = [
+        "Libs/libzlib-static-universal.a",
+        "Libs/libtcc-static-universal.a",
+        "Libs/libgodotcpp-static-universal.a",
+        "Libs/libcurl-static-universal.a",
+        "Libs/libasmjit-static-universal.a",
+        "Libs/libarchive-static-universal.a",
+        "Libs/liblzma-static-universal.a",
+        "Libs/libxml2-static-universal.a"
+    ]
+
+    # Configuration
+    compiler = compilerBinary
+    linker = linkerBinary
+    outputDir = "MacOS"
+    outputName = "Jenova.Runtime.MacOS.dylib"
+    mapFileName = "Jenova.Runtime.MacOS.map"
+    cacheDir = f"{outputDir}/Cache"
+    sdkDir = f"{outputDir}/JenovaSDK"
+    CacheDB = f"{cacheDir}/Build.db"
+
+    # Ensure Required Directories Exist
+    rgb_print("#367fff", "[ ^ ] Validating Paths...")
+    os.makedirs(outputDir, exist_ok=True)
+    os.makedirs(cacheDir, exist_ok=True)
+    os.makedirs(sdkDir, exist_ok=True)
+
+    # Initialize Toolchain
+    initialize_toolchain_mac()
+
+    # Build Dependencies
+    if not skip_deps:
+        rgb_print("#367fff", "[ ^ ] Building Dependencies...")
+        build_dependencies_mac(buildMode, cacheDir)
+    else:
+        rgb_print("#367fff", "[ ^ ] Building Dependencies Skipped by User.")
+
+    # Load Cache
+    rgb_print("#367fff", "[ ^ ] Loading Cache...")
+    cache = load_cache(CacheDB)
+
+    # Generate Compile Commands
+    rgb_print("#367fff", "[ ^ ] Generating Compiler Commands...")
+    compile_commands = {}
+    object_files = []
+    for source in sources:
+        object_file = f"{cacheDir}/{os.path.basename(source).replace('.cpp', '.o')}"
+        object_files.append(object_file)
+        compile_command = (
+            f"{compiler} -O3 -fPIC -pipe -w -std=c++20 -pthread -fexceptions "
+            f"-arch arm64 "
+            f"{' '.join([f'-D{flag}' for flag in flags])} "
+            f"{' '.join([f'-I{directory}' for directory in directories])} "
+            f"-c {source} -o {object_file}"
+        )
+        compile_commands[source] = compile_command
+
+    # Compile Source Code
+    rgb_print("#367fff", "[ ^ ] Compiling Jenova Runtime Source Code...")
+    with ThreadPoolExecutor(max_workers=len(sources)) as executor:
+        futures = []
+        for source, command in compile_commands.items():
+            if should_compile(source, cache):
+                futures.append(executor.submit(run_compile_command, command, source, compiler))
+                update_cache_entry(source, cache)
+            else:
+                rgb_print("#f59b42", f"[ ! ] Skipping Compilation for {os.path.basename(source)}, No Changes Detected.")
+        for future in futures: future.result()
+
+    # Save Cache
+    rgb_print("#367fff", "[ ^ ] Saving Cache...")
+    save_cache(cache, CacheDB)
+
+    # Generate Linker Command
+    rgb_print("#367fff", "[ ^ ] Generating Linker Command...")
+
+    link_command = (
+        f"{linker} -dynamiclib -undefined dynamic_lookup "
+        f"{' '.join(object_files)} -o {outputDir}/{outputName} "
+        f"-arch arm64 "
+        f"{' '.join(libs)} "
+        f"-I/opt/homebrew/opt/openssl@3/include "
+        f"-I/opt/homebrew/opt/lz4/include "
+        f"-I/opt/homebrew/opt/libb2/include "
+        f"-I/opt/homebrew/opt/libidn2/include "
+        f"-L/opt/homebrew/opt/openssl@3/lib "
+        f"-L/opt/homebrew/opt/lz4/lib "
+        f"-L/opt/homebrew/opt/libb2/lib "
+        f"-L/opt/homebrew/opt/libidn2/lib -lidn2 "
+        f"-I/opt/homebrew/opt/libssh2/include -L/opt/homebrew/opt/libssh2/lib -lssh2 "
+        f"-lssl -lcrypto -llz4 -lb2 -ldl -lz -lc++ "
+        f"-framework Foundation -framework Security -framework SystemConfiguration "
+        f"-Wl,-map,{outputDir}/{mapFileName}"
+    )
+
+    # Link Object Files
+    rgb_print("#367fff", "[ ^ ] Linking Jenova Runtime Binary...")
+    run_linker_command(link_command, linker)
+
+    # Prepare Release
+    open(f"{sdkDir}/.gitignore", "w").write("*")
+    shutil.copy2("./Source/JenovaSDK.h", f"{sdkDir}/JenovaSDK.h")
+    shutil.copy2("./Jenova.Runtime.gdextension", f"{outputDir}/Jenova.Runtime.gdextension")
+
+    # Create Package
+    if skip_packaging: return
+    packageFiles = [
+        {"src": f"{outputDir}/{outputName}", "dst": "./Jenova"},
+        {"src": f"{outputDir}/Jenova.Runtime.gdextension", "dst": "./Jenova"},
+        {"src": f"{sdkDir}/JenovaSDK.h", "dst": "./Jenova/JenovaSDK"},
+        {"src": f"{sdkDir}/.gitignore", "dst": "./Jenova/JenovaSDK"}
+    ]
+    os.makedirs(f"{outputDir}/Distribution", exist_ok=True)
+    toolchainName = get_toolchain_name(buildMode)
+
+    create_distribution_package(packageFiles, f"{outputDir}/Distribution/Jenova-Framework-MacOS-{toolchainName}.7z")
+
 
 # Windows Build Functions
 def initialize_toolchain_windows():
@@ -1423,6 +1766,8 @@ if __name__ == "__main__":
             build_linux("clang++", "clang++", "linux-clang", "LLVM Clang")
         elif args.compiler == "linux-gcc":
             build_linux("g++", "g++", "linux-gcc", "GNU Compiler Collection")
+        elif args.compiler == "mac-clang":
+            build_mac("clang++", "clang++", "mac-clang", "macOS Clang")
         else:
             rgb_print("#e02626", "[ x ] Error : Invalid Input.")
             exit(-1)

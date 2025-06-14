@@ -85,6 +85,25 @@ using namespace std;
 
 #endif
 
+#ifdef TARGET_PLATFORM_MACOS
+	// macOS Global Objects
+	jenova::ModuleHandle jenovaRuntimeInstance = nullptr;
+
+	// macOS Entrypoint
+	extern "C" void _start() { }
+
+	// macOS Constructor
+	__attribute__((constructor)) static void _init()
+	{
+		Dl_info info;
+		if (dladdr((void*)&_init, &info) && info.dli_fbase)
+		{
+			jenovaRuntimeInstance = info.dli_fbase;
+			jenova::GlobalStorage::CurrentJenovaRuntimeModulePath = jenova::GetLoadedModulePath(jenovaRuntimeInstance);
+		}
+	}
+#endif
+
 // Jenova Core Implementations
 namespace jenova
 {
@@ -4427,6 +4446,7 @@ namespace jenova
 			std::string runtimeModuleName = std::string(GlobalSettings::JenovaRuntimeModuleName);
 			if (QUERY_PLATFORM(Windows)) runtimeModuleName += ".Win64.dll";
 			if (QUERY_PLATFORM(Linux)) runtimeModuleName += ".Linux64.so";
+			if (QUERY_PLATFORM(MacOS)) runtimeModuleName += ".MacOS.dylib";
 			if (currentModuleName == runtimeModuleName) return false;
 			return true;
 		}
@@ -4436,6 +4456,7 @@ namespace jenova
 			std::string originalRuntimeModulePath = wrapperDirectory + "/" + std::string(GlobalSettings::JenovaRuntimeModuleName);
 			if (QUERY_PLATFORM(Windows)) originalRuntimeModulePath += ".Win64.dll";
 			if (QUERY_PLATFORM(Linux)) originalRuntimeModulePath += ".Linux64.so";
+			if (QUERY_PLATFORM(MacOS)) originalRuntimeModulePath += ".MacOS.dylib";
 			if (!std::filesystem::exists(originalRuntimeModulePath)) return false;
 			jenova::ModuleHandle jenovaRuntimeModule = jenova::LoadModule(originalRuntimeModulePath.c_str());
 			if (!jenovaRuntimeModule) return false;
@@ -4452,7 +4473,6 @@ namespace jenova
 			jenova::GlobalStorage::ExtensionInitData.godotGetProcAddress = p_get_proc_address;
 			jenova::GlobalStorage::ExtensionInitData.godotExtensionClassLibraryPtr = p_library;
 			jenova::GlobalStorage::ExtensionInitData.godotExtensionInitialization = r_initialization;
-
 			// Check for Wrapper Instance
 			if (CheckWrapperInitialization())
 			{
@@ -4793,6 +4813,11 @@ namespace jenova
 			return dlopen(libPath, RTLD_LAZY);
 		#endif
 
+		// MacOS Implementation
+		#ifdef TARGET_PLATFORM_MACOS
+			return dlopen(libPath, RTLD_LAZY);
+		#endif
+
 		// Not Implemented
 		return nullptr;
 	}
@@ -4808,6 +4833,11 @@ namespace jenova
 			 return (dlclose(moduleHandle) == 0);
 		#endif
 
+		// MacOS Implementation
+		#ifdef TARGET_PLATFORM_MACOS
+			return (dlclose(moduleHandle) == 0);
+		#endif
+
 		// Not Implemented
 		return true;
 	}
@@ -4820,6 +4850,11 @@ namespace jenova
 
 		// Linux Implementation
 		#ifdef TARGET_PLATFORM_LINUX
+			return dlsym(moduleHandle, functionName);
+		#endif
+
+		// MacOS Implementation
+		#ifdef TARGET_PLATFORM_MACOS
 			return dlsym(moduleHandle, functionName);
 		#endif
 
@@ -4838,6 +4873,11 @@ namespace jenova
 			return true;
 		#endif
 
+		// MacOS Implementation
+		#ifdef TARGET_PLATFORM_MACOS
+			return true;
+		#endif
+
 		// Not Implemented
 		return false;
 	}
@@ -4850,6 +4890,12 @@ namespace jenova
 
 		// Linux Implementation
 		#ifdef TARGET_PLATFORM_LINUX
+			OS::get_singleton()->alert(msg, title);
+			return 0;
+		#endif
+
+		// MacOS Implementation
+		#ifdef TARGET_PLATFORM_MACOS
 			OS::get_singleton()->alert(msg, title);
 			return 0;
 		#endif
@@ -4871,6 +4917,13 @@ namespace jenova
 			return (system(command.c_str()) == 0);
 		#endif
 
+		// MacOS Implementation
+		#ifdef TARGET_PLATFORM_MACOS
+			std::string command = "open ";
+			command += filePath;
+			return (system(command.c_str()) == 0);
+		#endif
+
 		// Not Implemented
 		return false;
 	}
@@ -4888,6 +4941,13 @@ namespace jenova
 			return (system(command.c_str()) == 0);
 		#endif
 
+		// MacOS Implementation
+		#ifdef TARGET_PLATFORM_MACOS
+			std::string command = "open ";
+			command += url;
+			return (system(command.c_str()) == 0);
+		#endif
+
 		// Not Implemented
 		return false;
 	}
@@ -4900,6 +4960,11 @@ namespace jenova
 
 		// Linux Implementation	
 		#ifdef TARGET_PLATFORM_LINUX
+			return calloc(1, memorySize);
+		#endif
+
+		// MacOS Implementation
+		#ifdef TARGET_PLATFORM_MACOS
 			return calloc(1, memorySize);
 		#endif
 
@@ -4932,6 +4997,12 @@ namespace jenova
 
 		// Linux Implementation	
 		#ifdef TARGET_PLATFORM_LINUX
+			if (memoryPtr) free(memoryPtr);
+			return true;
+		#endif
+
+		// MacOS Implementation
+		#ifdef TARGET_PLATFORM_MACOS
 			if (memoryPtr) free(memoryPtr);
 			return true;
 		#endif
@@ -4969,6 +5040,19 @@ namespace jenova
 			return valueLen;
 		#endif
 
+		// MacOS Implementation
+		#ifdef TARGET_PLATFORM_MACOS
+			const char* value = getenv(entityName);
+			if (!value) return -1;
+			size_t valueLen = strlen(value);
+			if (bufferPtr && bufferSize > 0)
+			{
+				strncpy(bufferPtr, value, bufferSize - 1);
+				bufferPtr[bufferSize - 1] = '\0';
+			}
+			return valueLen;
+		#endif
+
 		// Not Implemented
 		return 0;
 	}
@@ -4981,6 +5065,11 @@ namespace jenova
 
 		// Linux Implementation	
 		#ifdef TARGET_PLATFORM_LINUX
+			return (setenv(entityName, entityValue, 1) == 0);
+		#endif
+
+		// MacOS Implementation
+		#ifdef TARGET_PLATFORM_MACOS
 			return (setenv(entityName, entityValue, 1) == 0);
 		#endif
 
@@ -5011,6 +5100,7 @@ namespace jenova
 		{
 			if (QUERY_PLATFORM(Windows)) newPath += ";";
 			if (QUERY_PLATFORM(Linux)) newPath += ":";
+			if (QUERY_PLATFORM(MacOS)) newPath += ":";
 			newPath += oldPath;
 		}
 
@@ -5032,6 +5122,11 @@ namespace jenova
 			return (jenova::GenericHandle)getpid();
 		#endif
 
+		// MacOS Implementation
+		#ifdef TARGET_PLATFORM_MACOS
+			return (jenova::GenericHandle)getpid();
+		#endif
+
 		// Not Implemented
 		return 0;
 	}
@@ -5044,6 +5139,11 @@ namespace jenova
 
 		// Linux Implementation
 		#ifdef TARGET_PLATFORM_LINUX
+			return symlink(srcFile, dstFile) == 0;
+		#endif
+
+		// MacOS Implementation
+		#ifdef TARGET_PLATFORM_MACOS
 			return symlink(srcFile, dstFile) == 0;
 		#endif
 
@@ -5092,6 +5192,11 @@ namespace jenova
 			return std::system(command.c_str());
 		#endif
 
+		// MacOS Implementation
+		#ifdef TARGET_PLATFORM_MACOS
+			return std::system(command.c_str());
+		#endif
+
 		// Not Implemented
 		return -1;
 	}
@@ -5114,6 +5219,11 @@ namespace jenova
 
 		// Linux Implementation	
 		#ifdef TARGET_PLATFORM_LINUX
+			quick_exit(exitCode);
+		#endif
+
+		// MacOS Implementation
+		#ifdef TARGET_PLATFORM_MACOS
 			quick_exit(exitCode);
 		#endif
 	}
@@ -5846,6 +5956,11 @@ namespace jenova
 
 		#endif
 
+		// MacOS Implementation
+		#ifdef TARGET_PLATFORM_MACOS
+			return AS_STD_STRING(OS::get_singleton()->get_executable_path());
+		#endif
+
 		// Not Implemented
 		return std::string();
 	}
@@ -5869,6 +5984,14 @@ namespace jenova
 			std::string folder = fullPath.substr(0, pos);
 			chdir(folder.c_str());
 
+		#endif
+
+		// MacOS Implementation
+		#ifdef TARGET_PLATFORM_MACOS
+			std::string fullPath = GetExecutablePath();
+			size_t pos = fullPath.find_last_of("\\/");
+			std::string folder = fullPath.substr(0, pos);
+			chdir(folder.c_str());
 		#endif
 		
 	}
@@ -6052,6 +6175,11 @@ namespace jenova
 			}
 
 		#endif
+
+		// MacOS Compilers
+		#ifdef TARGET_PLATFORM_MACOS
+		// TODO
+		#endif
 		
 		// Unknown Compiler, Return Empty String
 		return std::string();
@@ -6171,6 +6299,11 @@ namespace jenova
 			}
 
 		#endif
+
+		// MacOS Compilers
+		#ifdef TARGET_PLATFORM_MACOS
+		// TODO
+		#endif
 		
 		// Unknown Compiler, Return Empty String
 		return std::string();
@@ -6213,6 +6346,11 @@ namespace jenova
 				// Not Required Yet
 			}
 
+		#endif
+
+		// MacOS Compilers
+		#ifdef TARGET_PLATFORM_MACOS
+		// TODO
 		#endif
 
 		// Unknown Symbol Signature
@@ -6399,6 +6537,19 @@ namespace jenova
 
 		// Linux Implementation
 		#ifdef TARGET_PLATFORM_LINUX
+			char path[PATH_MAX];
+			Dl_info info;
+			if (dladdr(moduleHandle, &info) && info.dli_fname)
+			{
+				strncpy(path, info.dli_fname, PATH_MAX);
+				path[PATH_MAX - 1] = '\0';
+				return std::string(path);
+			}
+			return std::string("Unknown");
+		#endif
+
+		// MacOS Implementation
+		#ifdef TARGET_PLATFORM_MACOS
 			char path[PATH_MAX];
 			Dl_info info;
 			if (dladdr(moduleHandle, &info) && info.dli_fname)
@@ -7170,6 +7321,22 @@ namespace jenova
 				filteredCompilerPackages.push_back(compilerPackage);
 			}
 			if (compilerModel == jenova::CompilerModel::ClangCompiler && compilerPackage.pkgDestination.contains("JenovaClangCompiler"))
+			{
+				filteredCompilerPackages.push_back(compilerPackage);
+			}
+			#endif
+
+			// MacOS Compilers
+			#ifdef TARGET_PLATFORM_MACOS
+			if (compilerModel == jenova::CompilerModel::AppleClangCompiler && compilerPackage.pkgDestination.contains("JenovaAppleClangCompiler"))
+			{
+				filteredCompilerPackages.push_back(compilerPackage);
+			}
+			if (compilerModel == jenova::CompilerModel::ClangCompiler && compilerPackage.pkgDestination.contains("JenovaClangCompiler"))
+			{
+				filteredCompilerPackages.push_back(compilerPackage);
+			}
+			if (compilerModel == jenova::CompilerModel::GNUCompiler && compilerPackage.pkgDestination.contains("JenovaGNUCompiler"))
 			{
 				filteredCompilerPackages.push_back(compilerPackage);
 			}
@@ -8621,6 +8788,26 @@ namespace jenova
 			return scriptFileState;
 		#endif
 
+		// macOS Implementation
+		#ifdef TARGET_PLATFORM_MACOS
+			jenova::ScriptFileState scriptFileState;
+			struct stat fileStat;
+			if (stat(scriptFilePath.c_str(), &fileStat) == 0) 
+			{
+				scriptFileState.isValid = true;
+				uint64_t creationNs = static_cast<uint64_t>(fileStat.st_ctimespec.tv_sec) * 10000000 + static_cast<uint64_t>(fileStat.st_ctimespec.tv_nsec) / 100;
+				uint64_t accessNs = static_cast<uint64_t>(fileStat.st_atimespec.tv_sec) * 10000000 + static_cast<uint64_t>(fileStat.st_atimespec.tv_nsec) / 100;
+				uint64_t writeNs = static_cast<uint64_t>(fileStat.st_mtimespec.tv_sec) * 10000000 + static_cast<uint64_t>(fileStat.st_mtimespec.tv_nsec) / 100;
+				scriptFileState.creationTime.LowDateTime = static_cast<uint32_t>(creationNs & 0xFFFFFFFF);
+				scriptFileState.creationTime.HighDateTime = static_cast<uint32_t>((creationNs >> 32) & 0xFFFFFFFF);
+				scriptFileState.accessTime.LowDateTime = static_cast<uint32_t>(accessNs & 0xFFFFFFFF);
+				scriptFileState.accessTime.HighDateTime = static_cast<uint32_t>((accessNs >> 32) & 0xFFFFFFFF);
+				scriptFileState.writeTime.LowDateTime = static_cast<uint32_t>(writeNs & 0xFFFFFFFF);
+				scriptFileState.writeTime.HighDateTime = static_cast<uint32_t>((writeNs >> 32) & 0xFFFFFFFF);
+			}
+			return scriptFileState;
+		#endif
+
 		// Not Implemented
 		return ScriptFileState();
 	}
@@ -8652,6 +8839,19 @@ namespace jenova
 			return false;
 		#endif
 
+		// macOS Implementation
+		#ifdef TARGET_PLATFORM_MACOS
+			if (!scriptFileState.isValid) return false;
+			uint64_t accessNs = (static_cast<uint64_t>(scriptFileState.accessTime.HighDateTime) << 32) | scriptFileState.accessTime.LowDateTime;
+			uint64_t writeNs = (static_cast<uint64_t>(scriptFileState.writeTime.HighDateTime) << 32) | scriptFileState.writeTime.LowDateTime;
+			struct timespec times[2];
+			times[0].tv_sec = accessNs / 10000000;
+			times[0].tv_nsec = (accessNs % 10000000) * 100;
+			times[1].tv_sec = writeNs / 10000000;
+			times[1].tv_nsec = (writeNs % 10000000) * 100;
+			if (utimensat(AT_FDCWD, scriptFilePath.c_str(), times, 0) == 0) return true;
+			return false;
+		#endif
 		// Not Implemented
 		return false;
 	}
@@ -8728,6 +8928,23 @@ namespace jenova
 
 		// Linux Implementation
 		#ifdef TARGET_PLATFORM_LINUX
+			std::string command = "sudo /bin/bash \"" + packageScriptFile + "\"";
+			std::array<char, 128> buffer = {};
+			FILE* pipe = popen(command.c_str(), "r");
+			if (!pipe) return false;
+			while (fgets(buffer.data(), buffer.size(), pipe) != nullptr)
+			{
+				std::string line(buffer.data());
+				if (!line.empty() && line.back() == '\n') line.pop_back();
+				if (!line.empty() && line.back() == '\r') line.pop_back();
+				jenova::Output("%s", line.c_str());
+			}
+			int result = pclose(pipe);
+			return result == 0;
+		#endif
+
+		// macOS Implementation
+		#ifdef TARGET_PLATFORM_MACOS
 			std::string command = "sudo /bin/bash \"" + packageScriptFile + "\"";
 			std::array<char, 128> buffer = {};
 			FILE* pipe = popen(command.c_str(), "r");
@@ -8972,6 +9189,23 @@ namespace jenova
     
 		#endif
 
+		// macOS Implementation
+		#ifdef TARGET_PLATFORM_MACOS
+    
+			if (!moduleDataPtr || moduleSize == 0) return "";
+			char tempPath[PATH_MAX];
+			const char* tmpDir = getenv("TMPDIR");
+			if (!tmpDir) tmpDir = "/tmp/";
+			pid_t pid = getpid();
+			std::string modulePath = std::string(tmpDir) + "Jenova.Module." + std::to_string(pid) + ".so";
+			std::ofstream outFile(modulePath, std::ios::binary);
+			if (!outFile) return "";
+			outFile.write(reinterpret_cast<const char*>(moduleDataPtr), moduleSize);
+			outFile.close();
+			return modulePath;
+    
+		#endif
+
 		// Unsupported Platform
 		return std::string();
 	}
@@ -8997,6 +9231,21 @@ namespace jenova
 
 		// Linux Implementation
 		#ifdef TARGET_PLATFORM_LINUX
+			const char* tmpDir = getenv("TMPDIR");
+			if (!tmpDir) tmpDir = "/tmp/";
+			pid_t pid = getpid();
+			std::string modulePath = std::string(tmpDir) + "Jenova.Module." + std::to_string(pid) + ".so";
+			void* handle = dlopen(modulePath.c_str(), RTLD_NOW);
+			if (handle)
+			{
+				dlclose(handle);
+				unlink(modulePath.c_str());
+			}
+			return true;
+		#endif
+
+		// macOS Implementation
+		#ifdef TARGET_PLATFORM_MACOS
 			const char* tmpDir = getenv("TMPDIR");
 			if (!tmpDir) tmpDir = "/tmp/";
 			pid_t pid = getpid();

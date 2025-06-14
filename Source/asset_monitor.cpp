@@ -119,7 +119,9 @@ bool JenovaAssetMonitor::AddDirectory(const String& directoryPath)
 
 		// Somehow Paths On Linux Have a Hash At End Sometimes, Need to Be cleaned
 		std::string solvedPath = path;
+		#ifdef __linux__
 		solvedPath = CleanPath(solvedPath);
+		#endif
 
 		// Rise Callback
 		for (const auto& callback : monitorCallbacks) callback(AS_GD_STRING(solvedPath), jenova::AssetMonitor::CallbackEvent(change_type));
