@@ -4473,15 +4473,12 @@ namespace jenova
 			jenova::GlobalStorage::ExtensionInitData.godotGetProcAddress = p_get_proc_address;
 			jenova::GlobalStorage::ExtensionInitData.godotExtensionClassLibraryPtr = p_library;
 			jenova::GlobalStorage::ExtensionInitData.godotExtensionInitialization = r_initialization;
-			std::cout<<"[ Jenova Runtime ] ::> Initializing Godot Extension..."<<std::endl;
 			// Check for Wrapper Instance
-			//if (CheckWrapperInitialization())
+			if (CheckWrapperInitialization())
 			{
 				// Instance is Wrapper, Fallback to Main
-				//return InitializeAsWrapper(jenova::GlobalStorage::ExtensionInitData);
+				return InitializeAsWrapper(jenova::GlobalStorage::ExtensionInitData);
 			}
-
-			
 
 			// Initailize Object & Solve API Functions
 			GDExtensionBinding::InitObject init_obj(p_get_proc_address, p_library, r_initialization);
@@ -5957,7 +5954,7 @@ namespace jenova
 
 		// MacOS Implementation
 		#ifdef TARGET_PLATFORM_MACOS
-		// TODO
+			return AS_STD_STRING(OS::get_singleton()->get_executable_path());
 		#endif
 
 		// Not Implemented
@@ -6549,7 +6546,15 @@ namespace jenova
 
 		// MacOS Implementation
 		#ifdef TARGET_PLATFORM_MACOS
-		// TODO
+			char path[PATH_MAX];
+			Dl_info info;
+			if (dladdr(moduleHandle, &info) && info.dli_fname)
+			{
+				strncpy(path, info.dli_fname, PATH_MAX);
+				path[PATH_MAX - 1] = '\0';
+				return std::string(path);
+			}
+			return std::string("Unknown");
 		#endif
 
 		// Not Implemented
@@ -7312,6 +7317,22 @@ namespace jenova
 				filteredCompilerPackages.push_back(compilerPackage);
 			}
 			if (compilerModel == jenova::CompilerModel::ClangCompiler && compilerPackage.pkgDestination.contains("JenovaClangCompiler"))
+			{
+				filteredCompilerPackages.push_back(compilerPackage);
+			}
+			#endif
+
+			// MacOS Compilers
+			#ifdef TARGET_PLATFORM_MACOS
+			if (compilerModel == jenova::CompilerModel::AppleClangCompiler && compilerPackage.pkgDestination.contains("JenovaAppleClangCompiler"))
+			{
+				filteredCompilerPackages.push_back(compilerPackage);
+			}
+			if (compilerModel == jenova::CompilerModel::ClangCompiler && compilerPackage.pkgDestination.contains("JenovaClangCompiler"))
+			{
+				filteredCompilerPackages.push_back(compilerPackage);
+			}
+			if (compilerModel == jenova::CompilerModel::GNUCompiler && compilerPackage.pkgDestination.contains("JenovaGNUCompiler"))
 			{
 				filteredCompilerPackages.push_back(compilerPackage);
 			}
