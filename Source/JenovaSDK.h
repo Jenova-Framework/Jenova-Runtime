@@ -147,7 +147,7 @@ namespace jenova::sdk
 	// Type Definitions
 	typedef void*						FunctionPtr;
 	typedef void*						NativePtr;
-	typedef __int64						IntPtr;
+	typedef int64_t						IntPtr;
 	typedef godot::Variant				ObjectPtr;
 	typedef const char*					StringPtr;
 	typedef const wchar_t*				WideStringPtr;
