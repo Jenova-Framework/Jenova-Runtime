@@ -53,7 +53,7 @@ jobs:
 
       - name: Build Jenova Runtime using GCC13
         run: |
-          python3 ./Jenova.Builder.py --skip-packaging --deploy-mode --deps-version "4.4" --compiler linux-gcc
+          python3 ./Jenova.Builder.py --skip-packaging --deploy-mode --deps-version "4.5" --compiler linux-gcc
 
       - name: Verbose Compiled Binary Dependencies
         run: |
@@ -123,7 +123,7 @@ jobs:
 
       - name: Build Jenova Runtime using LLVM CLANG19
         run: |
-          python3 ./Jenova.Builder.py --skip-packaging --deploy-mode --deps-version "4.4" --compiler linux-clang
+          python3 ./Jenova.Builder.py --skip-packaging --deploy-mode --deps-version "4.5" --compiler linux-clang
 
       - name: Verbose Compiled Binary Dependencies
         run: |

@@ -24,7 +24,7 @@ jobs:
 
       - name: Build Jenova Runtime using MSVC
         run: |
-          python3 ./Jenova.Builder.py --skip-packaging --deploy-mode --deps-version "4.4" --compiler win-msvc
+          python3 ./Jenova.Builder.py --skip-packaging --deploy-mode --deps-version "4.5" --compiler win-msvc
 
       - name: Prepare Jenova SDK and Extension
         run: |
@@ -61,7 +61,7 @@ jobs:
 
       - name: Build Jenova Runtime using LLVM
         run: |
-          python3 ./Jenova.Builder.py --skip-packaging --deploy-mode --deps-version "4.4" --compiler win-clangcl
+          python3 ./Jenova.Builder.py --skip-packaging --deploy-mode --deps-version "4.5" --compiler win-clangcl
 
       - name: Prepare Jenova SDK and Extension
         run: |
@@ -98,7 +98,7 @@ jobs:
 
       - name: Build Jenova Runtime using GCC
         run: |
-          python3 ./Jenova.Builder.py --skip-packaging --deploy-mode --deps-version "4.4" --compiler win-gcc
+          python3 ./Jenova.Builder.py --skip-packaging --deploy-mode --deps-version "4.5" --compiler win-gcc
 
       - name: Prepare Jenova SDK and Extension
         run: |
@@ -135,7 +135,7 @@ jobs:
 
       - name: Build Jenova Runtime using Clang
         run: |
-          python3 ./Jenova.Builder.py --skip-packaging --deploy-mode --deps-version "4.4" --compiler win-clang
+          python3 ./Jenova.Builder.py --skip-packaging --deploy-mode --deps-version "4.5" --compiler win-clang
 
       - name: Prepare Jenova SDK and Extension
         run: |
