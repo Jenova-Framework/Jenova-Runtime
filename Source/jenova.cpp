@@ -599,7 +599,6 @@ namespace jenova
 
 						// Build Tool Button Placement Property
 						String buttonPlacements = "Before Main Menu,After Main Menu,Before Stage Selector,After Stage Selector,Before Run Bar,After Run Bar,After Render Method";
-						if (jenova::IsEngineBlazium()) buttonPlacements = "Blazium Default";
 						PropertyInfo BuildToolButtonPlacementProperty(Variant::INT, BuildToolButtonEditorConfigPath, PropertyHint::PROPERTY_HINT_ENUM, buttonPlacements,
 							PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED, JenovaEditorSettingsCategory);
 						editor_settings->add_property_info(BuildToolButtonPlacementProperty);
@@ -709,10 +708,9 @@ namespace jenova
 				Variant BuildToolButtonPlacement;
 				if (!GetEditorSetting(BuildToolButtonEditorConfigPath, BuildToolButtonPlacement)) BuildToolButtonPlacement = int32_t(BuildToolButtonDefaultPlacement);
 
-				// Move the button to the desired position
-				if (!jenova::IsEngineBlazium()) buildToolButton->get_parent()->move_child(buildToolButton, BuildToolButtonPlacement);
-				else buildToolButton->get_parent()->move_child(buildToolButton, 1);
-
+				// Move the Button to the Desired Position
+				buildToolButton->get_parent()->move_child(buildToolButton, BuildToolButtonPlacement);
+				
 				// All Good
 				return true;
 			}
@@ -1729,7 +1727,7 @@ namespace jenova
 				else
 				{
 					// Pause Tree
-					get_tree()->set_pause(true);
+					if (jenova::GlobalSettings::PauseResumeTreeOnReload) get_tree()->set_pause(true);
 
 					// Reloading
 					if (!JenovaInterpreter::ReloadModule(buildResult))
@@ -1740,7 +1738,7 @@ namespace jenova
 					}
 				
 					// Resume Tree
-					get_tree()->set_pause(false);
+					if (jenova::GlobalSettings::PauseResumeTreeOnReload) get_tree()->set_pause(false);
 				}
 
 				// Update Script Instances 
@@ -1811,6 +1809,16 @@ namespace jenova
 				catch (const std::filesystem::filesystem_error& e) 
 				{
 					jenova::Error("Jenova Builder", "Failed to Clean Jenova Cache Directory.");
+				}
+
+				// Delete Cache Directory
+				try
+				{
+					std::filesystem::remove(jenovaCacheDirectory);
+				}
+				catch (const std::filesystem::filesystem_error& e)
+				{
+					jenova::Error("Jenova Builder", "Failed to Delete Jenova Cache Directory.");
 				}
 
 				// Delete Addon Binaries
@@ -1990,7 +1998,7 @@ namespace jenova
 					else
 					{
 						// Pause Tree
-						get_tree()->set_pause(true);
+						if (jenova::GlobalSettings::PauseResumeTreeOnReload) get_tree()->set_pause(true);
 
 						// Reloading
 						if (!JenovaInterpreter::ReloadModule(buildResult))
@@ -2000,7 +2008,7 @@ namespace jenova
 						}
 
 						// Resume Tree
-						get_tree()->set_pause(false);
+						if (jenova::GlobalSettings::PauseResumeTreeOnReload) get_tree()->set_pause(false);
 					}
 
 					// Release Buffers
@@ -3101,7 +3109,7 @@ namespace jenova
 				return true;
 			}
 
-			// Neovim Integration
+			// Neovim Integration [Experimental]
 			bool ExportNeovimProject()
 			{
 				// Verbose
@@ -5692,7 +5700,6 @@ namespace jenova
 			if (!root) return;
 			CollectScriptsFromNodes(root, collectedResources);
 			memdelete(root); // Must Not Use `queue_free`
-			scene->unreference();
 		};
 		CollectScriptsFromNodes = [&](Node* node, jenova::ResourceCollection& collectedResources)
 		{
@@ -5985,8 +5992,12 @@ namespace jenova
 	}
 	String GetJenovaCacheDirectory()
 	{
+		// Initialize Directory Path
+		String jenovaCacheDirectory = "";
+
 		// Generate Cache Directory Path
-		String jenovaCacheDirectory = OS::get_singleton()->get_cache_dir() + String(jenova::GlobalSettings::JenovaCacheDirectory);
+		jenovaCacheDirectory = ProjectSettings::get_singleton()->globalize_path("res://") + String(jenova::GlobalSettings::JenovaCacheDirectory);
+		if (jenova::GlobalSettings::UseLegacyJenovaCacheDirectory) jenovaCacheDirectory = OS::get_singleton()->get_cache_dir() + String(jenova::GlobalSettings::JenovaCacheDirectoryLegacy);
 
 		// Try to Create It If Doesn't Exist
 		if (!filesystem::exists(AS_STD_STRING(jenovaCacheDirectory)))
@@ -5994,6 +6005,10 @@ namespace jenova
 			try
 			{
 				filesystem::create_directories(AS_STD_STRING(jenovaCacheDirectory));
+
+				// Create Ignore Files
+				jenova::WriteStringToFile(jenovaCacheDirectory + ".gdignore", "*");
+				jenova::WriteStringToFile(jenovaCacheDirectory + ".gitignore", "*");
 			}
 			catch (const std::filesystem::filesystem_error& e) { }
 		}
@@ -7560,9 +7575,26 @@ namespace jenova
 		if (returnType == "void") return returnType;
 
 		// Basic Types
-		if (returnType == "bool" || returnType == "float" || 
-			returnType == "int" || returnType == "double") 
-			return returnType;
+		if (returnType == "float" || returnType == "int" || returnType == "uint" || returnType == "double") return returnType;
+
+		// Special Types
+		if (returnType == "bool") return "unsigned char";
+		if (returnType == "int64") return "long long";
+		if (returnType == "uint64") return "unsigned long long";
+
+		// Pointer Types
+		if (returnType.find("*") != std::string::npos) 
+		{
+			jenova::ErrorMessage("Yo yo yo!",
+				"You just tried returning a fucking raw pointer from a script, bitch.\n"
+				"Godot ain't built for that shady stuff, man. It's gonna blow up in your face. "
+				"Wrap that thing in a Variant or use an IntPtr like a pro.\n"
+				"Otherwise? Boom. Game over. Science, yo."
+			);
+
+			/* Todo : Add Support for Direct Raw Pointer Exchange */
+			return "void*";
+		}
 
 		// Other Types
 		return "Variant";
@@ -8837,7 +8869,7 @@ namespace jenova
 			runtimeConfigurationSerializer["RuntimeType"] = std::string("Proprietary");
 			runtimeConfigurationSerializer["RuntimeName"] = std::string(APP_VERSION_NAME);
 			runtimeConfigurationSerializer["RuntimeBuild"] = std::string(APP_VERSION_BUILD);
-			runtimeConfigurationSerializer["RuntimeVersion"] = std::string(APP_VERSION_NAME);
+			runtimeConfigurationSerializer["RuntimeVersion"] = std::string(APP_VERSION);
 			runtimeConfigurationSerializer["RuntimePlatform"] = std::string("Windows");
 			runtimeConfigurationSerializer["RuntimeArch"] = std::string("AMD64");
 			runtimeConfigurationSerializer["InterpreterSettings"]["RuntimeBackend"] = JenovaInterpreter::GetInterpreterBackend();
@@ -9306,11 +9338,6 @@ namespace jenova
 	{
 		if (!jenova::plugin::JenovaEditorPlugin::get_singleton()) return;
 		jenova::plugin::JenovaEditorPlugin::get_singleton()->call_deferred("SwitchToTerminal");
-	}
-	bool IsEngineBlazium()
-	{
-		if (ClassDB::class_exists("BlaziumClient")) return true;
-		return false;
 	}
 	#pragma endregion
 	

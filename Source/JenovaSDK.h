@@ -147,6 +147,8 @@ namespace jenova::sdk
 	// Type Definitions
 	typedef void*						FunctionPtr;
 	typedef void*						NativePtr;
+	typedef __int64						IntPtr;
+	typedef godot::Variant				ObjectPtr;
 	typedef const char*					StringPtr;
 	typedef const wchar_t*				WideStringPtr;
 	typedef const char*					MemoryID;
@@ -188,6 +190,7 @@ namespace jenova::sdk
 		JENOVA_INTERNAL(void DebugOutput(WideStringPtr format, va_list args));
 		JENOVA_INTERNAL(StringPtr GetCStr(const godot::String& godotStr));
 		JENOVA_INTERNAL(WideStringPtr GetWCStr(const godot::String& godotStr));
+		JENOVA_INTERNAL(ObjectPtr GetObjectPointer(NativePtr obj));
 		JENOVA_INTERNAL(bool SetClassIcon(const godot::String& className, const godot::Ref<godot::Texture2D> iconImage));
 		JENOVA_INTERNAL(double MatchScaleFactor(double inputSize));
 		JENOVA_INTERNAL(godot::Error CreateSignalCallback(godot::Object* object, const godot::String& signalName, FunctionPtr callbackPtr));
@@ -360,6 +363,11 @@ namespace jenova::sdk
 	{
 		if (!JenovaSDK::ValidateInterface(bridge)) return nullptr;
 		return bridge->GetWCStr(godotStr);
+	}
+	JENOVA_WRAPPER ObjectPtr GetObjectPointer(NativePtr obj)
+	{
+		if (!JenovaSDK::ValidateInterface(bridge)) return nullptr;
+		return bridge->GetObjectPointer(obj);
 	}
 	JENOVA_WRAPPER bool SetClassIcon(const godot::String& className, const godot::Ref<godot::Texture2D> iconImage)
 	{
@@ -589,5 +597,13 @@ namespace jenova::sdk
 	template <typename T> T GlobalVariable(VariableID id)
 	{
 		return T(GetGlobalVariable(id));
+	}
+	template <typename T> T* GetObjectFromIntPtr(IntPtr ptr)
+	{
+		return reinterpret_cast<T*>(ptr);
+	}
+	template <typename T> T* GetObjectFromIntPtr(godot::Variant variantPtr)
+	{
+		return reinterpret_cast<T*>(IntPtr(variantPtr));
 	}
 }

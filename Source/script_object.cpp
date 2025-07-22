@@ -109,6 +109,11 @@ Error CPPScript::_reload(bool p_keep_state)
 	}
 	return Error::ERR_UNAVAILABLE;
 }
+StringName CPPScript::_get_doc_class_name() const
+{
+	/* Needs to be Implemented */
+	return "CPPScript";
+}
 TypedArray<Dictionary> CPPScript::_get_documentation() const
 {
 	/* 
@@ -295,6 +300,10 @@ bool CPPHeader::_has_source_code() const { return !source_code.is_empty(); }
 String CPPHeader::_get_source_code() const { return this->source_code; }
 void CPPHeader::_set_source_code(const String& p_code) { this->source_code = p_code; }
 Error CPPHeader::_reload(bool p_keep_state) { return Error::ERR_UNAVAILABLE; }
+StringName CPPHeader::_get_doc_class_name() const
+{
+	return StringName();
+}
 TypedArray<Dictionary> CPPHeader::_get_documentation() const { return TypedArray<Dictionary>(); }
 String CPPHeader::_get_class_icon_path() const { return String(); }
 bool CPPHeader::_has_method(const StringName& p_method) const { return false; }

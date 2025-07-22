@@ -128,7 +128,7 @@ def print_banner():
 ===========================================================================
     """
     rgb_print("#42f569", banner)
-    rgb_print("#2942ff", f".:: Jenova Build System v2.4 ::.\n")
+    rgb_print("#2942ff", f".:: Jenova Build System v2.5 ::.\n")
 def get_compiler_choice():
     global compiler, linker
     rgb_print("#ff2474", "[ ? ] Select Supported Compiler :\n")
@@ -158,7 +158,42 @@ def get_compiler_choice():
     else:
         rgb_print("#e02626", "[ x ] Error : Invalid Choice.")
         exit(-1)
+def generate_gdsdk(output_dir):
+    rgb_print("#367fff", "[ ^ ] Generating GodotSDK Package...")
+    source_sdk_path = "./Libs/GodotSDK"
+    target_sdk_path = os.path.join(output_dir, "GodotSDK")
 
+    if os.path.exists(target_sdk_path):
+        shutil.rmtree(target_sdk_path)
+    shutil.copytree(source_sdk_path, target_sdk_path)
+
+    for root, _, files in os.walk(target_sdk_path):
+        for file in files:
+            if file.endswith(".hpp"):
+                file_path = os.path.join(root, file)
+                with open(file_path, "r", encoding="utf-8") as f:
+                    lines = f.readlines()
+                patched_lines = [
+                    line.replace('<godot_cpp', '<Godot') for line in lines
+                ]
+                with open(file_path, "w", encoding="utf-8") as f:
+                    f.writelines(patched_lines)
+
+    old_folder = os.path.join(target_sdk_path, "godot_cpp")
+    new_folder = os.path.join(target_sdk_path, "Godot")
+    if os.path.exists(old_folder):
+        os.rename(old_folder, new_folder)
+
+    for ext in [".lib", ".a"]:
+        lib_name = f"libgodotcpp-static-x86_64{ext}"
+        src_lib_path = os.path.join("./Libs", lib_name)
+        if os.path.exists(src_lib_path):
+            dst_lib_name = f"libGodot.x64{ext}"
+            dst_lib_path = os.path.join(target_sdk_path, dst_lib_name)
+            shutil.copy2(src_lib_path, dst_lib_path)
+
+    rgb_print("#38f227", "[ √ ] Godot SDK Package Successfully Generated.")
+    
 # Generic Build Functions
 def compute_md5(file_path):
     hasher = hashlib.md5()
@@ -458,11 +493,12 @@ def build_dependencies_linux(buildMode, cacheDir):
             "-B", buildPath,
             "-G", "Ninja",
             "-DCMAKE_BUILD_TYPE=MinSizeRel",
-            "-DGODOT_ENABLE_HOT_RELOAD=ON",
+            "-DGODOTCPP_USE_HOT_RELOAD=ON",
+            "-DGODOTCPP_TARGET=editor",
             "-DBUILD_SHARED_LIBS=OFF"
         ], check=True)
         build_with_ninja(buildPath)
-        shutil.copyfile(buildPath + "/bin/libgodot-cpp.linux.minsizerel.64.a", "./Libs/libgodotcpp-static-x86_64.a")
+        shutil.copyfile(buildPath + "/bin/libgodot-cpp.linux.editor.x86_64.a", "./Libs/libgodotcpp-static-x86_64.a")
         if os.path.exists(sdkPath): shutil.rmtree(sdkPath)
         os.makedirs(sdkPath, exist_ok=True)
         shutil.copyfile("./Dependencies/libgodot/gdextension/gdextension_interface.h", sdkPath + "/gdextension_interface.h")
@@ -563,6 +599,9 @@ def build_linux(compilerBinary, linkerBinary, buildMode, buildSystem):
     open(f"{sdkDir}/.gitignore", "w").write("*")
     shutil.copy2("./Source/JenovaSDK.h", f"{sdkDir}/JenovaSDK.h")
     shutil.copy2("./Jenova.Runtime.gdextension", f"{outputDir}/Jenova.Runtime.gdextension")
+
+    # Generate Godot SDK Package
+    if args.generate_gdsdk: generate_gdsdk(outputDir)
 
     # Create Package
     if skip_packaging: return
@@ -858,13 +897,14 @@ def build_dependencies_windows(buildMode, cacheDir):
                 "-B", buildPath,
                 "-G", "Ninja",
                 "-DCMAKE_BUILD_TYPE=MinSizeRel",
-                "-DGODOT_ENABLE_HOT_RELOAD=ON",
+                "-DGODOTCPP_USE_HOT_RELOAD=ON",
+                "-DGODOTCPP_TARGET=editor",
                 "-DBUILD_SHARED_LIBS=OFF",
                 "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded",
                 f"-DCMAKE_CXX_FLAGS={os.environ['CLFLAGS']}"
             ], check=True)
             build_with_ninja(buildPath)
-            shutil.copyfile(buildPath + "/bin/godot-cpp.windows.minsizerel.64.lib", "./Libs/libgodotcpp-static-x86_64.lib")
+            shutil.copyfile(buildPath + "/bin/libgodot-cpp.windows.editor.x86_64.lib", "./Libs/libgodotcpp-static-x86_64.lib")
             if os.path.exists(sdkPath): shutil.rmtree(sdkPath)
             os.makedirs(sdkPath, exist_ok=True)
             shutil.copyfile("./Dependencies/libgodot/gdextension/gdextension_interface.h", sdkPath + "/gdextension_interface.h")
@@ -1041,11 +1081,12 @@ def build_dependencies_windows(buildMode, cacheDir):
                 "-B", buildPath,
                 "-G", "Ninja",
                 "-DCMAKE_BUILD_TYPE=MinSizeRel",
-                "-DGODOT_ENABLE_HOT_RELOAD=ON",
+                "-DGODOTCPP_USE_HOT_RELOAD=ON",
+                "-DGODOTCPP_TARGET=editor",
                 "-DBUILD_SHARED_LIBS=OFF"
             ], check=True)
             build_with_ninja(buildPath)
-            shutil.copyfile(buildPath + "/bin/libgodot-cpp.windows.minsizerel.64.a", "./Libs/libgodotcpp-static-x86_64.a")
+            shutil.copyfile(buildPath + "/bin/libgodot-cpp.windows.editor.x86_64.a", "./Libs/libgodotcpp-static-x86_64.a")
             if os.path.exists(sdkPath): shutil.rmtree(sdkPath)
             os.makedirs(sdkPath, exist_ok=True)
             shutil.copyfile("./Dependencies/libgodot/gdextension/gdextension_interface.h", sdkPath + "/gdextension_interface.h")
@@ -1338,6 +1379,9 @@ def build_windows(compilerBinary, linkerBinary, buildMode, buildSystem):
     shutil.copy2("./Source/JenovaSDK.h", f"{sdkDir}/JenovaSDK.h")
     shutil.copy2("./Jenova.Runtime.gdextension", f"{outputDir}/Jenova.Runtime.gdextension")
 
+    # Generate Godot SDK Package
+    if args.generate_gdsdk: generate_gdsdk(outputDir)
+
     # Create Package
     if skip_packaging: return
     packageFiles = [
@@ -1360,7 +1404,7 @@ if __name__ == "__main__":
     os.environ['PYTHONDONTWRITEBYTECODE'] = "1"
 
     # Create Arguments Parser
-    parser = argparse.ArgumentParser(description="Jenova Runtime Build System 2.4 Developed by Hamid.Memar")
+    parser = argparse.ArgumentParser(description="Jenova Runtime Build System 2.5 Developed by Hamid.Memar")
     parser.add_argument('--compiler', type=str, help='Specify Compiler to Use.')
     parser.add_argument('--deploy-mode', action='store_true', help='Run As GitHub Action Deploy Mode')
     parser.add_argument('--deps-version', default="4.3", help='Specify Dependencies Version (default: 4.3)')
@@ -1370,6 +1414,7 @@ if __name__ == "__main__":
     parser.add_argument('--skip-packaging', action='store_true', help='Skip Creating Distribution Package')
     parser.add_argument('--clean-up', action='store_true', help='Clean Up Build Files')
     parser.add_argument('--deep-clean-up', action='store_true', help='Clean Up Everything')
+    parser.add_argument('--generate-gdsdk', action='store_true', help='Generate GodotSDK Package')
     parser.add_argument('--lithium-edition', action='store_true', help='Build Jenova Runtime foR Lithium IDE')
 
     # Parser Arguments

@@ -294,6 +294,10 @@ namespace jenova::sdk
 				return wcsdup(str.c_str());
 		#endif
 	}
+	ObjectPtr JenovaSDK::GetObjectPointer(NativePtr obj)
+	{
+		return ObjectPtr(IntPtr(obj));
+	}
 	bool JenovaSDK::SetClassIcon(const godot::String& className, const godot::Ref<godot::Texture2D> iconImage)
 	{
 		if (!godot::ClassDB::class_exists(className)) return false;
@@ -702,6 +706,7 @@ namespace jenova
 		if (string(sdkFunctionName) == "DebugOutputW") return FunctionPtr((void(*)(WideStringPtr, ...))(DebugOutput));
 		if (string(sdkFunctionName) == "GetCStr") return FunctionPtr(&GetCStr);
 		if (string(sdkFunctionName) == "GetWCStr") return FunctionPtr(&GetWCStr);
+		if (string(sdkFunctionName) == "GetObjectPointer") return FunctionPtr(&GetObjectPointer);
 		if (string(sdkFunctionName) == "SetClassIcon") return FunctionPtr(&SetClassIcon);
 		if (string(sdkFunctionName) == "MatchScaleFactor") return FunctionPtr(&MatchScaleFactor);
 		if (string(sdkFunctionName) == "CreateSignalCallback") return FunctionPtr(&CreateSignalCallback);

@@ -236,13 +236,24 @@ Variant CPPScriptInstance::callp(const StringName &p_method, const Variant **p_a
 		return Variant();
 	}
 
+	// Initial Update for Properties
+	if (p_method == StringName("_enter_world"))
+	{
+		auto propContainer = JenovaInterpreter::GetPropertyContainer(AS_STD_STRING(this->scriptInstanceIdentity));
+		for (size_t i = 0; i < propContainer.scriptProperties.size(); i++)
+		{
+			jenova::ScriptProperty scriptProperty = propContainer.scriptProperties[i];
+			if (!this->instanceProperties.has(scriptProperty.propertyName)) this->instanceProperties[scriptProperty.propertyName] = scriptProperty.defaultValue;
+		}
+	}
+
 	// Update Interpreter Properties
 	if (this->instanceProperties.size() != 0)
 	{
-		Array instancePropertiesKeys = instanceProperties.keys();
+		Array instancePropertiesKeys = this->instanceProperties.keys();
 		for (size_t i = 0; i < instancePropertiesKeys.size(); i++)
 		{
-			if (!JenovaInterpreter::SetPropertyValueFromVariant(instancePropertiesKeys[i], instanceProperties[instancePropertiesKeys[i]], scriptInstanceIdentity))
+			if (!JenovaInterpreter::SetPropertyValueFromVariant(instancePropertiesKeys[i], this->instanceProperties[instancePropertiesKeys[i]], scriptInstanceIdentity))
 			{
 				jenova::Error("Jenova Interpreter", "Failed to Update Interpreter Property Storage Value!");
 				r_error.error = GDEXTENSION_CALL_ERROR_INVALID_ARGUMENT;

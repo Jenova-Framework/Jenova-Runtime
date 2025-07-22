@@ -210,52 +210,52 @@ void CPPScriptLanguage::_thread_enter() {}
 void CPPScriptLanguage::_thread_exit() {}
 String CPPScriptLanguage::_debug_get_error() const
 {
-	jenova::Output("_debug_get_error");
+	// jenova::Output("_debug_get_error");
 	return String();
 }
 int32_t CPPScriptLanguage::_debug_get_stack_level_count() const
 {
-	jenova::Output("_debug_get_stack_level_count");
+	// jenova::Output("_debug_get_stack_level_count");
 	return 0;
 }
 int32_t CPPScriptLanguage::_debug_get_stack_level_line(int32_t p_level) const
 {
-	jenova::Output("_debug_get_stack_level_line %d", p_level);
+	// jenova::Output("_debug_get_stack_level_line %d", p_level);
 	return 0;
 }
 String CPPScriptLanguage::_debug_get_stack_level_function(int32_t p_level) const
 {
-	jenova::Output("_debug_get_stack_level_function %d", p_level);
+	// jenova::Output("_debug_get_stack_level_function %d", p_level);
 	return String();
 }
 Dictionary CPPScriptLanguage::_debug_get_stack_level_locals(int32_t p_level, int32_t p_max_subitems, int32_t p_max_depth)
 {
-	jenova::Output("_debug_get_stack_level_locals %d %d %d", p_level, p_max_subitems, p_max_depth);
+	// jenova::Output("_debug_get_stack_level_locals %d %d %d", p_level, p_max_subitems, p_max_depth);
 	return Dictionary();
 }
 Dictionary CPPScriptLanguage::_debug_get_stack_level_members(int32_t p_level, int32_t p_max_subitems, int32_t p_max_depth)
 {
-	jenova::Output("_debug_get_stack_level_members %d %d %d", p_level, p_max_subitems, p_max_depth);
+	// jenova::Output("_debug_get_stack_level_members %d %d %d", p_level, p_max_subitems, p_max_depth);
 	return Dictionary();
 }
 void* CPPScriptLanguage::_debug_get_stack_level_instance(int32_t p_level)
 {
-	jenova::Output("_debug_get_stack_level_instance %d", p_level);
+	// jenova::Output("_debug_get_stack_level_instance %d", p_level);
 	return nullptr;
 }
 Dictionary CPPScriptLanguage::_debug_get_globals(int32_t p_max_subitems, int32_t p_max_depth)
 {
-	jenova::Output("_debug_get_globals %d", p_max_subitems, p_max_depth);
+	// jenova::Output("_debug_get_globals %d", p_max_subitems, p_max_depth);
 	return Dictionary();
 }
 String CPPScriptLanguage::_debug_parse_stack_level_expression(int32_t p_level, const String& p_expression, int32_t p_max_subitems, int32_t p_max_depth)
 {
-	jenova::Output("_debug_parse_stack_level_expression %d %s %d %d", p_level, p_max_depth, AS_C_STRING(p_expression), p_max_subitems, p_max_depth);
+	// jenova::Output("_debug_parse_stack_level_expression %d %s %d %d", p_level, p_max_depth, AS_C_STRING(p_expression), p_max_subitems, p_max_depth);
 	return String();
 }
 TypedArray<Dictionary> CPPScriptLanguage::_debug_get_current_stack_info()
 {
-	jenova::Output("_debug_get_current_stack_info");
+	// jenova::Output("_debug_get_current_stack_info");
 	return TypedArray<Dictionary>();
 }
 void CPPScriptLanguage::_reload_all_scripts()
@@ -264,7 +264,7 @@ void CPPScriptLanguage::_reload_all_scripts()
 }
 void CPPScriptLanguage::_reload_scripts(const Array& p_scripts, bool p_soft_reload)
 {
-	// Called when a script gets edited while game is running
+	// Called when A Script gets Edited While Game is Running In Debug Mode
 	jenova::VerboseByID(__LINE__, "_reload_scripts Called");
 }
 void CPPScriptLanguage::_reload_tool_script(const Ref<Script>& p_script, bool p_soft_reload)

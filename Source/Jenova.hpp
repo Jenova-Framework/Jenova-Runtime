@@ -20,13 +20,13 @@
 #define APP_COMPANYNAME					"MemarDesign™ LLC."
 #define APP_DESCRIPTION					"Real-Time C++ Scripting System for Godot Game Engine, Developed By Hamid.Memar."
 #define APP_COPYRIGHT					"Copyright MemarDesign™ LLC. (©) 2024-2025, All Rights Reserved."
-#define APP_VERSION						"0.3.7.4"
+#define APP_VERSION						"0.3.7.5"
 #define APP_VERSION_MIDDLEFIX			" "
 #define APP_VERSION_POSTFIX				"Beta"
 #define APP_VERSION_SINGLECHAR			"b"
-#define APP_VERSION_DATA				0, 3, 7, 4
+#define APP_VERSION_DATA				0, 3, 7, 5
 #define APP_VERSION_BUILD				"0"
-#define APP_VERSION_NAME				"Silverlight"
+#define APP_VERSION_NAME				"Cyclone"
 
 #ifndef NO_JENOVA_RUNTIME_SDK
 
@@ -758,6 +758,9 @@ namespace jenova
 		constexpr bool LoadAndUnloadToolPackages				= true;
 		constexpr bool UpdatePropertiesAfterCall				= true;
 		constexpr bool DisableBuildAndRunWhileDebug				= true;
+		constexpr bool PauseResumeTreeOnReload					= false;
+		constexpr bool UseLegacyJenovaCacheDirectory			= false;
+
 
 		constexpr size_t PrintOutputBufferSize					= 8192;
 		constexpr size_t BuildOutputBufferSize					= PrintOutputBufferSize;
@@ -770,7 +773,8 @@ namespace jenova
 		constexpr char* JenovaHeaderExtension					= "hpp";
 		constexpr char* JenovaScriptType						= "CPPScript";
 		constexpr char* JenovaHeaderType						= "CPPHeader";
-		constexpr char* JenovaCacheDirectory					= "/Jenova_Cache/";
+		constexpr char* JenovaCacheDirectory					= "/.jenova/";
+		constexpr char* JenovaCacheDirectoryLegacy				= "/Jenova_Cache/";
 		constexpr char* ScriptToolIdentifier					= "JENOVA_TOOL_SCRIPT";
 		constexpr char* ScriptBlockBeginIdentifier				= "JENOVA_SCRIPT_BEGIN";
 		constexpr char* ScriptBlockEndIdentifier				= "JENOVA_SCRIPT_END";
