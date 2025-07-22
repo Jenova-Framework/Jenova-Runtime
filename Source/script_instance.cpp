@@ -44,19 +44,21 @@ static void AddState(GDExtensionConstStringNamePtr p_name, GDExtensionConstVaria
 	List<Pair<StringName, Variant>>* list = reinterpret_cast<List<Pair<StringName, Variant>>*>(p_userdata);
 	list->push_back({ *(const StringName*)p_name, *(const Variant*)p_value });
 }
-static GDExtensionMethodInfo CreateMethodInfo(const MethodInfo& methodInfo)
+static GDExtensionMethodInfo CreateMethodInfo(const MethodInfo& methodInfo, CPPScriptInstance* instance)
 {
 	// Create Extension Parameters Info
-	std::vector<GDExtensionPropertyInfo> parametersInfo;
+	std::vector<GDExtensionPropertyInfo>* parametersInfo = new std::vector<GDExtensionPropertyInfo>();
+	instance->methodInfoPointers.push_back(parametersInfo);
+
 	for (const auto& parameter : methodInfo.arguments)
 	{
-		parametersInfo.push_back(GDExtensionPropertyInfo
+		parametersInfo->push_back(GDExtensionPropertyInfo
 		{
 			GDExtensionVariantType(parameter.type),
 			AllocateStringName(parameter.name),
 			AllocateStringName(parameter.class_name),
 			parameter.hint,
-			AllocateStringName(parameter.hint_string),
+			AllocateString(parameter.hint_string),
 			parameter.usage
 		});
 	}
@@ -71,13 +73,13 @@ static GDExtensionMethodInfo CreateMethodInfo(const MethodInfo& methodInfo)
 			AllocateStringName(methodInfo.return_val.name),
 			AllocateStringName(methodInfo.return_val.class_name),
 			methodInfo.return_val.hint,
-			AllocateStringName(methodInfo.return_val.hint_string),
+			AllocateString(methodInfo.return_val.hint_string),
 			methodInfo.return_val.usage
 		},
 		methodInfo.flags,
 		methodInfo.id,
 		(uint32_t)methodInfo.arguments.size(),
-		parametersInfo.data(),
+		parametersInfo->data(),
 		0, nullptr // Default Arguments Not Supported Yet
 	};
 }
@@ -243,7 +245,7 @@ Variant CPPScriptInstance::callp(const StringName &p_method, const Variant **p_a
 		for (size_t i = 0; i < propContainer.scriptProperties.size(); i++)
 		{
 			jenova::ScriptProperty scriptProperty = propContainer.scriptProperties[i];
-			if (!this->instanceProperties.has(scriptProperty.propertyName)) this->instanceProperties[scriptProperty.propertyName] = scriptProperty.defaultValue;
+			if (!this->instanceProperties.has(scriptProperty.propertyInfo.name)) this->instanceProperties[scriptProperty.propertyInfo.name] = scriptProperty.defaultValue;
 		}
 	}
 
@@ -344,8 +346,10 @@ const GDExtensionMethodInfo* CPPScriptInstance::get_method_list(uint32_t *r_coun
 	const int size = methodsInfo.size();
 	GDExtensionMethodInfo* list = memnew_arr(GDExtensionMethodInfo, size);
 	int i = 0;
-	for (auto& methodInfo : methodsInfo) {
-		list[i] = CreateMethodInfo(methodInfo);
+	for (auto& methodInfo : methodsInfo) 
+	{
+		CPPScriptInstance* self = const_cast<CPPScriptInstance*>(this);
+		list[i] = CreateMethodInfo(methodInfo, self);
 		i++;
 	}
 
@@ -649,6 +653,10 @@ CPPScriptInstance::~CPPScriptInstance()
 	// Remove
 	jenova::VerboseByID(__LINE__, "CPPScriptInstance::~CPPScriptInstance (%s)", AS_C_STRING(this->get_identity()));
 
-	// Register Script Instance to Manager
+	// Unregister Script Instance to Manager
 	JenovaScriptManager::get_singleton()->remove_script_instance(this);
+
+	// Release Pointers
+	for (size_t i = 0; i < this->methodInfoPointers.size(); i++) delete this->methodInfoPointers[i];
+	std::vector<std::vector<GDExtensionPropertyInfo>*>().swap(this->methodInfoPointers);
 }

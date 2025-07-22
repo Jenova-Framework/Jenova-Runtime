@@ -59,6 +59,10 @@ public:
 	ScriptLanguage* _get_language() override;
 
 public:
+	// Memory Storage
+	mutable std::vector<std::vector<GDExtensionPropertyInfo>*> methodInfoPointers;
+
+public:
 	// Methods
 	String get_identity();
 
