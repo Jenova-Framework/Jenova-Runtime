@@ -156,7 +156,6 @@ namespace jenova
 			jenova::IJenovaCompiler* jenovaCompiler = nullptr;
 			Node* lastSelectedNode = nullptr;
 			Button* buildToolButton = nullptr;
-			Node* lastSelectedNode = nullptr;
 			PopupMenu* toolsMenu = nullptr;
 			Control* jenovaTerminal = nullptr;
 			RichTextLabel* jenovaLogOutput = nullptr;
