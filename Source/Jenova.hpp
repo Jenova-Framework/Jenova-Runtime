@@ -143,6 +143,7 @@
 #include <classes/input_event_key.hpp>
 #include <classes/animation.hpp>
 #include <classes/scene_tree.hpp>
+#include <classes/scene_tree_timer.hpp>
 #include <classes/tween.hpp>
 #include <classes/property_tweener.hpp>
 #include <classes/color_rect.hpp>
@@ -746,6 +747,7 @@ namespace jenova
 		constexpr bool VerboseEnabled							= false;
 		constexpr bool ScriptingEnabled							= true;
 		constexpr bool BuildInternalSources						= true;
+		constexpr bool UpdateSelectionAfterBuild				= true;
 		constexpr bool SafeExitOnPluginUnload					= true;
 		constexpr bool HandlePreLaunchErrors					= true;
 		constexpr bool AskAboutOpeningVisualStudio				= true;
@@ -825,6 +827,7 @@ namespace jenova
 		extern bool												UseHotReloadAtRuntime;
 		extern bool												UseMonospaceFontForTerminal;
 		extern bool												UseManagedSafeExecution;
+		extern bool												RefreshSceneTreeAfterBuild;
 		extern int												TerminalDefaultFontSize;
 	}
 

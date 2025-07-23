@@ -126,6 +126,7 @@ namespace jenova
 			 String GodotKitPackageConfigPath							= "jenova/godot_kit_package";
 			 String SDKLinkingModeConfigPath							= "jenova/sdk_linking_mode";
 			 String ManagedSafeExecutionConfigPath						= "jenova/managed_safe_execution";
+			 String RefreshTreeAfterBuildConfigPath						= "jenova/refresh_scene_tree_after_build";
 			 String BuildToolButtonEditorConfigPath						= "jenova/build_tool_button_placement";
 
 		private:
@@ -153,8 +154,9 @@ namespace jenova
 			Ref<JenovaDebuggerPlugin> debuggerPlugin;
 			jenova::ModuleList scriptModules;
 			jenova::IJenovaCompiler* jenovaCompiler = nullptr;
+			Node* lastSelectedNode = nullptr;
 			Button* buildToolButton = nullptr;
-			PopupMenu* jenovaMenu = nullptr;
+			Node* lastSelectedNode = nullptr;
 			PopupMenu* toolsMenu = nullptr;
 			Control* jenovaTerminal = nullptr;
 			RichTextLabel* jenovaLogOutput = nullptr;
@@ -472,6 +474,7 @@ namespace jenova
 						if (!editor_settings->has_setting(GodotKitPackageConfigPath)) editor_settings->set(GodotKitPackageConfigPath, "Latest");
 						if (!editor_settings->has_setting(SDKLinkingModeConfigPath)) editor_settings->set(SDKLinkingModeConfigPath, int32_t(SDKLinkingDefaultMode));
 						if (!editor_settings->has_setting(ManagedSafeExecutionConfigPath)) editor_settings->set(ManagedSafeExecutionConfigPath, true);
+						if (!editor_settings->has_setting(RefreshTreeAfterBuildConfigPath)) editor_settings->set(RefreshTreeAfterBuildConfigPath, false);
 						if (!editor_settings->has_setting(BuildToolButtonEditorConfigPath)) editor_settings->set(BuildToolButtonEditorConfigPath, int32_t(BuildToolButtonDefaultPlacement));
 				
 						// Add the Setting Descriptions to The Editor Settings
@@ -597,6 +600,12 @@ namespace jenova
 						editor_settings->add_property_info(ManagedSafeExecutionProperty);
 						editor_settings->set_initial_value(ManagedSafeExecutionConfigPath, true, false);
 
+						// Refresh Scene Tree After Build Property
+						PropertyInfo RefreshTreeAfterBuildProperty(Variant::BOOL, RefreshTreeAfterBuildConfigPath,
+							PropertyHint::PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, JenovaEditorSettingsCategory);
+						editor_settings->add_property_info(RefreshTreeAfterBuildProperty);
+						editor_settings->set_initial_value(RefreshTreeAfterBuildConfigPath, false, false);
+
 						// Build Tool Button Placement Property
 						String buttonPlacements = "Before Main Menu,After Main Menu,Before Stage Selector,After Stage Selector,Before Run Bar,After Run Bar,After Render Method";
 						PropertyInfo BuildToolButtonPlacementProperty(Variant::INT, BuildToolButtonEditorConfigPath, PropertyHint::PROPERTY_HINT_ENUM, buttonPlacements,
@@ -682,6 +691,11 @@ namespace jenova
 				Variant useManagedSafeExecution;
 				if (!GetEditorSetting(ManagedSafeExecutionConfigPath, useManagedSafeExecution)) return false;
 				jenova::GlobalStorage::UseManagedSafeExecution = bool(useManagedSafeExecution);
+
+				// Update SceneTree Refresh After Build
+				Variant refreshSceneTreeAfterBuild;
+				if (!GetEditorSetting(RefreshTreeAfterBuildConfigPath, refreshSceneTreeAfterBuild)) return false;
+				jenova::GlobalStorage::RefreshSceneTreeAfterBuild = bool(refreshSceneTreeAfterBuild);
 
 				// All Good
 				return true;
@@ -1279,6 +1293,26 @@ namespace jenova
 					{
 						Ref<EditorDebuggerSession> debuggerSession = currentSessions[i];
 						if (debuggerSession.is_valid() && debuggerSession->is_active()) debuggerSession->send_message("Jenova-Runtime:Reload");
+					}
+				}
+			
+				// Update Selection
+				if (jenova::GlobalStorage::RefreshSceneTreeAfterBuild && jenova::GlobalSettings::UpdateSelectionAfterBuild)
+				{
+					lastSelectedNode = nullptr;
+					EditorSelection* selection = get_editor_interface()->get_selection();
+					if (selection)
+					{
+						Array nodes = selection->get_selected_nodes();
+						if (nodes.size())
+						{
+							lastSelectedNode = Object::cast_to<Node>(nodes[0]);
+							if (lastSelectedNode)
+							{
+								selection->clear();
+								this->get_tree()->create_timer(0.001)->connect("timeout", callable_mp(this, &JenovaEditorPlugin::RefreshSelection));
+							}
+						}
 					}
 				}
 			}
@@ -2180,6 +2214,16 @@ namespace jenova
 				}
 			}
 
+			// Timer Callbacks
+			void RefreshSelection()
+			{
+				if (lastSelectedNode)
+				{
+					EditorSelection* selection = get_editor_interface()->get_selection();
+					if (selection) selection->add_node(lastSelectedNode);
+				}
+			}
+
 			// Terminal Actions
 			void UpdateTerminal()
 			{
@@ -2405,6 +2449,7 @@ namespace jenova
 				if (setting_key == std::string("godot_kit_package")) return GodotKitPackageConfigPath;
 				if (setting_key == std::string("sdk_linking_mode")) return SDKLinkingModeConfigPath;
 				if (setting_key == std::string("managed_safe_execution")) return ManagedSafeExecutionConfigPath;
+				if (setting_key == std::string("refresh_scene_tree_after_build")) return RefreshTreeAfterBuildConfigPath;
 				if (setting_key == std::string("build_toolbutton_placement")) return BuildToolButtonEditorConfigPath;
 				return String("jenova/unknown");
 			}
@@ -4782,6 +4827,7 @@ namespace jenova
 		bool UseHotReloadAtRuntime = true;
 		bool UseMonospaceFontForTerminal = true;
 		bool UseManagedSafeExecution = true;
+		bool RefreshSceneTreeAfterBuild = false;
 
 		// Values
 		int TerminalDefaultFontSize = 12;
