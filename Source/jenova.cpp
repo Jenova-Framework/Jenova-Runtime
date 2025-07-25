@@ -124,7 +124,7 @@ namespace jenova
 			 String TerminalDefaultFontSizeConfigPath					= "jenova/terminal_default_font_size";
 			 String CompilerPackageConfigPath							= "jenova/compiler_package";
 			 String GodotKitPackageConfigPath							= "jenova/godot_kit_package";
-			 String SDKLinkingModeConfigPath							= "jenova/sdk_linking_mode";
+			 String SDKLinkingModeConfigPath							= "jenova/sdk_linking_mode_(_deprecated_)";
 			 String ManagedSafeExecutionConfigPath						= "jenova/managed_safe_execution";
 			 String RefreshTreeAfterBuildConfigPath						= "jenova/refresh_scene_tree_after_build";
 			 String BuildToolButtonEditorConfigPath						= "jenova/build_tool_button_placement";
@@ -136,7 +136,7 @@ namespace jenova
 			const jenova::ChangesTriggerMode ExternalChangesDefaultTriggerMode = jenova::ChangesTriggerMode::DoNothing;
 			const jenova::EditorVerboseOutput EditorVerboseDefaultOutput = jenova::EditorVerboseOutput::JenovaTerminal;
 			const jenova::InterpreterBackend InterpreterBackendDefaultMode = jenova::InterpreterBackend::TinyCC;
-			const jenova::SDKLinkingMode SDKLinkingDefaultMode = jenova::SDKLinkingMode::Dynamically;
+			const jenova::SDKLinkingMode SDKLinkingDefaultMode = jenova::SDKLinkingMode::None;
 
 			// Default Compiler
 			#if defined(TARGET_PLATFORM_WINDOWS)
@@ -589,7 +589,7 @@ namespace jenova
 
 						// SDK Linking Mode Property
 						PropertyInfo SDKLinkingModeProperty(Variant::INT, SDKLinkingModeConfigPath,
-							PropertyHint::PROPERTY_HINT_ENUM, "Don't Link, Dynamically, Statically (Experimental)",
+							PropertyHint::PROPERTY_HINT_ENUM, "Don't Link, Dynamically, Statically",
 							PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED, JenovaEditorSettingsCategory);
 						editor_settings->add_property_info(SDKLinkingModeProperty);
 						editor_settings->set_initial_value(SDKLinkingModeConfigPath, int32_t(SDKLinkingDefaultMode), false);
@@ -2447,7 +2447,6 @@ namespace jenova
 				if (setting_key == std::string("terminal_default_font_size")) return TerminalDefaultFontSizeConfigPath;
 				if (setting_key == std::string("compiler_package")) return CompilerPackageConfigPath;
 				if (setting_key == std::string("godot_kit_package")) return GodotKitPackageConfigPath;
-				if (setting_key == std::string("sdk_linking_mode")) return SDKLinkingModeConfigPath;
 				if (setting_key == std::string("managed_safe_execution")) return ManagedSafeExecutionConfigPath;
 				if (setting_key == std::string("refresh_scene_tree_after_build")) return RefreshTreeAfterBuildConfigPath;
 				if (setting_key == std::string("build_toolbutton_placement")) return BuildToolButtonEditorConfigPath;
@@ -4264,6 +4263,32 @@ namespace jenova
 				// Verbose Mode
 				jenova::Output("Running Jenova Core in [%s] Engine Mode.", AS_C_STRING(jenova::GetCurrentEngineInstanceModeAsString()));
 			}
+		
+			// Create Static Build Required Files
+			#ifdef JENOVA_STATIC_BUILD
+				if (QUERY_ENGINE_MODE(Editor))
+				{
+					// Create Ignore File If Doesn't Exist
+					std::string ignoreFilePath = AS_STD_STRING(ProjectSettings::get_singleton()->globalize_path("res://Jenova/.gdignore"));
+					if (!filesystem::exists(ignoreFilePath))
+					{
+						std::filesystem::path ignorePath(ignoreFilePath);
+						if (!std::filesystem::exists(ignorePath.parent_path())) std::filesystem::create_directories(ignorePath.parent_path());
+						jenova::WriteStdStringToFile(ignoreFilePath, "*");
+					}
+				
+					// Create JenovaSDK File If Doesn't Exist
+					std::string jenovaSDKFilePath = AS_STD_STRING(ProjectSettings::get_singleton()->globalize_path("res://Jenova/JenovaSDK/JenovaSDK.h"));
+					extern const char* GetJenovaSDKHeaderData();
+					extern size_t GetJenovaSDKHeaderSize();
+					if (!filesystem::exists(jenovaSDKFilePath))
+					{
+						std::filesystem::path jenovaSDKPath(jenovaSDKFilePath);
+						if (!std::filesystem::exists(jenovaSDKPath.parent_path())) std::filesystem::create_directories(jenovaSDKPath.parent_path());
+						jenova::WriteStdStringToFile(jenovaSDKFilePath, std::string(GetJenovaSDKHeaderData(), GetJenovaSDKHeaderSize()));
+					}
+				}
+			#endif
 		}
 		static void OnExtensionRelease()
 		{
@@ -4507,11 +4532,13 @@ namespace jenova
 			jenova::GlobalStorage::ExtensionInitData.godotExtensionInitialization = r_initialization;
 
 			// Check for Wrapper Instance
+			#ifndef JENOVA_STATIC_BUILD
 			if (CheckWrapperInitialization())
 			{
 				// Instance is Wrapper, Fallback to Main
 				return InitializeAsWrapper(jenova::GlobalStorage::ExtensionInitData);
 			}
+			#endif // JENOVA_STATIC_BUILD
 
 			// Initailize Object & Solve API Functions
 			GDExtensionBinding::InitObject init_obj(p_get_proc_address, p_library, r_initialization);
@@ -4525,7 +4552,7 @@ namespace jenova
 		namespace Deployer
 		{
 			// Windows Implementation
-			#ifdef TARGET_PLATFORM_WINDOWS
+			#if defined(TARGET_PLATFORM_WINDOWS) && !defined(JENOVA_STATIC_BUILD)
 				JENOVA_API void CALLBACK Deploy(HWND hwnd, HINSTANCE hinst, LPSTR lpszCmdLine, int nCmdShow)
 				{
 					// Parse Arguments And Split to Argument Array
@@ -8991,12 +9018,23 @@ namespace jenova
 					bool addoneAutoload = addonConfig["Addon Autoload"].get<bool>();
 					if (addoneAutoload && !QUERY_ENGINE_MODE(Editor))
 					{
-						if (!jenova::LoadModule(addonBinary.c_str()))
+						ModuleHandle addonModule = jenova::LoadModule(addonBinary.c_str());
+						if (!addonModule)
 						{
 							jenova::Error("Jenova Addon Loader", "Following Addon '%s' Binary Missing, Failed to Load Addon.", addonBinary.c_str());
 							return false;
 						};
 						jenova::Output("Runtime Addon Module '%s' Autoloaded.", addonBinary.c_str());
+
+						// Check for Module Initializer
+						typedef void(*InitializeAddon_t)(void* sdkSolver);
+						InitializeAddon_t InitializeAddon = (InitializeAddon_t)jenova::GetModuleFunction(addonModule, "InitializeAddon");
+
+						// If Addon has Initializer Call It
+						if (InitializeAddon)
+						{
+							InitializeAddon(jenova::GetJenovaSDKFunctionSolver());
+						}
 					}
 					else
 					{

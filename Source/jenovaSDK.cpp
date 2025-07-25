@@ -670,6 +670,10 @@ namespace jenova
 		sdk::bridge = (sdk::JenovaSDK*)sdkInterface;
 		return sdkInterface;
 	}
+	void* GetJenovaSDKFunctionSolver()
+	{
+		return reinterpret_cast<void*>(&jenova::sdk::GetSDKFunction);
+	}
 	bool ReleaseJenovaSDKInterface(JenovaSDKInterface sdkInterface)
 	{
 		if (!sdkInterface) return false;
@@ -759,7 +763,7 @@ namespace jenova
 	}
 }
 
-// Static Runtime SDK Implementation
+// Static Runtime SDK Implementation [Deprecated]
 #ifdef JENOVA_SDK_STATIC
 namespace jenova
 {

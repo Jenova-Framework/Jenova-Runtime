@@ -28,13 +28,16 @@
 #ifdef JENOVA_SDK_STATIC
     #define JENOVA_API
 #else
-    #ifdef JENOVA_SDK_BUILD
-        #define JENOVA_API JENOVA_API_EXPORT
+	#if defined(JENOVA_STATIC_BUILD)
+		#define JENOVA_API
+		#define JENOVA_C_API extern "C"
+	#elif defined(JENOVA_SDK_BUILD)
+		#define JENOVA_API JENOVA_API_EXPORT
 		#define JENOVA_C_API extern "C" JENOVA_API_EXPORT
-    #else
-        #define JENOVA_API JENOVA_API_IMPORT
+	#else
+		#define JENOVA_API JENOVA_API_IMPORT
 		#define JENOVA_C_API extern "C" JENOVA_API_IMPORT
-    #endif
+	#endif
 #endif
 
 // Jenova Definitions

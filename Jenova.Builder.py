@@ -27,8 +27,7 @@ flags = [
     "NDEBUG",
     "JENOVA_RUNTIME",
     "JENOVA_SDK_BUILD",
-    "TYPED_METHOD_BIND",
-    # "LITHIUM_EDITION" -> Use for Building Lithium Edition
+    "TYPED_METHOD_BIND"
 ]
 directories = [
     "Libs",
@@ -61,7 +60,8 @@ sources = [
 ]
 
 # Global Options
-deps_version        = "4.3"
+deps_version        = "4.4"
+static_build        = False
 skip_deps           = False
 skip_cache          = False
 skip_packaging      = False
@@ -128,7 +128,7 @@ def print_banner():
 ===========================================================================
     """
     rgb_print("#42f569", banner)
-    rgb_print("#2942ff", f".:: Jenova Build System v2.5 ::.\n")
+    rgb_print("#2942ff", f".:: Jenova Build System v2.6 ::.\n")
 def get_compiler_choice():
     global compiler, linker
     rgb_print("#ff2474", "[ ? ] Select Supported Compiler :\n")
@@ -193,7 +193,21 @@ def generate_gdsdk(output_dir):
             shutil.copy2(src_lib_path, dst_lib_path)
 
     rgb_print("#38f227", "[ √ ] Godot SDK Package Successfully Generated.")
-    
+def generate_jnvsdk(output_file):
+    with open("./Source/JenovaSDK.h", "rb") as f:
+        data = f.read()
+        size = len(data)
+    with open(output_file, "w") as out:
+        out.write('#include <cstddef>\n')
+        out.write('namespace jenova {\nnamespace plugin {\n')    
+        out.write('static const char JenovaSDKHeader[] = {\n')
+        out.write(', '.join(f'0x{byte:02x}' for byte in data))
+        out.write('\n};\n')
+        out.write(f'static const size_t JenovaSDKHeaderSize = {size};\n')
+        out.write('const char* GetJenovaSDKHeaderData() { return JenovaSDKHeader; }\n')
+        out.write(f'size_t GetJenovaSDKHeaderSize() {{ return JenovaSDKHeaderSize; }}\n')
+        out.write('}\n}\n')
+
 # Generic Build Functions
 def compute_md5(file_path):
     hasher = hashlib.md5()
@@ -400,7 +414,7 @@ def build_dependencies_linux(buildMode, cacheDir):
     # Build Archive
     if not os.path.exists("./Libs/libarchive-static-x86_64.a"):
         buildPath = cacheDir + "/Dependencies/archive"
-        lzmaInclude = os.path.abspath('./Dependencies/liblzma/src/liblzma/api');
+        lzmaInclude = os.path.abspath('./Dependencies/liblzma/src/liblzma/api')
         if os.path.exists(buildPath): shutil.rmtree(buildPath)
         subprocess.run([
             "cmake",
@@ -586,7 +600,7 @@ def build_linux(compilerBinary, linkerBinary, buildMode, buildSystem):
     # Generate Linker Command
     rgb_print("#367fff", "[ ^ ] Generating Linker Command...")
     link_command = (
-        f"{linker} -shared -fPIC {' '.join(object_files)} -o {outputDir}/{outputName} -m64 "
+        f"{linker} {'-static' if static_build else '-shared'} -fPIC {' '.join(object_files)} -o {outputDir}/{outputName} -m64 "
         f"-static-libstdc++ -static-libgcc {' '.join(libs)} -Wl,-Bstatic -lssl -lcrypto -Wl,-Bdynamic -ldl -lrt "
         f"-Wl,-Map,{outputDir}/{mapFileName}"
     )
@@ -780,7 +794,7 @@ def build_dependencies_windows(buildMode, cacheDir):
         # Build Archive
         if not os.path.exists("./Libs/libarchive-static-x86_64.lib"):
             buildPath = cacheDir + "/Dependencies/archive"
-            lzmaInclude = os.path.abspath('./Dependencies/liblzma/src/liblzma/api');
+            lzmaInclude = os.path.abspath('./Dependencies/liblzma/src/liblzma/api')
             if os.path.exists(buildPath): shutil.rmtree(buildPath)
             subprocess.run([
                 "cmake.exe",
@@ -986,7 +1000,7 @@ def build_dependencies_windows(buildMode, cacheDir):
         # Build Archive
         if not os.path.exists("./Libs/libarchive-static-x86_64.a"):
             buildPath = cacheDir + "/Dependencies/archive"
-            lzmaInclude = os.path.abspath('./Dependencies/liblzma/src/liblzma/api');
+            lzmaInclude = os.path.abspath('./Dependencies/liblzma/src/liblzma/api')
             if os.path.exists(buildPath): shutil.rmtree(buildPath)
             subprocess.run([
                 "cmake.exe",
@@ -1102,13 +1116,15 @@ def build_windows(compilerBinary, linkerBinary, buildMode, buildSystem):
     compiler = compilerBinary
     linker = linkerBinary
     outputDir = "Win64"
-    outputName = "Jenova.Runtime.Win64.dll"
     symbolFileName = "Jenova.Runtime.Win64.pdb"
     mapFileName = "Jenova.Runtime.Win64.map"
     resourceFileName = "Jenova.Runtime.rc"
     cacheDir = f"{outputDir}/Cache"
     sdkDir = f"{outputDir}/JenovaSDK"
     CacheDB = f"{cacheDir}/Build.db"
+
+    # Create Output File
+    outputName = "Jenova.Runtime.Win64.lib" if static_build else "Jenova.Runtime.Win64.dll"
 
     # Ensure Required Directories Exist
     rgb_print("#367fff", "[ ^ ] Validating Paths...")
@@ -1153,6 +1169,15 @@ def build_windows(compilerBinary, linkerBinary, buildMode, buildSystem):
             "Ws2_32.lib",
             "Wldap32.lib"
         ]
+        default_libs = [
+            "comctl32.lib",
+            "Dbghelp.lib",
+            "Ws2_32.lib",
+            "Wldap32.lib"
+        ]
+
+        # Add Default Libraries
+        if not static_build: libs += default_libs
 
         # Add Extra Directories
         directories.append("Libs/Threading")
@@ -1160,6 +1185,12 @@ def build_windows(compilerBinary, linkerBinary, buildMode, buildSystem):
         # Add Compatibility Sources
         if buildMode == "win-clangcl":
             sources.append("Libs/Misc/clangcl-compatibility.cpp")
+
+        # Generate Built-in JenovaSDK
+        if static_build:
+            jnvsdkHeader = os.path.join(cacheDir, "jenovaSDK_builtin.cpp")
+            generate_jnvsdk(jnvsdkHeader)
+            sources.append(jnvsdkHeader)
 
         # Load Cache
         rgb_print("#367fff", "[ ^ ] Loading Cache...")
@@ -1239,24 +1270,35 @@ def build_windows(compilerBinary, linkerBinary, buildMode, buildSystem):
 
             # Generate Linker Command
             rgb_print("#367fff", "[ ^ ] Generating Linker Command...")
-            link_command = (
-                f"{linker} /OUT:\"{outputDir}/{outputName}\" /MANIFEST /LTCG:incremental /NXCOMPAT "
-                f"/PDB:\"{outputDir}/{symbolFileName}\" /DYNAMICBASE "
-                f"{' '.join(object_files)} "
-                f"{' '.join(libs)} "
-                f"\"{compiled_resource_file}\" "
-                f"comctl32.lib Dbghelp.lib Ws2_32.lib Wldap32.lib kernel32.lib user32.lib Crypt32.lib "
-                f"gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib "
-                f"bcrypt.lib uuid.lib odbc32.lib odbccp32.lib delayimp.lib "
-                f"/DEBUG:FULL /DLL /MACHINE:X64 /OPT:REF /INCREMENTAL:NO "
-                f"/SUBSYSTEM:CONSOLE /MANIFESTUAC:\"level='asInvoker' uiAccess='false'\" "
-                f"/ManifestFile:\"{cacheDir}/{outputName}.intermediate.manifest\" "
-                f"/LTCGOUT:\"{cacheDir}/{outputName}.iobj\" /OPT:ICF /ERRORREPORT:PROMPT "
-                f"/ILK:\"{cacheDir}/{outputName}.ilk\" /NOLOGO /IMPLIB:\"{sdkDir}/Jenova.SDK.x64.lib\" "
-                f"/DELAYLOAD:\"dbghelp.dll\" /DELAYLOAD:\"Wldap32.dll\" "
-                f"/DELAYLOAD:\"bcrypt.dll\" /DELAYLOAD:\"Crypt32.dll\" "
-                f"/TLBID:1 /IGNORE:4098 /IGNORE:4286 /IGNORE:4099 "
-            )
+            if static_build:
+                    linker = "lib.exe"
+                    global skip_packaging
+                    skip_packaging = True
+                    link_command = (
+                        f"{linker} /OUT:\"{outputDir}/{outputName}\" "
+                        f"{' '.join(object_files)} "
+                        f"{' '.join(libs)} "
+                        f"/NOLOGO /IGNORE:4006"
+                    )
+            else:
+                link_command = (
+                    f"{linker} /OUT:\"{outputDir}/{outputName}\" /MANIFEST /LTCG:incremental /NXCOMPAT "
+                    f"/PDB:\"{outputDir}/{symbolFileName}\" /DYNAMICBASE "
+                    f"{' '.join(object_files)} "
+                    f"{' '.join(libs)} "
+                    f"\"{compiled_resource_file}\" "
+                    f"comctl32.lib Dbghelp.lib Ws2_32.lib Wldap32.lib kernel32.lib user32.lib Crypt32.lib "
+                    f"gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib "
+                    f"bcrypt.lib uuid.lib odbc32.lib odbccp32.lib delayimp.lib "
+                    f"/DEBUG:FULL /DLL /MACHINE:X64 /OPT:REF /INCREMENTAL:NO "
+                    f"/SUBSYSTEM:CONSOLE /MANIFESTUAC:\"level='asInvoker' uiAccess='false'\" "
+                    f"/ManifestFile:\"{cacheDir}/{outputName}.intermediate.manifest\" "
+                    f"/LTCGOUT:\"{cacheDir}/{outputName}.iobj\" /OPT:ICF /ERRORREPORT:PROMPT "
+                    f"/ILK:\"{cacheDir}/{outputName}.ilk\" /NOLOGO /IMPLIB:\"{sdkDir}/Jenova.SDK.x64.lib\" "
+                    f"/DELAYLOAD:\"dbghelp.dll\" /DELAYLOAD:\"Wldap32.dll\" "
+                    f"/DELAYLOAD:\"bcrypt.dll\" /DELAYLOAD:\"Crypt32.dll\" "
+                    f"/TLBID:1 /IGNORE:4098 /IGNORE:4286 /IGNORE:4099 "
+                )
 
             # Link Object Files
             rgb_print("#367fff", "[ ^ ] Linking Jenova Runtime Binary...")
@@ -1345,7 +1387,7 @@ def build_windows(compilerBinary, linkerBinary, buildMode, buildSystem):
         rgb_print("#367fff", "[ ^ ] Generating Linker Command...")
         if buildMode == "win-clang":
             link_command = (
-                f"{linker} -shared -static-libstdc++ -static-libgcc -fuse-ld=lld "
+                f"{linker} {'-static' if static_build else '-shared'} -static-libstdc++ -static-libgcc -fuse-ld=lld "
                 f"{' '.join(object_files)} -o {outputDir}/{outputName} -m64 "
                 f"{' '.join(libs)} -lws2_32 -lwinhttp -ldbghelp -lbcrypt -lcrypt32 -lwldap32" + " "
                 "-delayimp -Wl,-Bstatic -lpthread" + " "
@@ -1358,7 +1400,7 @@ def build_windows(compilerBinary, linkerBinary, buildMode, buildSystem):
             )
         if buildMode == "win-gcc":
             link_command = (
-                f"{linker} -shared -static-libstdc++ -static-libgcc -fuse-ld=lld "
+                f"{linker} {'-static' if static_build else '-shared'} -static-libstdc++ -static-libgcc -fuse-ld=lld "
                 f"{' '.join(object_files)} -o {outputDir}/{outputName} -m64 -flto -Os -s "
                 f"{' '.join(libs)} -lws2_32 -lwinhttp -ldbghelp -lbcrypt -lcrypt32 -lwldap32" + " "
                 "-delayimp -Wl,-Bstatic -lpthread" + " "
@@ -1404,10 +1446,11 @@ if __name__ == "__main__":
     os.environ['PYTHONDONTWRITEBYTECODE'] = "1"
 
     # Create Arguments Parser
-    parser = argparse.ArgumentParser(description="Jenova Runtime Build System 2.5 Developed by Hamid.Memar")
+    parser = argparse.ArgumentParser(description="Jenova Runtime Build System 2.6 Developed by Hamid.Memar")
     parser.add_argument('--compiler', type=str, help='Specify Compiler to Use.')
     parser.add_argument('--deploy-mode', action='store_true', help='Run As GitHub Action Deploy Mode')
     parser.add_argument('--deps-version', default="4.3", help='Specify Dependencies Version (default: 4.3)')
+    parser.add_argument('--static-build', action='store_true', help='Build Jenova Runtime as Static Library') 
     parser.add_argument('--skip-banner', action='store_true', help='Skip Printing Banner')
     parser.add_argument('--skip-deps', action='store_true', help='Skip Building Dependencies')
     parser.add_argument('--skip-cache', action='store_true', help='Skip Source Caching')
@@ -1425,6 +1468,11 @@ if __name__ == "__main__":
 
     # Set Dependencies Version
     deps_version = args.deps_version
+
+    # Enable Static Build Mode
+    if args.static_build:
+        static_build = True
+        flags.append("JENOVA_STATIC_BUILD")
 
     # Enable Deploy Mode
     if args.deploy_mode: deploy_mode = True
