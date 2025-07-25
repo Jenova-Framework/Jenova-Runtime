@@ -415,7 +415,7 @@ extern "C" namespace ClektronSystem
     }
 
     // Memory Manager API
-     Buffer API_Allocate(Size size)
+    Buffer API_Allocate(Size size)
     {
         return malloc(size);
     }

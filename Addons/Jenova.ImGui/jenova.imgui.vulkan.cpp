@@ -46,7 +46,7 @@ extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam
 namespace JenovaRuntime
 {
     // Internal Objects
-    HMODULE jenovaRuntime = nullptr;
+    void* jenovaSDKFunctionSolver = nullptr;
 
     // JenovaSDK Enumerators
     enum RuntimeEvent
@@ -81,19 +81,10 @@ namespace JenovaRuntime
     } 
 
     // Internal Functions
-    static bool SolveJenovaRuntimeModule()
-    {
-        jenovaRuntime = LoadLibraryW(L"Jenova.Runtime.Win64.dll");
-        if (!jenovaRuntime) return false;
-        return true;
-    }
     static bool SolveJenovaRuntimeSDKFunctions()
     {
-        // Validate Runtime Module
-        if (!jenovaRuntime) return false;
-
         // Get SDK Function Solver
-        JenovaSDK::GetSDKFunction = (void*(*)(const char*))GetProcAddress(jenovaRuntime, "GetSDKFunction");
+        JenovaSDK::GetSDKFunction = (void*(*)(const char*))jenovaSDKFunctionSolver;
         if (!JenovaSDK::GetSDKFunction) return false;
 
         // Solve SDK Functions
@@ -133,14 +124,6 @@ namespace JenovaImGui
 // Static Library API
 static void InitializeJenovaImGui()
 {
-    // Solve Runtime Module
-    if (!JenovaRuntime::SolveJenovaRuntimeModule())
-    {
-        log("[Error] Failed to Solve Runtime Module.");
-        return;
-    };
-
-    // Solve Runtime SDK Functions
     if (!JenovaRuntime::SolveJenovaRuntimeSDKFunctions())
     {
         log("[Error] Failed to Solve Runtime SDK Functions.");
@@ -179,9 +162,6 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, ULONG fdwReason, LPVOID lpvReserved)
 	{
 		// Disable Thread Calls
 		DisableThreadLibraryCalls(hinstDLL);
-
-		// Initialize JenovaImGui
-		InitializeJenovaImGui();
 	}
     if (fdwReason == DLL_PROCESS_DETACH)
     {
@@ -613,4 +593,14 @@ namespace JenovaImGui
     {
         isRenderingAllowed = renderState;
     }
+}
+
+// Addon Routine
+extern "C" JENOVAIMGUI_API void InitializeAddon(void* sdkSolver)
+{
+    // Set SDK Function Solver
+    JenovaRuntime::jenovaSDKFunctionSolver = sdkSolver;
+
+    // Initialize JenovaImGui
+    InitializeJenovaImGui();
 }

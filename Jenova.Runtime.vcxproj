@@ -44,7 +44,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;JENOVA_RUNTIME;JENOVA_SDK_BUILD;TYPED_METHOD_BIND;LITHIUM_EDITION_DISABLED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;JENOVA_RUNTIME;JENOVA_SDK_BUILD;JENOVA_STATIC_BUILD_DISABLED;LITHIUM_EDITION_DISABLED;TYPED_METHOD_BIND;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -78,6 +78,12 @@ ren "$(BuildPath)JenovaSDK\$(TargetName).lib" "Jenova.SDK.x64.lib"
     <ResourceCompile>
       <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">-c65001 %(AdditionalOptions)</AdditionalOptions>
     </ResourceCompile>
+    <ProjectReference>
+      <LinkLibraryDependencies Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</LinkLibraryDependencies>
+    </ProjectReference>
+    <Lib>
+      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\Libs\libgodotcpp-static-x86_64.lib;.\Libs\libasmjit-static-x86_64.lib;.\Libs\libzlib-static-x86_64.lib;.\Libs\liblzma-static-x86_64.lib;.\Libs\libarchive-static-x86_64.lib;.\Libs\libcurl-static-x86_64.lib;.\Libs\libtcc-static-x86_64.lib;.\Libs\libpthread-static-x86_64.lib;.\Libs\libxml2-static-x86_64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Source\asset_monitor.cpp" />

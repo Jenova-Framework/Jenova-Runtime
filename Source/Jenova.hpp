@@ -20,11 +20,11 @@
 #define APP_COMPANYNAME					"MemarDesign™ LLC."
 #define APP_DESCRIPTION					"Real-Time C++ Scripting System for Godot Game Engine, Developed By Hamid.Memar."
 #define APP_COPYRIGHT					"Copyright MemarDesign™ LLC. (©) 2024-2025, All Rights Reserved."
-#define APP_VERSION						"0.3.7.5"
+#define APP_VERSION						"0.3.7.6"
 #define APP_VERSION_MIDDLEFIX			" "
 #define APP_VERSION_POSTFIX				"Beta"
 #define APP_VERSION_SINGLECHAR			"b"
-#define APP_VERSION_DATA				0, 3, 7, 5
+#define APP_VERSION_DATA				0, 3, 7, 6
 #define APP_VERSION_BUILD				"0"
 #define APP_VERSION_NAME				"Cyclone"
 
@@ -65,12 +65,15 @@
 #endif
 
 // Jenova API Import/Export
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(JENOVA_STATIC_BUILD)
+#define JENOVA_API_EXPORT
+#define JENOVA_API_IMPORT
+#elif defined(_WIN32) || defined(_WIN64)
 #define JENOVA_API_EXPORT __declspec(dllexport)
 #define JENOVA_API_IMPORT __declspec(dllimport)
 #else
 #define JENOVA_API_EXPORT __attribute__((visibility("default")))
-#define JENOVA_API_IMPORT 
+#define JENOVA_API_IMPORT
 #endif
 
 // Windows SDK
@@ -1009,7 +1012,6 @@ namespace jenova
 	void CheckForRuntimeUpdate();
 	std::string FormatTimestampToStdString(time_t timestamp);
 	void SwitchToJenovaTerminalTab();
-	bool IsEngineBlazium();
 	#pragma endregion
 
 	// Crash Handlers
@@ -1022,6 +1024,7 @@ namespace jenova
 
 	// SDK Management
 	JenovaSDKInterface CreateJenovaSDKInterface();
+	void* GetJenovaSDKFunctionSolver();
 	bool ReleaseJenovaSDKInterface(JenovaSDKInterface sdkInterface);
 }
 

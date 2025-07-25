@@ -1,6 +1,6 @@
 # Projekt J.E.N.O.V.A :: Jenova Runtime (Core)
 
-This repository contains source code of **Jenova Runtime** for Godot 4+ and It's a part of **[Projekt J.E.N.O.V.A](https://github.com/Jenova-Framework/J.E.N.O.V.A)**
+This repository contains source code of **Jenova Runtime** for Godot Engine and It's a part of **[Projekt J.E.N.O.V.A](https://github.com/Jenova-Framework/J.E.N.O.V.A)**
 
 ![image](https://github.com/user-attachments/assets/013eed25-7047-407d-aef8-b964203e73b0)
 
@@ -15,20 +15,13 @@ This repository contains source code of **Jenova Runtime** for Godot 4+ and It's
 
 ## Overview
 
-**Projekt J.E.N.O.V.A** is a comprehensive series of extension libraries for the Godot 4+ Game Engine that brings fully-featured C++ scripting directly into the Godot Editor. It allows the use of modern C++20 standards within the Godot Engine similar to GDScript. 
+**Projekt J.E.N.O.V.A** is a comprehensive collection of modular components for the Godot Engine, designed to deliver major enhancements and break through the limitations of current development workflows. By bringing fully-featured C++ scripting directly into the Godot Editor, it enables the use of modern C++20/C++23 standards within Godot in a manner similar to GDScript.
 
-By using Jenova Framework you can easily program your entire game or application in C/C++ without any issues. You can also integrate OpenCV, CUDA, Vulkan, OpenMP and any other modern C++ features seamlessly, All supported by the powerful backend.
+**Jenova Framework** empowers developers to build entire games or applications natively in C/C++ with ease and stability. It supports seamless integration of cutting-edge technologies and allowing direct integration of OpenCV, CUDA, Vulkan, OpenMP and any other modern C++ features seamlessly, All supported by the powerful backend.
 
-Jenova Framework comes with a fully-featured scripting backend offering almost all the features of GDScript that are not available in any other third-party language at the moment. It’s not just an automated GDExtension; It’s a complete scripting backend with many features.
+This repository contains the full source code of **Jenova Runtime** also known as Core. It is a full-featured scripting backend with a wide range of capabilities including a Build System, Compiler Interface, Script Objects, Script Language, Script Instances, Script interpreter and more.
 
-### Structure of Projekt J.E.N.O.V.A
-
-- **Jenova Framework**: The framework contains Jenova Runtime, Jenova Utilities and Jenova SDK.
-- **Jenova Runtime (Core)**: The heart of the framework, It includes the Jenova Interpreter, Jenova Compiler Interface, Jenova Packer etc.
-- **Jenova Package Manager:** A utility included in Jenova Runtime for installing, removing and managing Jenova packages.
-- **Jenova SDK**: An optional component of Jenova Runtime, providing helpers and APIs for Hot-Reloading, Global Allocation/Access etc.
-
-Full feature list can be found [here](https://github.com/Jenova-Framework/J.E.N.O.V.A#%EF%B8%8F-current-features).
+For more information and to view the full feature list, check out the details [here](https://github.com/Jenova-Framework/J.E.N.O.V.A#%EF%B8%8F-current-features).
 
 ## Issue/Bug Reports and Questions
 - If you want to report an issue or bug create a new thread at [Issues](https://github.com/Jenova-Framework/Jenova-Runtime/issues).
@@ -125,7 +118,10 @@ Additionally, the following Python packages are required for Builder :
 pip install requests py7zr colored
 ```
 
+>  Full information and a detailed usage guide for the build system can be found [here](https://jenova-framework.github.io/docs/pages/Advanced/Build-Guide).
+
 ## Open Source vs Proprietary
+
 While the public source code of Jenova is ~90% identical to the proprietary version, a few specific features have been removed or disabled.
 ### These changes include :
 - **Jenova Emulator Connector** is removed and will be made available later as an addon in the Package Manager.
