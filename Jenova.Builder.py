@@ -60,6 +60,7 @@ sources = [
 ]
 
 # Global Options
+builder_version     = "2.7"
 deps_version        = "4.4"
 static_build        = False
 skip_deps           = False
@@ -128,7 +129,7 @@ def print_banner():
 ===========================================================================
     """
     rgb_print("#42f569", banner)
-    rgb_print("#2942ff", f".:: Jenova Build System v2.6 ::.\n")
+    rgb_print("#2942ff", f".:: Jenova Build System v{builder_version} ::.\n")
 def get_compiler_choice():
     global compiler, linker
     rgb_print("#ff2474", "[ ? ] Select Supported Compiler :\n")
@@ -1258,15 +1259,16 @@ def build_windows(compilerBinary, linkerBinary, buildMode, buildSystem):
                 object_files.append(object_file)
 
             # Compile Resource File
-            rgb_print("#367fff", "[ ^ ] Generating Resource Compiler Command...")
-            compiled_resource_file = f"{cacheDir}/Jenova.Runtime.res"
-            if buildMode == "win-msvc": resource_compiler = "rc.exe"
-            if buildMode == "win-clangcl": resource_compiler = "llvm-rc.exe"
-            compile_resource_command = (
-                f"{resource_compiler} -D_UNICODE -DUNICODE -c65001 /NOLOGO /fo "
-                f"\"{compiled_resource_file}\" \"{resourceFileName}\""
-            )
-            run_compile_command(compile_resource_command, "Jenova.Runtime.rc", resource_compiler)
+            if not static_build:
+                rgb_print("#367fff", "[ ^ ] Generating Resource Compiler Command...")
+                compiled_resource_file = f"{cacheDir}/Jenova.Runtime.res"
+                if buildMode == "win-msvc": resource_compiler = "rc.exe"
+                if buildMode == "win-clangcl": resource_compiler = "llvm-rc.exe"
+                compile_resource_command = (
+                    f"{resource_compiler} -D_UNICODE -DUNICODE -c65001 /NOLOGO /fo "
+                    f"\"{compiled_resource_file}\" \"{resourceFileName}\""
+                )
+                run_compile_command(compile_resource_command, "Jenova.Runtime.rc", resource_compiler)
 
             # Generate Linker Command
             rgb_print("#367fff", "[ ^ ] Generating Linker Command...")
@@ -1374,14 +1376,15 @@ def build_windows(compilerBinary, linkerBinary, buildMode, buildSystem):
         save_cache(cache, CacheDB)
 
         # Compile Resource File
-        rgb_print("#367fff", "[ ^ ] Generating Resource Compiler Command...")
-        compiled_resource_file = f"{cacheDir}/Jenova.Runtime.res"
-        resource_compiler = "windres.exe"
-        compile_resource_command = (
-            f"{resource_compiler} -D_UNICODE -DUNICODE -c65001 "
-            f"-o \"{compiled_resource_file}\" -i\"{resourceFileName}\""
-        )
-        run_compile_command(compile_resource_command, "Jenova.Runtime.rc", resource_compiler)
+        if not static_build:
+            rgb_print("#367fff", "[ ^ ] Generating Resource Compiler Command...")
+            compiled_resource_file = f"{cacheDir}/Jenova.Runtime.res"
+            resource_compiler = "windres.exe"
+            compile_resource_command = (
+                f"{resource_compiler} -D_UNICODE -DUNICODE -c65001 "
+                f"-o \"{compiled_resource_file}\" -i\"{resourceFileName}\""
+            )
+            run_compile_command(compile_resource_command, "Jenova.Runtime.rc", resource_compiler)
 
         # Generate Linker Command
         rgb_print("#367fff", "[ ^ ] Generating Linker Command...")
@@ -1446,7 +1449,7 @@ if __name__ == "__main__":
     os.environ['PYTHONDONTWRITEBYTECODE'] = "1"
 
     # Create Arguments Parser
-    parser = argparse.ArgumentParser(description="Jenova Runtime Build System 2.6 Developed by Hamid.Memar")
+    parser = argparse.ArgumentParser(description=f"Jenova Runtime Build System {builder_version} Developed by Hamid.Memar")
     parser.add_argument('--compiler', type=str, help='Specify Compiler to Use.')
     parser.add_argument('--deploy-mode', action='store_true', help='Run As GitHub Action Deploy Mode')
     parser.add_argument('--deps-version', default="4.3", help='Specify Dependencies Version (default: 4.3)')

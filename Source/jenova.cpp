@@ -972,8 +972,11 @@ namespace jenova
 				// Register Project Directory Monitor
 				if (!JenovaAssetMonitor::get_singleton()->AddDirectory(jenova::GetJenovaProjectDirectory())) return false;
 
-				// Register Jenova Cache Directory Monitor
-				if (!JenovaAssetMonitor::get_singleton()->AddDirectory(jenova::GetJenovaCacheDirectory())) return false;
+				// Register Jenova Cache Directory Monitor [Legacy]
+				if (jenova::GlobalSettings::UseLegacyJenovaCacheDirectory)
+				{
+					if (!JenovaAssetMonitor::get_singleton()->AddDirectory(jenova::GetJenovaCacheDirectory())) return false;
+				}
 
 				// Register Callback
 				if (!JenovaAssetMonitor::get_singleton()->RegisterCallback(JenovaEditorPlugin::OnAssetChanged)) return false;
@@ -2757,6 +2760,12 @@ namespace jenova
 					return false;
 				}
 
+				// Configure Deployer Path
+				std::string jenovaDeployer = "Jenova\\Jenova.Runtime.Win64.dll";
+				#ifdef JENOVA_STATIC_BUILD
+				jenovaDeployer = "Jenova\\Jenova.Deployer.Win64.dll";
+				#endif
+
 				// Create Project File
 				jenova::Output("Generating Visual C++ Project...");
 				std::string projectTemplate = std::string(BUFFER_PTR_SIZE_PARAM(jenova::visualstudio::VS_PROJECT_TEMPLATE));
@@ -2809,6 +2818,7 @@ namespace jenova
 				jenova::ReplaceAllMatchesWithString(projectTemplate, "@@ADDITIONALDEPENDENCIES@@", nativeLibraries + extraLibraries + "%(AdditionalDependencies)");
 				jenova::ReplaceAllMatchesWithString(projectTemplate, "@@DELAYLOADDLLS@@", delayedDlls);
 				jenova::ReplaceAllMatchesWithString(projectTemplate, "@@FORCEDINCLUDEFILES@@", forcedHeaders);
+				jenova::ReplaceAllMatchesWithString(projectTemplate, "@@DEPLOYER@@", jenovaDeployer);
 				if (!jenova::WriteStdStringToFile(projectFile, projectTemplate))
 				{
 					DisposeCompiler();
@@ -2869,6 +2879,13 @@ namespace jenova
 				// Generate Source Control Git Ignore
 				std::string gitIgnoreTemplate = std::string(BUFFER_PTR_SIZE_PARAM(jenova::visualstudio::VS_SCRIPT_GIT_IGNORE));
 				if (!jenova::WriteStdStringToFile(gitIgnoreFile, gitIgnoreTemplate)) return false;
+
+				// Create Deployer Module If Exporting from Core Build
+				#ifdef JENOVA_STATIC_BUILD
+					auto deployerBuffer = jenova::CreateMemoryBuffer((void*)LIB_DEPLOYER_WIN64, sizeof LIB_DEPLOYER_WIN64);
+					if (!jenova::WriteMemoryBufferToFile(jenovaDeployer, deployerBuffer)) return false;
+					jenova::ReleaseMemoryBuffer(deployerBuffer);
+				#endif
 
 				// Check If User Wants to Launch VS
 				if (jenova::GlobalSettings::AskAboutOpeningVisualStudio)
@@ -6864,16 +6881,34 @@ namespace jenova
 		if (addBrackets) formattedHash = "{" + formattedHash + "}";
 		return formattedHash;
 	}
+	std::string NormalizePath(const std::string& input)
+	{
+		std::string result;
+		char prevChar = '\0';
+		for (char c : input)
+		{
+			if (c == '/' && prevChar == '/')
+				continue;
+			result += (c == '\\') ? '/' : c;
+			prevChar = c;
+		}
+		return result;
+	}
 	bool CompareFilePaths(const std::string& sourcePath, const std::string& destinationPath)
 	{
-		if (sourcePath.size() != destinationPath.size()) return false;
-		for (size_t i = 0; i < sourcePath.size(); ++i)
+		// Use New File System Features
+		if (jenova::GlobalSettings::UseNewFileSystemFeatures)
 		{
-			char c1 = (sourcePath[i] == '\\') ? '/' : sourcePath[i];
-			char c2 = (destinationPath[i] == '\\') ? '/' : destinationPath[i];
-			if (c1 != c2) return false;
+			std::filesystem::path p1 = std::filesystem::weakly_canonical(sourcePath);
+			std::filesystem::path p2 = std::filesystem::weakly_canonical(destinationPath);
+			return p1 == p2;
 		}
-		return true;
+
+		// Legacy Method
+		std::string srcPathNormalized = NormalizePath(sourcePath);
+		std::string dstPathNormalized = NormalizePath(destinationPath);
+		if (srcPathNormalized.size() != dstPathNormalized.size()) return false;
+		return srcPathNormalized == dstPathNormalized;
 	}
 	bool RemoveFileEncodingInStdString(std::string& fileContent) 
 	{
@@ -7034,6 +7069,20 @@ namespace jenova
 		std::string decodedString((char*)decompressedData.data(), decompressedData.size());
 		jenova::MemoryBuffer().swap(decompressedData);
 		return decodedString;
+	}
+	jenova::MemoryBuffer CreateMemoryBuffer(void* dataPtr, size_t dataSize)
+	{
+		jenova::MemoryBuffer buffer;
+		if (dataPtr && dataSize > 0)
+		{
+			uint8_t* bytePtr = static_cast<uint8_t*>(dataPtr);
+			buffer.assign(bytePtr, bytePtr + dataSize);
+		}
+		return buffer;
+	}
+	void ReleaseMemoryBuffer(jenova::MemoryBuffer& memoryBuffer)
+	{
+		jenova::MemoryBuffer().swap(memoryBuffer);
 	}
 	bool WriteMemoryBufferToFile(const std::string& filePath, const jenova::MemoryBuffer& memoryBuffer)
 	{

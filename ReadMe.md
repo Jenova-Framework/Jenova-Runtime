@@ -1,4 +1,4 @@
-# Projekt J.E.N.O.V.A :: Jenova Runtime (Core)
+# Jenova Runtime (Core)
 
 This repository contains source code of **Jenova Runtime** for Godot Engine and It's a part of **[Projekt J.E.N.O.V.A](https://github.com/Jenova-Framework/J.E.N.O.V.A)**
 
@@ -19,9 +19,11 @@ This repository contains source code of **Jenova Runtime** for Godot Engine and 
 
 **Jenova Framework** empowers developers to build entire games or applications natively in C/C++ with ease and stability. It supports seamless integration of cutting-edge technologies and allowing direct integration of OpenCV, CUDA, Vulkan, OpenMP and any other modern C++ features seamlessly, All supported by the powerful backend.
 
-This repository contains the full source code of **Jenova Runtime** also known as Core. It is a full-featured scripting backend with a wide range of capabilities including a Build System, Compiler Interface, Script Objects, Script Language, Script Instances, Script interpreter and more.
-
 For more information and to view the full feature list, check out the details [here](https://github.com/Jenova-Framework/J.E.N.O.V.A#%EF%B8%8F-current-features).
+
+### Jenova Runtime (Core)
+
+This repository contains the full source code of **Jenova Runtime**, a full-featured scripting backend with a wide range of capabilities including a Build System, Compiler Interface, Script Objects, Script Language, Script Instances, Script Interpreter and more.
 
 ## Issue/Bug Reports and Questions
 - If you want to report an issue or bug create a new thread at [Issues](https://github.com/Jenova-Framework/Jenova-Runtime/issues).

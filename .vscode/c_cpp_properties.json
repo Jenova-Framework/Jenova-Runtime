@@ -17,7 +17,7 @@
                 "TYPED_METHOD_BIND",
                 "_WIN32", "_WIN64"
             ],
-            "compilerPath": "Toolchain/bin/clang-cl.exe",
+            "compilerPath": "${workspaceFolder}/Toolchain/bin/clang-cl.exe",
             "cStandard": "c17",
             "cppStandard": "c++20",
             "intelliSenseMode": "windows-clang-x64",

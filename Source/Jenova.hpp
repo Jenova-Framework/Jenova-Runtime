@@ -20,11 +20,11 @@
 #define APP_COMPANYNAME					"MemarDesign™ LLC."
 #define APP_DESCRIPTION					"Real-Time C++ Scripting System for Godot Game Engine, Developed By Hamid.Memar."
 #define APP_COPYRIGHT					"Copyright MemarDesign™ LLC. (©) 2024-2025, All Rights Reserved."
-#define APP_VERSION						"0.3.7.6"
+#define APP_VERSION						"0.3.7.7"
 #define APP_VERSION_MIDDLEFIX			" "
 #define APP_VERSION_POSTFIX				"Beta"
 #define APP_VERSION_SINGLECHAR			"b"
-#define APP_VERSION_DATA				0, 3, 7, 6
+#define APP_VERSION_DATA				0, 3, 7, 7
 #define APP_VERSION_BUILD				"0"
 #define APP_VERSION_NAME				"Cyclone"
 
@@ -765,7 +765,7 @@ namespace jenova
 		constexpr bool DisableBuildAndRunWhileDebug				= true;
 		constexpr bool PauseResumeTreeOnReload					= false;
 		constexpr bool UseLegacyJenovaCacheDirectory			= false;
-
+		constexpr bool UseNewFileSystemFeatures					= true;
 
 		constexpr size_t PrintOutputBufferSize					= 8192;
 		constexpr size_t BuildOutputBufferSize					= PrintOutputBufferSize;
@@ -940,11 +940,14 @@ namespace jenova
 	ArgumentsArray SplitStdStringToArguments(const std::string& str, char delimiter = ';');
 	ScriptEntityContainer CreateScriptEntityContainer(const String& rootPath);
 	std::string GenerateFilterUniqueIdentifier(std::string& filterName, bool addBrackets = false);
+	std::string NormalizePath(const std::string& input);
 	bool CompareFilePaths(const std::string& sourcePath, const std::string& destinationPath);
 	bool RemoveFileEncodingInStdString(std::string& fileContent);
 	bool ApplyFileEncodingFromReferenceFile(const std::string& sourceFile, const std::string& destinationFile);
 	EncodedData CreateCompressedBase64FromStdString(const std::string& srcStr);
 	std::string CreateStdStringFromCompressedBase64(const EncodedData& base64);
+	jenova::MemoryBuffer CreateMemoryBuffer(void* dataPtr, size_t dataSize);
+	void ReleaseMemoryBuffer(jenova::MemoryBuffer& memoryBuffer);
 	bool WriteMemoryBufferToFile(const std::string& filePath, const MemoryBuffer& memoryBuffer);
 	MemoryBuffer ReadMemoryBufferFromFile(const std::string& filePath);
 	std::string ExtractMajorVersionFromFullVersion(const std::string& fullVersion);
