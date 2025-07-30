@@ -421,8 +421,8 @@ jenova::ScriptPropertyContainer JenovaInterpreter::GetPropertyContainer(const st
 Variant JenovaInterpreter::CallFunction(const godot::Object* objectPtr, const std::string& functionName, std::string& scriptUID, const Variant** functionParameters, const int functionParametersCount)
 {
     // Validate Module
-    if (!allowExecution) return Variant("ERROR::EXECUTION_DENIED");
-    if (!moduleHandle || !moduleBaseAddress) return Variant("ERROR::INVALID_MODULE");
+    if (!allowExecution) return GenerateFunctionCallError(functionName, "ERROR::EXECUTION_DENIED");
+    if (!moduleHandle || !moduleBaseAddress) return GenerateFunctionCallError(functionName, "ERROR::INVALID_MODULE");
 
     // Create Profiler Checkpoint [Not Required For Now]
     /* JenovaTinyProfiler::CreateCheckpoint("InterpreterCallFunction"); */
@@ -432,15 +432,15 @@ Variant JenovaInterpreter::CallFunction(const godot::Object* objectPtr, const st
 
     // Get Function Address Offset
     jenova::FunctionAddress functionAddress = JenovaInterpreter::GetFunctionAddress(functionName, scriptUID);
-    if (!functionAddress) return Variant("ERROR::FUNCTION_ADDRESS_NOT_FOUND");
+    if (!functionAddress) return GenerateFunctionCallError(functionName, "ERROR::FUNCTION_ADDRESS_NOT_FOUND");
 
     // Get Function Return Type
     std::string functionReturnType = JenovaInterpreter::GetFunctionReturn(functionName, scriptUID);
-    if (functionReturnType == "Unknown") return Variant("ERROR::FUNCTION_RETURN_TYPE_NOT_FOUND");
+    if (functionReturnType == "Unknown") return GenerateFunctionCallError(functionName, "ERROR::FUNCTION_RETURN_TYPE_NOT_FOUND");
 
     // Get Function Parameters Type
     jenova::ParameterTypeList functionParametersType = JenovaInterpreter::GetFunctionParameters(functionName, scriptUID);
-    if (functionParametersType.size() == 0) return Variant("ERROR::FUNCTION_PARAMETERS_TYPE_NOT_FOUND");
+    if (functionParametersType.size() == 0) return GenerateFunctionCallError(functionName, "ERROR::FUNCTION_PARAMETERS_TYPE_NOT_FOUND");
 
     // Determine and Set Flags
     bool callMustReturn = JenovaInterpreter::IsFunctionReturnable(functionReturnType);
@@ -572,7 +572,7 @@ Variant JenovaInterpreter::CallFunction(const godot::Object* objectPtr, const st
         catch (const std::exception&)
         {
             // If Failed, Return False
-            return Variant("ERROR::CALL_FAILED");
+            return GenerateFunctionCallError(functionName, "ERROR::CALL_FAILED");
         }
     }
     if (interpreterBackend == jenova::InterpreterBackend::TinyCC)
@@ -698,12 +698,20 @@ Variant JenovaInterpreter::CallFunction(const godot::Object* objectPtr, const st
     }
 
     // No Valid Backend
-    return Variant("ERROR::INVALID_INTERPRETER_BACKEND");
+    return GenerateFunctionCallError(functionName, "ERROR::INVALID_INTERPRETER_BACKEND");
 }
 void JenovaInterpreter::SetExecutionState(bool executionState)
 {
     // Set Execution State
     allowExecution = executionState;
+}
+Variant JenovaInterpreter::GenerateFunctionCallError(const std::string& functionName, const String& errorReason)
+{
+    // Throw Error Message
+    jenova::Error("[Jenova Interpreter]", "Failed to Interpret Function [%s] With Reason : %s", functionName.c_str(), AS_C_STRING(errorReason));
+
+    // Return Error Reason
+    return String(errorReason);
 }
 jenova::SerializedData JenovaInterpreter::GenerateModuleMetadata(const std::string& mapFilePath, const jenova::ModuleList& scriptModules, const jenova::BuildResult& buildResult)
 {
@@ -1259,7 +1267,7 @@ jenova::SerializedData JenovaInterpreter::GenerateModuleMetadata(const std::stri
                     }
                 }
 
-                // Handle property offsets explicitly
+                // Handle Property Offsets Explicitly
                 std::regex propOffsetPattern(R"(^\s*([0-9a-fA-F]+)\s+\d+\s+\d+\s+JNV_([a-f0-9]+)::(__prop_[\w]+).*$)");
                 if (std::regex_search(line, match, propOffsetPattern))
                 {
@@ -1442,7 +1450,7 @@ jenova::SerializedData JenovaInterpreter::GenerateModuleMetadata(const std::stri
                     }
                 }
 
-                // Handle property offsets explicitly
+                // Handle Property Offsets Explicitly
                 std::regex propOffsetPattern(R"(\s*0x([0-9a-fA-F]+)\s*JNV_([a-f0-9]+)::(__prop_\w+).*$)");
                 if (std::regex_search(line, match, propOffsetPattern))
                 {

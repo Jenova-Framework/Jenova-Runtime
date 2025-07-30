@@ -20,11 +20,11 @@
 #define APP_COMPANYNAME					"MemarDesign™ LLC."
 #define APP_DESCRIPTION					"Real-Time C++ Scripting System for Godot Game Engine, Developed By Hamid.Memar."
 #define APP_COPYRIGHT					"Copyright MemarDesign™ LLC. (©) 2024-2025, All Rights Reserved."
-#define APP_VERSION						"0.3.7.7"
+#define APP_VERSION						"0.3.7.8"
 #define APP_VERSION_MIDDLEFIX			" "
 #define APP_VERSION_POSTFIX				"Beta"
 #define APP_VERSION_SINGLECHAR			"b"
-#define APP_VERSION_DATA				0, 3, 7, 7
+#define APP_VERSION_DATA				0, 3, 7, 8
 #define APP_VERSION_BUILD				"0"
 #define APP_VERSION_NAME				"Cyclone"
 
@@ -755,6 +755,7 @@ namespace jenova
 		constexpr bool HandlePreLaunchErrors					= true;
 		constexpr bool AskAboutOpeningVisualStudio				= true;
 		constexpr bool AskAboutOpeningVSCode					= true;
+		constexpr bool AskAboutOpeningNeoVim					= true;
 		constexpr bool CreateSymbolicAddonModules				= true;
 		constexpr bool CopyRuntimeModuleOnExport				= true;
 		constexpr bool RespectSourceFilesEncoding				= true;

@@ -2656,6 +2656,7 @@ namespace jenova
             internalDefaultSettings["instance_name"]                        = compilerInstanceName;
             internalDefaultSettings["cpp_compiler_binary"]                  = "clang++"; 
             internalDefaultSettings["cpp_linker_binary"]                    = "clang++";
+            internalDefaultSettings["cpp_extra_linker"]                     = "-fuse-ld=bfd";
 
             // All Good
             return true;

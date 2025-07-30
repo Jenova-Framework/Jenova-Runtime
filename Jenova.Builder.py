@@ -602,7 +602,7 @@ def build_linux(compilerBinary, linkerBinary, buildMode, buildSystem):
     rgb_print("#367fff", "[ ^ ] Generating Linker Command...")
     link_command = (
         f"{linker} {'-static' if static_build else '-shared'} -fPIC {' '.join(object_files)} -o {outputDir}/{outputName} -m64 "
-        f"-static-libstdc++ -static-libgcc {' '.join(libs)} -Wl,-Bstatic -lssl -lcrypto -Wl,-Bdynamic -ldl -lrt "
+        f"-static-libstdc++ -static-libgcc -L/usr/lib64 {' '.join(libs)} -Wl,-Bstatic -lssl -lcrypto -Wl,-Bdynamic -ldl -lrt -lzstd "
         f"-Wl,-Map,{outputDir}/{mapFileName}"
     )
 

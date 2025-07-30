@@ -3164,9 +3164,9 @@ namespace jenova
 				std::string projectPath = AS_STD_STRING(jenova::GetJenovaProjectDirectory());
 
 				// Open Project in VSCode
-				std::string vscodeExecutable = "code";
-				std::string command = vscodeExecutable + " " + projectPath;
-				if (std::system(command.c_str()) != 0) return false;
+				std::thread([](std::string path) {std::string command = "code \"" + path + "\""; std::system(command.c_str()); }, projectPath).detach();
+
+				// All Good
 				return true;
 			}
 
@@ -3235,19 +3235,57 @@ namespace jenova
 					return false;
 				}
 
-				// All Good
+				// Check If User Wants to Launch Neo Vim
+				if (jenova::GlobalSettings::AskAboutOpeningNeoVim)
+				{
+					// Prompt User for Opening Neo Vim
+					ConfirmationDialog* dialog = memnew(ConfirmationDialog);
+					dialog->set_title("[ NeoVim Integration ]");
+					dialog->set_text("NeoVim Project Successfully Generated. Would you like to open it now?");
+					dialog->get_ok_button()->set_text("Open NeoVim");
+					dialog->get_cancel_button()->set_text("No Thanks!");
+
+					// Create & Assign UI Callback to Dialog
+					dialog->connect("confirmed", callable_mp(this, &JenovaEditorPlugin::OpenProjectInNeovim));
+					dialog->connect("confirmed", callable_mp((Node*)dialog, &ConfirmationDialog::queue_free));
+					dialog->connect("canceled", callable_mp((Node*)dialog, &ConfirmationDialog::queue_free));
+
+					// Add Dialog to Engine & Show
+					add_child(dialog);
+					dialog->popup_centered();
+				}
+
+				// Verbose
 				jenova::OutputColored("#00ff88", "Neovim Project Has Been Successfully Exported.");
+
+				// All Good
 				return true;
 			}
 			bool OpenProjectInNeovim()
 			{
-				// Get Project Path
 				std::string projectPath = AS_STD_STRING(jenova::GetJenovaProjectDirectory());
+				std::thread([](const std::string& path)
+				{
+					std::string command;
+					if (QUERY_PLATFORM(Windows))
+					{
+						command = "start cmd /k nvim \"" + path + "\"";
+					}
+					if (QUERY_PLATFORM(Linux))
+					{
+						const std::vector<std::string> terminals = { "x-terminal-emulator", "gnome-terminal", "konsole", "xfce4-terminal", "lxterminal", "xterm" };
+						for (const auto& term : terminals)
+						{
+							if (std::system(("which " + term + " > /dev/null 2>&1").c_str()) == 0)
+							{
+								command = term + " -e \"sh -c 'nvim \\\"" + path + "\\\"'\"";
+								break;
+							}
+						}
+					}
+					std::system(command.c_str());
 
-				// Open Project in Neovim
-				std::string neovimExecutable = "nvim";
-				std::string command = neovimExecutable + " " + projectPath;
-				if (std::system(command.c_str()) != 0) return false;
+				}, projectPath).detach();
 				return true;
 			}
 
@@ -6089,6 +6127,9 @@ namespace jenova
 		jenovaCacheDirectory = ProjectSettings::get_singleton()->globalize_path("res://") + String(jenova::GlobalSettings::JenovaCacheDirectory);
 		if (jenova::GlobalSettings::UseLegacyJenovaCacheDirectory) jenovaCacheDirectory = OS::get_singleton()->get_cache_dir() + String(jenova::GlobalSettings::JenovaCacheDirectoryLegacy);
 
+		// Clean Up Path
+		jenovaCacheDirectory = jenovaCacheDirectory.replace("//", "/");
+
 		// Try to Create It If Doesn't Exist
 		if (!filesystem::exists(AS_STD_STRING(jenovaCacheDirectory)))
 		{
@@ -8882,7 +8923,7 @@ namespace jenova
 
 		// Linux Implementation
 		#ifdef TARGET_PLATFORM_LINUX
-			std::string command = "sudo /bin/bash \"" + packageScriptFile + "\"";
+			std::string command = "/bin/bash \"" + packageScriptFile + "\"";
 			std::array<char, 128> buffer = {};
 			FILE* pipe = popen(command.c_str(), "r");
 			if (!pipe) return false;

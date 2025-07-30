@@ -42,6 +42,7 @@ public:
     static jenova::ScriptPropertyContainer GetPropertyContainer(const std::string& scriptUID);
     static Variant CallFunction(const godot::Object* objectPtr, const std::string& functionName, std::string& scriptUID, const Variant** functionParameters, const int functionParametersCount);
     static void SetExecutionState(bool executionState);
+    static Variant GenerateFunctionCallError(const std::string& functionName, const String& errorReason);
     static jenova::SerializedData GenerateModuleMetadata(const std::string& mapFilePath, const jenova::ModuleList& scriptModules, const jenova::BuildResult& buildResult);
     static bool UpdateConfigurationsFromMetaData(const jenova::SerializedData& metaData);
     static bool UpdatePropertyStorageFromMetaData();
