@@ -36,7 +36,8 @@ jobs:
           sudo apt install gcc-13 g++-13 -y
           sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 130 --slave /usr/bin/g++ g++ /usr/bin/g++-13
           sudo update-alternatives --config gcc
-          sudo apt-get install libc6-dev
+          sudo apt install libc6-dev
+          sudo apt install libzstd-dev
           gcc --version
           g++ --version
 
@@ -105,6 +106,7 @@ jobs:
           sudo apt-get autoremove -y
           sudo apt-get autoclean
           sudo apt-get install clang-19 lld-19 -y
+          sudo apt-get install libzstd-dev
           sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-19 100
           sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-19 100
           clang --version

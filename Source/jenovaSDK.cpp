@@ -145,17 +145,6 @@ static bool OverrideClassAPIType(const godot::StringName& className, jenova::sdk
 		// Failed
 		return false;
 	}
-
-	// For Future Use This Code
-	/*if (ClassDB::class_override_api_type(className, ClassDBSingleton::API_EXTENSION) != godot::Error::OK)
-	{
-		jenova::Error("Sakura", "Failed to Override API of Class '%s'", AS_C_STRING(className));
-		return false;
-	};
-
-	// All Good
-	return true;
-	*/
 }
 static godot::TypedArray<godot::Node> GetOpenedScenes()
 {

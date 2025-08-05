@@ -3967,6 +3967,7 @@ namespace jenova
 				}
 
 				// Export Runtime Module
+				#ifndef JENOVA_STATIC_BUILD
 				if (jenova::GlobalSettings::CopyRuntimeModuleOnExport)
 				{
 					// Verbose Runtime Module Export
@@ -3983,6 +3984,7 @@ namespace jenova
 						jenova::Warning("Jenova Exporter", "Failed to Copy Jenova Runtime Module to Build Directory!");
 					}
 				}
+				#endif
 
 				// Verbose Build Success
 				jenova::Output("[color=#729bed][Build][/color] Jenova Runtime Successfully Generated and Exported.");
