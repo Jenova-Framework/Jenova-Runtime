@@ -20,11 +20,11 @@
 #define APP_COMPANYNAME					"MemarDesign™ LLC."
 #define APP_DESCRIPTION					"Real-Time C++ Scripting System for Godot Game Engine, Developed By Hamid.Memar."
 #define APP_COPYRIGHT					"Copyright MemarDesign™ LLC. (©) 2024-2025, All Rights Reserved."
-#define APP_VERSION						"0.3.7.8"
+#define APP_VERSION						"0.3.7.9"
 #define APP_VERSION_MIDDLEFIX			" "
 #define APP_VERSION_POSTFIX				"Beta"
 #define APP_VERSION_SINGLECHAR			"b"
-#define APP_VERSION_DATA				0, 3, 7, 8
+#define APP_VERSION_DATA				0, 3, 7, 9
 #define APP_VERSION_BUILD				"0"
 #define APP_VERSION_NAME				"Cyclone"
 
@@ -169,21 +169,7 @@
 #include <classes/display_server.hpp>
 #include <classes/rendering_server.hpp>
 #include <classes/rendering_device.hpp>
-#include <classes/editor_file_system.hpp>
-#include <classes/editor_interface.hpp>
-#include <classes/editor_settings.hpp>
-#include <classes/editor_selection.hpp>
-#include <classes/editor_paths.hpp>
-#include <classes/editor_plugin.hpp>
-#include <classes/editor_plugin_registration.hpp>
-#include <classes/editor_export_platform.hpp>
-#include <classes/editor_export_plugin.hpp>
-#include <classes/editor_import_plugin.hpp>
 #include <classes/engine_debugger.hpp>
-#include <classes/editor_debugger_session.hpp>
-#include <classes/editor_debugger_plugin.hpp>
-#include <classes/editor_inspector_plugin.hpp>
-#include <classes/editor_resource_conversion_plugin.hpp>
 #include <classes/packed_data_container.hpp>
 #include <classes/project_settings.hpp>
 #include <classes/grid_container.hpp>
@@ -219,7 +205,6 @@
 #include <classes/dir_access.hpp>
 #include <classes/file_access.hpp>
 #include <classes/file_dialog.hpp>
-#include <classes/editor_file_dialog.hpp>
 #include <classes/hashing_context.hpp>
 #include <classes/texture.hpp>
 #include <classes/texture2d.hpp>
@@ -260,6 +245,24 @@
 #include <variant/typed_array.hpp>
 #include <variant/variant.hpp>
 #include <variant/utility_functions.hpp>
+
+// Godot SDK :: Editor
+#include <classes/editor_file_system.hpp>
+#include <classes/editor_file_dialog.hpp>
+#include <classes/editor_interface.hpp>
+#include <classes/editor_settings.hpp>
+#include <classes/editor_selection.hpp>
+#include <classes/editor_paths.hpp>
+#include <classes/editor_plugin.hpp>
+#include <classes/editor_plugin_registration.hpp>
+#include <classes/editor_export_platform.hpp>
+#include <classes/editor_export_plugin.hpp>
+#include <classes/editor_import_plugin.hpp>
+#include <classes/editor_inspector_plugin.hpp>
+#include <classes/editor_command_palette.hpp>
+#include <classes/editor_debugger_session.hpp>
+#include <classes/editor_debugger_plugin.hpp>
+#include <classes/editor_resource_conversion_plugin.hpp>
 
 // GodotSDK/LithiumSDK
 #ifdef LITHIUM_EDITION
@@ -904,7 +907,7 @@ namespace jenova
 	std::string GetExecutablePath();
 	void ResetCurrentDirectoryToRoot();
 	void DoApplicationEvents();
-	bool QueueProjectBuild(bool deferred = true);
+	bool QueueProjectBuild(bool deferred = true, bool restart = false);
 	bool UpdateGlobalStorageFromEditorSettings();
 	std::string GetNotificationString(int p_what);
 	String GetJenovaCacheDirectory();

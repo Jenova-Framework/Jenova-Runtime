@@ -171,6 +171,7 @@ namespace jenova
 			{
 				ClassDB::bind_static_method("JenovaEditorPlugin", D_METHOD("GetInstance"), &JenovaEditorPlugin::get_singleton);
 				ClassDB::bind_method(D_METHOD("BuildProject"), &JenovaEditorPlugin::BuildProject);
+				ClassDB::bind_method(D_METHOD("RebuildProject"), &JenovaEditorPlugin::RebuildProject);
 				ClassDB::bind_method(D_METHOD("CleanProject"), &JenovaEditorPlugin::CleanProject);
 				ClassDB::bind_method(D_METHOD("BootstrapModule"), &JenovaEditorPlugin::BootstrapModule);
 				ClassDB::bind_method(D_METHOD("SwitchToTerminal"), &JenovaEditorPlugin::SwitchToTerminal);
@@ -238,6 +239,9 @@ namespace jenova
 				// Initialize Editor Menu
 				VALIDATE_FUNCTION(InitializeEditorMenu());
 
+				// Initialize Editor Command Palette
+				VALIDATE_FUNCTION(RegisterEditorCommandPalette());
+
 				// Create 'Build' Tool Button
 				VALIDATE_FUNCTION(CreateBuildToolButton());
 
@@ -263,6 +267,9 @@ namespace jenova
 
 				// Destroy Editor Menu
 				VALIDATE_FUNCTION(DestroyEditorMenu());
+
+				// Unregister Editor Command Palette
+				VALIDATE_FUNCTION(UnRegisterEditorCommandPalette());
 
 				// Unregister Export Plugins
 				VALIDATE_FUNCTION(UnRegisterExportPlugins());
@@ -967,6 +974,36 @@ namespace jenova
 				// All Good
 				return true;
 			}
+			bool RegisterEditorCommandPalette()
+			{
+				// Get Editor Command Palette
+				EditorCommandPalette* cmdPalette = get_editor_interface()->get_command_palette();
+
+				// Add Commands
+				cmdPalette->add_command("Build Project", "jenova/build_project", callable_mp(this, &JenovaEditorPlugin::BuildProject), "Ctrl+Shift+B");
+				cmdPalette->add_command("Rebuild Project", "jenova/rebuild_project", callable_mp(this, &JenovaEditorPlugin::BuildProject), "Ctrl+Shift+R");
+				cmdPalette->add_command("Clean Project", "jenova/clean_project", callable_mp(this, &JenovaEditorPlugin::CleanProject), "Ctrl+Shift+K");
+				cmdPalette->add_command("Open Terminal", "jenova/switch_to_terminal", callable_mp(this, &JenovaEditorPlugin::SwitchToTerminal));
+				cmdPalette->add_command("Clear Logs", "jenova/clear_logs", callable_mp(this, &JenovaEditorPlugin::ClearLogs));
+
+				// All Good
+				return true;
+			}
+			bool UnRegisterEditorCommandPalette()
+			{
+				// Get Editor Command Palette
+				EditorCommandPalette* cmdPalette = get_editor_interface()->get_command_palette();
+
+				// Remove Commands
+				cmdPalette->remove_command("Build Project");
+				cmdPalette->remove_command("Rebuild Project");
+				cmdPalette->remove_command("Clean Project");
+				cmdPalette->remove_command("Open Terminal");
+				cmdPalette->remove_command("Clear Logs");
+				// All Good
+				return true;
+			}
+
 			bool RegisterAssetMonitors()
 			{
 				// Register Project Directory Monitor
@@ -1152,8 +1189,7 @@ namespace jenova
 					BuildProject();
 					break;
 				case jenova::EditorMenuID::RebuildSolution:
-					CleanProject();
-					BuildProject();
+					RebuildProject();
 					break;
 				case jenova::EditorMenuID::CleanSolution:
 					CleanProject();
@@ -1792,6 +1828,11 @@ namespace jenova
 
 				// All Good
 				return true;
+			}
+			void RebuildProject()
+			{
+				CleanProject();
+				BuildProject();
 			}
 			void CleanProject()
 			{
@@ -6028,7 +6069,7 @@ namespace jenova
 
 		#endif
 	}
-	bool QueueProjectBuild(bool deferred)
+	bool QueueProjectBuild(bool deferred, bool restart)
 	{
 		if (!jenova::plugin::JenovaEditorPlugin::get_singleton()) return false;
 		jenova::plugin::JenovaEditorPlugin::get_singleton()->call_deferred("BuildProject");

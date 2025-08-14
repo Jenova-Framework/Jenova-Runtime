@@ -544,6 +544,9 @@ Panel* JenovaPackageManager::CreatePackageItem(const jenova::JenovaPackage& jeno
 		package_item_install_button->set_text("  Uninstall Package  ");
 		package_item_install_button->connect("pressed", callable_mp(this, &JenovaPackageManager::UtilizeNewPackageTask)
 			.bind(String("UninstallPackagePrepare"), jenovaPackage.pkgHash, package_item_install_button));
+
+		// Hide Uninstall Button for Sample Projects
+		if (jenovaPackage.pkgType == jenova::PackageType::SampleProject) package_item_install_button->set_visible(false);
 	}
 	else
 	{
@@ -1076,6 +1079,9 @@ bool JenovaPackageManager::InstallPackage(const String& packageHash)
 
 	// Request Restart if Package is Tool
 	if (package.pkgType == jenova::PackageType::Tool) this->call_deferred("RequestEditorRestart");
+
+	// Request Build and Restart if Package is Sample Project
+	if (package.pkgType == jenova::PackageType::SampleProject) jenova::QueueProjectBuild(true, true);
 
 	// All Good
 	return true;
