@@ -2,6 +2,9 @@
 namespace jenova::resources {
 static constexpr char JenovaModuleInitializerCPP[] = R"(
 
+	// Imports
+	#include <vector>
+
 	// Godot SDK
 	#include <Godot/godot.hpp>
 
@@ -10,6 +13,7 @@ static constexpr char JenovaModuleInitializerCPP[] = R"(
 
 	// Namespaces
 	using namespace godot;
+	using namespace jenova::sdk;
 
 	// Dummy Callbacks
 	void DummyCallback(ModuleInitializationLevel initLevel) {}
@@ -44,6 +48,60 @@ static constexpr char JenovaModuleInitializerCPP[] = R"(
 		init_obj.register_terminator(DummyCallback);
 		init_obj.set_minimum_library_initialization_level(MODULE_INITIALIZATION_LEVEL_SCENE);
 		return init_obj.init();
+	}
+
+	// Autoload Event Storage
+	static std::vector<FunctionPtr> bootFunctions;
+	static std::vector<FunctionPtr> shutdownFunctions;
+	static bool InsertEvent(std::vector<FunctionPtr>& list, FunctionPtr funcPtr, int index)
+	{
+		if (std::find(list.begin(), list.end(), funcPtr) != list.end()) return false;
+		if (index < 0 || index >= static_cast<int>(list.size())) list.push_back(funcPtr);
+		else list.insert(list.begin() + index, funcPtr);
+		return true;
+	}
+	static bool RemoveEvent(std::vector<FunctionPtr>& list, FunctionPtr funcPtr)
+	{
+		auto it = std::find(list.begin(), list.end(), funcPtr);
+		if (it == list.end()) return false;
+		list.erase(it);
+		return true;
+	}
+
+	// Autoload Event Manager
+	bool jenova::sdk::RegisterBootEvent(FunctionPtr funcPtr, int index)
+	{
+		return InsertEvent(bootFunctions, funcPtr, index);
+	}
+	bool jenova::sdk::RegisterShutdownEvent(FunctionPtr funcPtr, int index)
+	{
+		return InsertEvent(shutdownFunctions, funcPtr, index);
+	}
+	bool jenova::sdk::UnregisterBootEvent(FunctionPtr funcPtr)
+	{
+		return RemoveEvent(bootFunctions, funcPtr);
+	}
+	bool jenova::sdk::UnregisterShutdownEvent(FunctionPtr funcPtr)
+	{
+		return RemoveEvent(shutdownFunctions, funcPtr);
+	}
+
+	// Internal Module Events
+	JENOVA_EXPORT bool _JenovaBoot()
+	{
+		// Execute Registered Boot Functions
+		for (const void* event : bootFunctions) reinterpret_cast<void(*)()>(event)();
+
+		// All Good
+		return true;
+	}
+	JENOVA_EXPORT bool _JenovaShutdown()
+	{
+		// Execute Registered Shutdown Functions
+		for (const void* event : shutdownFunctions) reinterpret_cast<void(*)()>(event)();
+
+		// All Good
+		return true;
 	}
 
 )";

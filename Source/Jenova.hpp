@@ -20,13 +20,13 @@
 #define APP_COMPANYNAME					"MemarDesign™ LLC."
 #define APP_DESCRIPTION					"Real-Time C++ Scripting System for Godot Game Engine, Developed By Hamid.Memar."
 #define APP_COPYRIGHT					"Copyright MemarDesign™ LLC. (©) 2024-2025, All Rights Reserved."
-#define APP_VERSION						"0.3.7.9"
+#define APP_VERSION						"0.3.8.0"
 #define APP_VERSION_MIDDLEFIX			" "
 #define APP_VERSION_POSTFIX				"Beta"
 #define APP_VERSION_SINGLECHAR			"b"
-#define APP_VERSION_DATA				0, 3, 7, 9
+#define APP_VERSION_DATA				0, 3, 8, 0
 #define APP_VERSION_BUILD				"0"
-#define APP_VERSION_NAME				"Cyclone"
+#define APP_VERSION_NAME				"Sigma"
 
 #ifndef NO_JENOVA_RUNTIME_SDK
 
@@ -770,6 +770,7 @@ namespace jenova
 		constexpr bool PauseResumeTreeOnReload					= false;
 		constexpr bool UseLegacyJenovaCacheDirectory			= false;
 		constexpr bool UseNewFileSystemFeatures					= true;
+		constexpr bool ForceJenovaSDKHeader						= true;
 
 		constexpr size_t PrintOutputBufferSize					= 8192;
 		constexpr size_t BuildOutputBufferSize					= PrintOutputBufferSize;
@@ -792,6 +793,7 @@ namespace jenova
 		constexpr char* ScriptSignalCallbackIdentifier			= "JENOVA_CALLBACK";
 		constexpr char* ScriptPropertyIdentifier				= "JENOVA_PROPERTY";
 		constexpr char* ScriptClassNameIdentifier				= "JENOVA_CLASS_NAME";
+		constexpr char* ScriptActivatorIdentifier				= "JENOVA_ACTIVATOR";
 		constexpr char* ScriptFunctionExportIdentifier			= "JENOVA_EXPORT";
 		constexpr char* DefaultModuleDatabaseFile				= "JenovaRuntime.jdb";
 		constexpr char* DefaultModuleConfigFile					= "JenovaRuntime.cfg";
@@ -910,6 +912,8 @@ namespace jenova
 	bool QueueProjectBuild(bool deferred = true, bool restart = false);
 	bool UpdateGlobalStorageFromEditorSettings();
 	std::string GetNotificationString(int p_what);
+	String GenerateHeaderNameFromClassName(const String& className);
+	String GenerateClassNameFromBaseName(const String& baseName);
 	String GetJenovaCacheDirectory();
 	String GetJenovaProjectDirectory();
 	String RemoveCommentsFromSource(const String& sourceCode);
@@ -922,7 +926,7 @@ namespace jenova
 	jenova::SymbolSignatureType DetectSymbolSignatureType(const std::string& symbolSignature, jenova::CompilerModel compilerModel);
 	bool LoadSymbolForModule(jenova::GenericHandle process, jenova::LongWord baseAddress, const std::string& pdbPath, size_t dllSize);
 	bool InitializeExtensionModule(const char* initFuncName, jenova::ModuleHandle moduleBase, jenova::ModuleCallMode callType);
-	bool CallModuleEvent(const char* eventFuncName, jenova::ModuleHandle moduleBase, jenova::ModuleCallMode callType);
+	bool CallModuleEvent(const std::string& eventFuncName, jenova::ModuleHandle moduleBase, jenova::ModuleCallMode callType);
 	ScriptModule CreateScriptModuleFromInternalSource(const std::string& sourceName, const std::string& sourceCode);
 	bool CreateFileFromInternalSource(const std::string& sourceFile, const std::string& sourceCode);
 	bool CreateBuildCacheDatabase(const std::string& cacheFile, const ModuleList& scriptModules, const jenova::HeaderList& scriptHeaders, bool skipHashes = false);

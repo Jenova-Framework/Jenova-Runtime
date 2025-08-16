@@ -70,6 +70,7 @@ PackedStringArray CPPScriptLanguage::_get_reserved_words() const
 		jenova::GlobalSettings::ScriptSignalCallbackIdentifier,
 		jenova::GlobalSettings::ScriptPropertyIdentifier,
 		jenova::GlobalSettings::ScriptClassNameIdentifier,
+		jenova::GlobalSettings::ScriptActivatorIdentifier,
 		jenova::GlobalSettings::ScriptFunctionExportIdentifier
 	};
 	return reserved_words;
@@ -87,6 +88,7 @@ bool CPPScriptLanguage::_is_control_flow_keyword(const String& p_keyword) const
 		jenova::GlobalSettings::ScriptSignalCallbackIdentifier,
 		jenova::GlobalSettings::ScriptPropertyIdentifier,
 		jenova::GlobalSettings::ScriptClassNameIdentifier,
+		jenova::GlobalSettings::ScriptActivatorIdentifier,
 		jenova::GlobalSettings::ScriptFunctionExportIdentifier
 	};
 	return control_flow_keywords.find(p_keyword.utf8().get_data()) != control_flow_keywords.end();
@@ -119,7 +121,19 @@ Ref<Script> CPPScriptLanguage::_make_template(const String& p_template, const St
 	script.instantiate();
 
 	// Set Template
-	if (!p_template.is_empty()) script->set_source_code(p_template);
+	if (!p_template.is_empty())
+	{
+		// Create A Copy from Template
+		String templateCode = p_template;
+
+		// Process Template Macros
+		templateCode = templateCode.replace("$BASE_TYPE$", p_base_class_name);
+		templateCode = templateCode.replace("$BASE_TYPE_HEADER$", jenova::GenerateHeaderNameFromClassName(p_base_class_name));
+		templateCode = templateCode.replace("$BASE_CLASS_NAME$", jenova::GenerateClassNameFromBaseName(p_class_name));
+
+		// Set Processed Template
+		script->set_source_code(templateCode);
+	}
 
 	// Return Created Script
 	return script;

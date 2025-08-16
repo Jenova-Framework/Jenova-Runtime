@@ -995,15 +995,15 @@ namespace jenova
 				EditorCommandPalette* cmdPalette = get_editor_interface()->get_command_palette();
 
 				// Remove Commands
-				cmdPalette->remove_command("Build Project");
-				cmdPalette->remove_command("Rebuild Project");
-				cmdPalette->remove_command("Clean Project");
-				cmdPalette->remove_command("Open Terminal");
-				cmdPalette->remove_command("Clear Logs");
+				cmdPalette->remove_command("jenova/build_project");
+				cmdPalette->remove_command("jenova/rebuild_project");
+				cmdPalette->remove_command("jenova/clean_project");
+				cmdPalette->remove_command("jenova/switch_to_terminal");
+				cmdPalette->remove_command("jenova/clear_logs");
+
 				// All Good
 				return true;
 			}
-
 			bool RegisterAssetMonitors()
 			{
 				// Register Project Directory Monitor
@@ -2729,7 +2729,7 @@ namespace jenova
 				std::string extraLibraries = AS_STD_STRING(String(jenovaCompiler->GetCompilerOption("cpp_extra_libs")));
 				std::string nativeLibraries = "libGodot.x64.lib;";
 				std::string delayedDlls = QUERY_SDK_LINKING_MODE(Dynamically) ? "Jenova.Runtime.Win64.dll;" : "";
-				std::string forcedHeaders = "";
+				std::string forcedHeaders = jenova::GlobalSettings::ForceJenovaSDKHeader ? "JenovaSDK.h;" : "";
 
 				// Handle JenovaSDK Linking
 				if (QUERY_SDK_LINKING_MODE(Dynamically))
@@ -3067,7 +3067,7 @@ namespace jenova
 				#endif
 				std::string cpp_definitions = AS_STD_STRING(String(jenovaCompiler->GetCompilerOption("cpp_definitions")));
 				std::string extraIncludeDirectories = AS_STD_STRING(String(jenovaCompiler->GetCompilerOption("cpp_extra_include_directories")));
-				std::string forcedHeaders = "";
+				std::string forcedHeaders = jenova::GlobalSettings::ForceJenovaSDKHeader ? "JenovaSDK.h;" : "";
 
 				// Solve GodotKit Path
 				String selectedGodotKitPath = jenova::GetInstalledGodotKitPathFromPackages(jenovaCompiler->GetCompilerOption("cpp_godotsdk_path"));
@@ -6161,6 +6161,61 @@ namespace jenova
 			default: return "UNKNOWN_NOTIFICATION";
 		}
 	}
+	String GenerateHeaderNameFromClassName(const String& className)
+	{
+		String result;
+		int length = className.length();
+		for (int i = 0; i < length; ++i)
+		{
+			if (i + 1 < length && (className.substr(i, 2) == "2D" || className.substr(i, 2) == "3D"))
+			{
+				result += className.substr(i, 2).to_lower();
+				i += 1;
+				continue;
+			}
+			char32_t c = className[i];
+			if (std::isupper(c))
+			{
+				if (i > 0 && (std::islower(className[i - 1]) || std::isdigit(className[i - 1])))
+				{
+					result += "_";
+				}
+				result += String::chr(std::tolower(c));
+			}
+			else
+			{
+				result += String::chr(c);
+			}
+		}
+		result += ".hpp";
+		return result;
+	}
+	String GenerateClassNameFromBaseName(const String& baseName)
+	{
+		String result;
+		String suffix;
+		String core = baseName;
+		if (baseName.ends_with("2d"))
+		{
+			suffix = "2D";
+			core = baseName.substr(0, baseName.length() - 2);
+		}
+		else if (baseName.ends_with("3d"))
+		{
+			suffix = "3D";
+			core = baseName.substr(0, baseName.length() - 2);
+		}
+		PackedStringArray parts = core.split("_");
+		for (int i = 0; i < parts.size(); ++i)
+		{
+			result += parts[i].capitalize();
+		}
+		result += suffix;
+		result = result.replace("2d", "2D");
+		result = result.replace("3d", "3D");
+		result = result.replace(" ", "");
+		return result;
+	}
 	String GetJenovaCacheDirectory()
 	{
 		// Initialize Directory Path
@@ -6466,7 +6521,7 @@ namespace jenova
 		// All Good
 		return true;
 	}
-	bool CallModuleEvent(const char* eventFuncName, jenova::ModuleHandle moduleBase, jenova::ModuleCallMode callType)
+	bool CallModuleEvent(const std::string& eventFuncName, jenova::ModuleHandle moduleBase, jenova::ModuleCallMode callType)
 	{
 		// Event Function Typedef
 		typedef bool(*ModuleEventFun)(void);
@@ -6476,10 +6531,10 @@ namespace jenova
 		switch (callType)
 		{
 		case jenova::ModuleCallMode::Actual:
-			ModuleEvent = (ModuleEventFun)jenova::GetModuleFunction(moduleBase, eventFuncName);
+			ModuleEvent = (ModuleEventFun)jenova::GetModuleFunction(moduleBase, eventFuncName.c_str());
 			break;
 		case jenova::ModuleCallMode::Virtual:
-			ModuleEvent = (ModuleEventFun)JenovaInterpreter::SolveVirtualFunction(moduleBase, eventFuncName);
+			ModuleEvent = (ModuleEventFun)JenovaInterpreter::SolveVirtualFunction(moduleBase, eventFuncName.c_str());
 			break;
 		default:
 			break;

@@ -296,6 +296,9 @@ namespace jenova
             compilerArgument += "/I \"" + this->jenovaSDKPath + "\" ";
             compilerArgument += "/I \"" + this->godotSDKPath + "\" ";
 
+            // Force Include JenovaSDK Header
+            if (jenova::GlobalSettings::ForceJenovaSDKHeader) compilerArgument += "/FI JenovaSDK.h ";
+
             // Add Additional Include Directories
             compilerArgument += GenerateAdditionalIncludeDirectories(compilerSettings["cpp_extra_include_directories"]);
 
@@ -1258,6 +1261,9 @@ namespace jenova
             // Add Additional Include Directories
             compilerArgument += GeneratePreprocessDefinitions(compilerSettings["cpp_extra_include_directories"]);
 
+            // Force Include JenovaSDK Header
+            if (jenova::GlobalSettings::ForceJenovaSDKHeader) compilerArgument += "-include JenovaSDK.h ";
+
             // Add Packages Headers (Addons, Libraries etc.)
             for (const auto& addonConfig : jenova::GetInstalledAddons())
             {
@@ -2149,6 +2155,11 @@ namespace jenova
                 compilerArgument += "-I\"" + this->includePath + "\" ";
                 compilerArgument += "-I\"" + this->jenovaSDKPath + "\" ";
                 compilerArgument += "-I\"" + this->godotSDKPath + "\" ";
+
+                // Force Include JenovaSDK Header
+                if (jenova::GlobalSettings::ForceJenovaSDKHeader) compilerArgument += "-include JenovaSDK.h ";
+
+                // Add Additional Include Directories
                 compilerArgument += GenerateAdditionalIncludeDirectories(compilerSettings["cpp_extra_include_directories"]);
 
                 // Add Source File

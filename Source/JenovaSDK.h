@@ -67,14 +67,24 @@
 #define JENOVA_VM_BEGIN
 #define JENOVA_VM_END
 
-// Jenova Property Macros
+// Jenova Property Macro
 #ifndef JENOVA_PROPERTY
 	#define JENOVA_PROPERTY(pType, pName, pValue, ...) pType pName = pValue;
 #endif
 
-// Jenova Class Name
+// Jenova Class Name Macro
 #ifndef JENOVA_CLASS_NAME
 	#define JENOVA_CLASS_NAME(className)
+#endif
+
+// Jenova Activator Macro
+#ifndef JENOVA_ACTIVATOR
+	#define JENOVA_ACTIVATOR(name, regfn, uregfn)   \
+		static struct name##SelfActivator {         \
+			inline name##SelfActivator() {          \
+				RegisterBootEvent(&regfn);          \
+				RegisterShutdownEvent(&uregfn);     \
+			}} inline _self;
 #endif
 
 // C++ Runtime Imports
@@ -609,4 +619,10 @@ namespace jenova::sdk
 	{
 		return reinterpret_cast<T*>(IntPtr(variantPtr));
 	}
+
+	// Internal Module Functions
+	bool RegisterBootEvent(jenova::sdk::FunctionPtr funcionPtr, int index = -1);
+	bool RegisterShutdownEvent(jenova::sdk::FunctionPtr funcionPtr, int index = -1);
+	bool UnregisterBootEvent(jenova::sdk::FunctionPtr funcionPtr);
+	bool UnregisterShutdownEvent(jenova::sdk::FunctionPtr funcionPtr);
 }

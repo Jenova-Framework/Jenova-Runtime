@@ -155,6 +155,12 @@ bool JenovaInterpreter::LoadModule(const uint8_t* moduleDataPtr, const size_t mo
         jenova::Warning("Jenova Interpreter", "Module Boot Event Failed. Unexpected Behaviors May Occur.");
     }
 
+    // Call Module Internal Boot Event
+    if (!jenova::CallModuleEvent(jenova::Format("_%s", jenova::GlobalSettings::JenovaModuleBootEventName), moduleHandle, jenova::ModuleCallMode::Virtual))
+    {
+        jenova::Warning("Jenova Interpreter", "Module Internal Boot Event Failed. Unexpected Behaviors May Occur.");
+    }
+
     // Enable Execution
     allowExecution = true;
 
@@ -190,6 +196,12 @@ bool JenovaInterpreter::UnloadModule(const jenova::ModuleUnloadStage& unloadStag
     {
         jenova::Error("Jenova Interpreter", "Failed to Flush Interpreter Property Database.");
         return false;
+    }
+
+    // Call Module Internal Shutdown Event
+    if (!jenova::CallModuleEvent(jenova::Format("_%s", jenova::GlobalSettings::JenovaModuleShutdownEventName), moduleHandle, jenova::ModuleCallMode::Virtual))
+    {
+        jenova::Warning("Jenova Interpreter", "Module Internal Shutdown Event Failed. Unexpected Behaviors May Occur.");
     }
 
     // Call Module Shutdown Event If Exists

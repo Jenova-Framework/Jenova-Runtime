@@ -163,7 +163,9 @@
     <ClInclude Include="Source\clektron.h">
       <Filter>Implementation\Engine\Clektron</Filter>
     </ClInclude>
-    <ClInclude Include="Source\InternalSources.h" />
+    <ClInclude Include="Source\InternalSources.h">
+      <Filter>Resources\Storage</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Jenova.Runtime.rc">
