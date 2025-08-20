@@ -3559,7 +3559,7 @@ namespace jenova
 				module_type_selector->set_anchor_and_offset(Side::SIDE_TOP, 0.0, SCALED(29.0));
 				module_type_selector->set_anchor_and_offset(Side::SIDE_BOTTOM, 0.0, SCALED(74.0));
 				module_type_selector->add_theme_color_override("font_color", editor_theme->get_color("accent_color", "Editor"));
-				module_type_selector->add_item(" GDExtension (Windows x64)");
+				module_type_selector->add_item(" GDExtension (Windows x64) -- Deprecated");
 				module_type_selector->select(module_type_selector->get_item_count() - 1);
 				window_surface->add_child(module_type_selector);
 
