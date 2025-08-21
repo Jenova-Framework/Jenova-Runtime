@@ -245,3 +245,99 @@ private:
 };
 
 #endif
+
+#ifdef TARGET_PLATFORM_MACOS
+
+#include <dlfcn.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <unordered_map>
+#include <string>
+#include <sys/mman.h>
+
+// Loader Interface [macOS]
+class JenovaLoader
+{
+public:
+	static bool Initialize() {
+		return true;
+	}
+	static bool Release() {
+		return true;
+	}
+	static bool SetAgressiveMode(bool agrState) {
+		aggressiveMode = agrState;
+		return true;
+	}
+
+	static jenova::ModuleHandle LoadModule(void* bufferPtr, size_t bufferSize, int flags = 0) {
+		char tempPath[] = "/tmp/jenova_module_XXXXXX.dylib";
+		int fd = mkstemps(tempPath, 6); // ".dylib"
+		if (fd == -1) {
+			perror("[Jenova Loader] mkstemps failed");
+			return nullptr;
+		}
+
+		// Write buffer to temp file
+		if (write(fd, bufferPtr, bufferSize) != static_cast<ssize_t>(bufferSize)) {
+			perror("[Jenova Loader] write failed");
+			close(fd);
+			unlink(tempPath);
+			return nullptr;
+		}
+
+		close(fd); // Safe to close before `dlopen`
+
+		// Load dylib
+		void* handle = dlopen(tempPath, RTLD_NOW | RTLD_GLOBAL);
+		if (!handle) {
+			fprintf(stderr, "[Jenova Loader] dlopen failed: %s\n", dlerror());
+			unlink(tempPath);
+			return nullptr;
+		}
+
+		// Store file path for later cleanup
+		if (aggressiveMode)
+			moduleTempPaths[handle] = tempPath;
+
+		return reinterpret_cast<jenova::ModuleHandle>(handle);
+	}
+
+	static jenova::ModuleHandle LoadModuleAsVirtual(void* bufferPtr, size_t bufferSize, const char* moduleName, const char* modulePath, int flags = 0) {
+		return LoadModule(bufferPtr, bufferSize, flags);
+	}
+
+	static jenova::ModuleAddress GetModuleBaseAddress(jenova::ModuleHandle moduleHandle) {
+		// Not easily supported on macOS; use nullptr or stub
+		return jenova::ModuleAddress(0); // Could use `dladdr` for symbols
+	}
+
+	static void* GetVirtualFunction(jenova::ModuleHandle moduleHandle, const char* functionName) {
+		return dlsym(moduleHandle, functionName);
+	}
+
+	static bool ReleaseModule(jenova::ModuleHandle moduleHandle) {
+		if (!moduleHandle) return false;
+
+		dlclose(moduleHandle);
+
+		if (aggressiveMode) {
+			auto it = moduleTempPaths.find(moduleHandle);
+			if (it != moduleTempPaths.end()) {
+				unlink(it->second.c_str());
+				moduleTempPaths.erase(it);
+			}
+		}
+
+		return true;
+	}
+
+private:
+	static inline bool aggressiveMode = false;
+	static inline std::unordered_map<jenova::ModuleHandle, std::string> moduleTempPaths;
+};
+
+#endif
