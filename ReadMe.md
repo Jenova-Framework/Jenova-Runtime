@@ -70,6 +70,7 @@ For Windows, Jenova Framework provides a massive compiler collection including a
 - Microsoft Visual C++ LLVM (clang-cl)
 - LLVM Clang (clang/clang++)
 - Minimalist GNU for Windows (gcc/g++)
+- Apple Clang for macOS (gcc/clang/clang++)
 
 You can use **Jenova Builder** to build Jenova Runtime for Windows using GigaChad Toolchain. Everything is automated and all dependencies will be compiled by Jenova Builder. The compiled dependencies from Jenova Builder can be used in Visual Studio as well.
 

@@ -529,7 +529,7 @@ def build_linux(compilerBinary, linkerBinary, buildMode, buildSystem):
         object_file = f"{cacheDir}/{os.path.basename(source).replace('.cpp', '.o')}"
         object_files.append(object_file)
         compile_command = (
-            f"{compiler} -m64 -O3 -fPIC -pipe -w -std=c++20 -pthread -fexceptions "
+            f"{compiler} -m64 -g -fPIC -pipe -w -std=c++20 -pthread -fexceptions "
             f"{' '.join([f'-D{flag}' for flag in flags])} "
             f"{' '.join([f'-I{directory}' for directory in directories])} "
             f"-c {source} -o {object_file}"
@@ -850,7 +850,7 @@ def build_mac(compilerBinary, linkerBinary, buildMode, buildSystem):
         object_file = f"{cacheDir}/{os.path.basename(source).replace('.cpp', '.o')}"
         object_files.append(object_file)
         compile_command = (
-            f"{compiler} -O3 -fPIC -pipe -w -std=c++20 -pthread -fexceptions "
+            f"{compiler} -g -fPIC -pipe -w -std=c++20 -pthread -fexceptions "
             f"-arch arm64 "
             f"{' '.join([f'-D{flag}' for flag in flags])} "
             f"{' '.join([f'-I{directory}' for directory in directories])} "
@@ -1597,7 +1597,7 @@ def build_windows(compilerBinary, linkerBinary, buildMode, buildSystem):
                 object_file = f"{cacheDir}/{os.path.basename(source).replace('.cpp', '.o')}"
                 object_files.append(object_file)
                 compile_command = (
-                    f"{compiler} -m64 -O3 -g -gcodeview -fno-use-linker-plugin "
+                    f"{compiler} -m64 -g -gcodeview -fno-use-linker-plugin "
                     "-pipe -w -std=c++20 -pthread -fexceptions -femulated-tls "
                     f"{' '.join([f'-D{flag}' for flag in flags])} "
                     f"{' '.join([f'-I{directory}' for directory in directories])} "
@@ -1609,7 +1609,7 @@ def build_windows(compilerBinary, linkerBinary, buildMode, buildSystem):
                 object_file = f"{cacheDir}/{os.path.basename(source).replace('.cpp', '.o')}"
                 object_files.append(object_file)
                 compile_command = (
-                    f"{compiler} -m64 -O3 -g -gcodeview -fno-use-linker-plugin "
+                    f"{compiler} -m64 -g -gcodeview -fno-use-linker-plugin "
                     "-pipe -w -std=c++20 -pthread -fexceptions "
                     f"{' '.join([f'-D{flag}' for flag in flags])} "
                     f"{' '.join([f'-I{directory}' for directory in directories])} "
