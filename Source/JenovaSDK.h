@@ -71,11 +71,11 @@
 
 // Jenova Activator Macro
 #ifndef JENOVA_ACTIVATOR
-	#define JENOVA_ACTIVATOR(name, regfn, uregfn)   \
-		static struct name##SelfActivator {         \
-			inline name##SelfActivator() {          \
-				RegisterBootEvent(&regfn);          \
-				RegisterShutdownEvent(&uregfn);     \
+	#define JENOVA_ACTIVATOR(name, regfn, uregfn)					\
+		static struct name##SelfActivator {							\
+			inline name##SelfActivator() {							\
+				RegisterBootEvent((FunctionPtr)&regfn);				\
+				RegisterShutdownEvent((FunctionPtr)&uregfn);		\
 			}} inline _self;
 #endif
 
