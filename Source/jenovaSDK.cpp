@@ -203,7 +203,7 @@ namespace jenova::sdk
 	double JenovaSDK::GetTime()
 	{
 		int64_t time_msec = godot::Time::get_singleton()->get_ticks_msec();
-		return static_cast<double>(time_msec) / 1000.0f;
+		return static_cast<double>(time_msec) / 1000.0;
 	}
 	godot::String JenovaSDK::Format(StringPtr format, va_list args)
 	{

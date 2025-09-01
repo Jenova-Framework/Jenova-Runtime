@@ -511,7 +511,7 @@ Panel* JenovaPackageManager::CreatePackageItem(const jenova::JenovaPackage& jeno
 	package_item_description->set_theme(nullptr);
 	package_item_description->set_autowrap_mode(TextServer::AutowrapMode::AUTOWRAP_OFF);
 	package_item_description->add_theme_stylebox_override("normal", memnew(StyleBoxEmpty));
-	package_item_description->add_theme_constant_override("line_separation", 2.0f);
+	package_item_description->add_theme_constant_override("line_separation", godot::real_t(2.0));
 	package_item_description->parse_bbcode(vformat("%s\nSize : [color=%s]%s[/color]  Date Uploaded : [color=%s]%s[/color]  Platform : [color=%s]%s[/color]",
 		jenovaPackage.pkgDescription, accentColorHash, jenova::FormatBytesSize(jenovaPackage.pkgSize), accentColorHash, jenovaPackage.pkgDate,
 		accentColorHash, AS_C_STRING(JenovaPackageManager::GetPackagePlatformName(jenovaPackage.pkgPlatform))));

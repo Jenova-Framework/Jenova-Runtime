@@ -3,69 +3,57 @@
   <ItemGroup>
     <ClCompile Include="Source\jenova.cpp" />
     <ClCompile Include="Source\tiny_profiler.cpp">
-      <Filter>Implementation\Utilities</Filter>
+      <Filter>Core\Utilities</Filter>
     </ClCompile>
     <ClCompile Include="Source\jenovaSDK.cpp">
-      <Filter>Implementation\SDK</Filter>
+      <Filter>Core\SDK</Filter>
     </ClCompile>
     <ClCompile Include="Source\asset_monitor.cpp">
-      <Filter>Implementation\Utilities</Filter>
+      <Filter>Core\Utilities</Filter>
     </ClCompile>
     <ClCompile Include="Source\package_manager.cpp">
-      <Filter>Implementation\Utilities</Filter>
+      <Filter>Core\Utilities</Filter>
     </ClCompile>
     <ClCompile Include="Source\task_system.cpp">
-      <Filter>Implementation\Utilities</Filter>
+      <Filter>Core\Utilities</Filter>
     </ClCompile>
     <ClCompile Include="Source\gdextension_exporter.cpp">
-      <Filter>Implementation\Exporters</Filter>
+      <Filter>Core\Exporters</Filter>
     </ClCompile>
     <ClCompile Include="Source\script_compiler.cpp">
-      <Filter>Implementation\Engine\C++</Filter>
+      <Filter>Core\Engine\C++</Filter>
     </ClCompile>
     <ClCompile Include="Source\script_instance.cpp">
-      <Filter>Implementation\Engine\C++</Filter>
+      <Filter>Core\Engine\C++</Filter>
     </ClCompile>
     <ClCompile Include="Source\script_instance_base.cpp">
-      <Filter>Implementation\Engine\C++</Filter>
+      <Filter>Core\Engine\C++</Filter>
     </ClCompile>
     <ClCompile Include="Source\script_interpreter.cpp">
-      <Filter>Implementation\Engine\C++</Filter>
+      <Filter>Core\Engine\C++</Filter>
     </ClCompile>
     <ClCompile Include="Source\script_language.cpp">
-      <Filter>Implementation\Engine\C++</Filter>
+      <Filter>Core\Engine\C++</Filter>
     </ClCompile>
     <ClCompile Include="Source\script_manager.cpp">
-      <Filter>Implementation\Engine\C++</Filter>
+      <Filter>Core\Engine\C++</Filter>
     </ClCompile>
     <ClCompile Include="Source\script_object.cpp">
-      <Filter>Implementation\Engine\C++</Filter>
+      <Filter>Core\Engine\C++</Filter>
     </ClCompile>
     <ClCompile Include="Source\script_resource.cpp">
-      <Filter>Implementation\Engine\C++</Filter>
+      <Filter>Core\Engine\C++</Filter>
     </ClCompile>
     <ClCompile Include="Source\script_templates.cpp">
-      <Filter>Implementation\Engine\C++</Filter>
+      <Filter>Core\Engine\C++</Filter>
     </ClCompile>
     <ClCompile Include="Source\clektron.cpp">
-      <Filter>Implementation\Engine\Clektron</Filter>
+      <Filter>Core\Engine\Clektron</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="Implementation">
-      <UniqueIdentifier>{b60540e3-4a20-4dc2-bb38-7e5d4cb2b657}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Resources">
       <UniqueIdentifier>{93b07def-781b-47eb-837c-0d403d2567f9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Implementation\Engine">
-      <UniqueIdentifier>{84fa0f04-3783-4208-be24-eaa1f69f68c3}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Implementation\Utilities">
-      <UniqueIdentifier>{9978979a-25ce-44f5-ab70-bebce0c53e75}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Implementation\SDK">
-      <UniqueIdentifier>{2076148d-274f-42d3-9c28-084fff7bb26d}</UniqueIdentifier>
     </Filter>
     <Filter Include="Misc">
       <UniqueIdentifier>{5a5b3670-1e7b-4168-9275-0726cfa49e0e}</UniqueIdentifier>
@@ -73,29 +61,41 @@
     <Filter Include="Resources\Storage">
       <UniqueIdentifier>{2b4efd82-3d90-44ca-ab35-a9269625828f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Implementation\Exporters">
-      <UniqueIdentifier>{41aafcac-862e-4b66-8ce9-9fbc8aba7f0b}</UniqueIdentifier>
+    <Filter Include="Core">
+      <UniqueIdentifier>{b60540e3-4a20-4dc2-bb38-7e5d4cb2b657}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Implementation\Engine\C++">
+    <Filter Include="Core\Engine">
+      <UniqueIdentifier>{84fa0f04-3783-4208-be24-eaa1f69f68c3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Engine\C++">
       <UniqueIdentifier>{4ce67dbc-ae4b-49e7-94ee-b8c09b55edb3}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Implementation\Engine\Clektron">
+    <Filter Include="Core\Engine\Clektron">
       <UniqueIdentifier>{e8057c48-d73d-4eb7-9483-37a7cf8c82f8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Utilities">
+      <UniqueIdentifier>{9978979a-25ce-44f5-ab70-bebce0c53e75}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\SDK">
+      <UniqueIdentifier>{2076148d-274f-42d3-9c28-084fff7bb26d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Exporters">
+      <UniqueIdentifier>{41aafcac-862e-4b66-8ce9-9fbc8aba7f0b}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\tiny_profiler.h">
-      <Filter>Implementation\Utilities</Filter>
+      <Filter>Core\Utilities</Filter>
     </ClInclude>
     <ClInclude Include="Source\Jenova.hpp" />
     <ClInclude Include="Source\JenovaSDK.h">
-      <Filter>Implementation\SDK</Filter>
+      <Filter>Core\SDK</Filter>
     </ClInclude>
     <ClInclude Include="Source\asset_monitor.h">
-      <Filter>Implementation\Utilities</Filter>
+      <Filter>Core\Utilities</Filter>
     </ClInclude>
     <ClInclude Include="Source\package_manager.h">
-      <Filter>Implementation\Utilities</Filter>
+      <Filter>Core\Utilities</Filter>
     </ClInclude>
     <ClInclude Include="Source\AboutImage.h">
       <Filter>Resources\Storage</Filter>
@@ -122,46 +122,46 @@
       <Filter>Resources\Storage</Filter>
     </ClInclude>
     <ClInclude Include="Source\task_system.h">
-      <Filter>Implementation\Utilities</Filter>
+      <Filter>Core\Utilities</Filter>
     </ClInclude>
     <ClInclude Include="Source\ExtensionHosts.h">
       <Filter>Resources\Storage</Filter>
     </ClInclude>
     <ClInclude Include="Source\gdextension_exporter.h">
-      <Filter>Implementation\Exporters</Filter>
+      <Filter>Core\Exporters</Filter>
     </ClInclude>
     <ClInclude Include="Source\InternalModules.h">
       <Filter>Resources\Storage</Filter>
     </ClInclude>
     <ClInclude Include="Source\script_compiler.h">
-      <Filter>Implementation\Engine\C++</Filter>
+      <Filter>Core\Engine\C++</Filter>
     </ClInclude>
     <ClInclude Include="Source\script_instance.h">
-      <Filter>Implementation\Engine\C++</Filter>
+      <Filter>Core\Engine\C++</Filter>
     </ClInclude>
     <ClInclude Include="Source\script_instance_base.h">
-      <Filter>Implementation\Engine\C++</Filter>
+      <Filter>Core\Engine\C++</Filter>
     </ClInclude>
     <ClInclude Include="Source\script_interpreter.h">
-      <Filter>Implementation\Engine\C++</Filter>
+      <Filter>Core\Engine\C++</Filter>
     </ClInclude>
     <ClInclude Include="Source\script_language.h">
-      <Filter>Implementation\Engine\C++</Filter>
+      <Filter>Core\Engine\C++</Filter>
     </ClInclude>
     <ClInclude Include="Source\script_manager.h">
-      <Filter>Implementation\Engine\C++</Filter>
+      <Filter>Core\Engine\C++</Filter>
     </ClInclude>
     <ClInclude Include="Source\script_object.h">
-      <Filter>Implementation\Engine\C++</Filter>
+      <Filter>Core\Engine\C++</Filter>
     </ClInclude>
     <ClInclude Include="Source\script_resource.h">
-      <Filter>Implementation\Engine\C++</Filter>
+      <Filter>Core\Engine\C++</Filter>
     </ClInclude>
     <ClInclude Include="Source\script_templates.h">
-      <Filter>Implementation\Engine\C++</Filter>
+      <Filter>Core\Engine\C++</Filter>
     </ClInclude>
     <ClInclude Include="Source\clektron.h">
-      <Filter>Implementation\Engine\Clektron</Filter>
+      <Filter>Core\Engine\Clektron</Filter>
     </ClInclude>
     <ClInclude Include="Source\InternalSources.h">
       <Filter>Resources\Storage</Filter>

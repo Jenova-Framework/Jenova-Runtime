@@ -60,8 +60,9 @@ sources = [
 ]
 
 # Global Options
-builder_version     = "2.7"
-deps_version        = "4.4"
+builder_version     = "2.8"
+deps_version        = "4.5"
+double_precision    = False
 static_build        = False
 skip_deps           = False
 skip_cache          = False
@@ -510,10 +511,12 @@ def build_dependencies_linux(buildMode, cacheDir):
             "-DCMAKE_BUILD_TYPE=MinSizeRel",
             "-DGODOTCPP_USE_HOT_RELOAD=ON",
             "-DGODOTCPP_TARGET=editor",
+            f"-DGODOTCPP_PRECISION={'double' if double_precision else 'single'}",
             "-DBUILD_SHARED_LIBS=OFF"
         ], check=True)
         build_with_ninja(buildPath)
-        shutil.copyfile(buildPath + "/bin/libgodot-cpp.linux.editor.x86_64.a", "./Libs/libgodotcpp-static-x86_64.a")
+        binary_path = buildPath + f"/bin/libgodot-cpp.linux.editor{'.double' if double_precision else ''}.x86_64.a"
+        shutil.copyfile(binary_path, "./Libs/libgodotcpp-static-x86_64.a")
         if os.path.exists(sdkPath): shutil.rmtree(sdkPath)
         os.makedirs(sdkPath, exist_ok=True)
         shutil.copyfile("./Dependencies/libgodot/gdextension/gdextension_interface.h", sdkPath + "/gdextension_interface.h")
@@ -914,12 +917,14 @@ def build_dependencies_windows(buildMode, cacheDir):
                 "-DCMAKE_BUILD_TYPE=MinSizeRel",
                 "-DGODOTCPP_USE_HOT_RELOAD=ON",
                 "-DGODOTCPP_TARGET=editor",
+                f"-DGODOTCPP_PRECISION={'double' if double_precision else 'single'}",
                 "-DBUILD_SHARED_LIBS=OFF",
                 "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded",
                 f"-DCMAKE_CXX_FLAGS={os.environ['CLFLAGS']}"
             ], check=True)
             build_with_ninja(buildPath)
-            shutil.copyfile(buildPath + "/bin/libgodot-cpp.windows.editor.x86_64.lib", "./Libs/libgodotcpp-static-x86_64.lib")
+            binary_path = buildPath + f"/bin/libgodot-cpp.windows.editor{'.double' if double_precision else ''}.x86_64.lib"
+            shutil.copyfile(binary_path, "./Libs/libgodotcpp-static-x86_64.lib")
             if os.path.exists(sdkPath): shutil.rmtree(sdkPath)
             os.makedirs(sdkPath, exist_ok=True)
             shutil.copyfile("./Dependencies/libgodot/gdextension/gdextension_interface.h", sdkPath + "/gdextension_interface.h")
@@ -1098,10 +1103,12 @@ def build_dependencies_windows(buildMode, cacheDir):
                 "-DCMAKE_BUILD_TYPE=MinSizeRel",
                 "-DGODOTCPP_USE_HOT_RELOAD=ON",
                 "-DGODOTCPP_TARGET=editor",
+                f"-DGODOTCPP_PRECISION={'double' if double_precision else 'single'}",
                 "-DBUILD_SHARED_LIBS=OFF"
             ], check=True)
             build_with_ninja(buildPath)
-            shutil.copyfile(buildPath + "/bin/libgodot-cpp.windows.editor.x86_64.a", "./Libs/libgodotcpp-static-x86_64.a")
+            binary_path = buildPath + f"/bin/libgodot-cpp.windows.editor{'.double' if double_precision else ''}.x86_64.a"
+            shutil.copyfile(binary_path, "./Libs/libgodotcpp-static-x86_64.a")
             if os.path.exists(sdkPath): shutil.rmtree(sdkPath)
             os.makedirs(sdkPath, exist_ok=True)
             shutil.copyfile("./Dependencies/libgodot/gdextension/gdextension_interface.h", sdkPath + "/gdextension_interface.h")
@@ -1452,7 +1459,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=f"Jenova Runtime Build System {builder_version} Developed by Hamid.Memar")
     parser.add_argument('--compiler', type=str, help='Specify Compiler to Use.')
     parser.add_argument('--deploy-mode', action='store_true', help='Run As GitHub Action Deploy Mode')
-    parser.add_argument('--deps-version', default="4.3", help='Specify Dependencies Version (default: 4.3)')
+    parser.add_argument('--deps-version', default="4.5", help='Specify Dependencies Version (default: 4.5)')
+    parser.add_argument('--double-precision', action='store_true', help='Build Jenova Runtime using Double Precision')  
     parser.add_argument('--static-build', action='store_true', help='Build Jenova Runtime as Static Library') 
     parser.add_argument('--skip-banner', action='store_true', help='Skip Printing Banner')
     parser.add_argument('--skip-deps', action='store_true', help='Skip Building Dependencies')
@@ -1471,6 +1479,11 @@ if __name__ == "__main__":
 
     # Set Dependencies Version
     deps_version = args.deps_version
+
+    # Enable Double Precision Mode
+    if args.double_precision:
+        double_precision = True
+        flags.append("REAL_T_IS_DOUBLE")
 
     # Enable Static Build Mode
     if args.static_build:

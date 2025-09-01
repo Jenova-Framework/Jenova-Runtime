@@ -40,14 +40,6 @@
 	#endif
 #endif
 
-// Jenova Definitions
-#ifndef JENOVA_VERSION
-	#define JENOVA_VERSION "Unknown Version"
-#endif
-#ifndef JENOVA_COMPILER
-	#define JENOVA_COMPILER "Unknown Compiler"
-#endif
-
 // Jenova Utilities
 #define JENOVA_EXPORT			extern "C" JENOVA_API_EXPORT
 #define JENOVA_CALLBACK			(void*)static_cast<void(*)(void)>([]()

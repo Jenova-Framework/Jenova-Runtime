@@ -1051,7 +1051,7 @@ namespace jenova
 				jenovaTerminal = memnew(Control);
 				jenovaTerminal->set_name("JenovaTerminalControl");
 				jenovaTerminal->set_anchors_preset(Control::PRESET_FULL_RECT);
-				jenovaTerminal->set_custom_minimum_size(Vector2i(0, editorViewport->get_visible_rect().get_size().height * 0.2f));
+				jenovaTerminal->set_custom_minimum_size(Vector2i(0, editorViewport->get_visible_rect().get_size().height * godot::real_t(0.2)));
 
 				// Log Screen
 				jenovaLogOutput = memnew(RichTextLabel);
@@ -5774,7 +5774,8 @@ namespace jenova
 		imageDataPackedBytes.clear();
 		if (loadResult == godot::Error::OK)
 		{
-			int menuIconSize = 16.0f * EditorInterface::get_singleton()->get_editor_scale();
+			real_t scaledSize = godot::real_t(16.0) * godot::real_t(EditorInterface::get_singleton()->get_editor_scale());
+			int menuIconSize = static_cast<int>(scaledSize);
 			createdImage->resize(menuIconSize, menuIconSize, Image::INTERPOLATE_LANCZOS);
 			Ref<ImageTexture> createdImageTexture = ImageTexture::create_from_image(createdImage);
 			return createdImageTexture;
