@@ -5697,6 +5697,10 @@ namespace jenova
 	{
 		return jenova::GlobalStorage::CurrentEngineMode;
 	}
+	bool IsEngineRuntimeExport()
+	{
+		return OS::get_singleton()->has_feature("template");
+	}
 	String GetCurrentEngineInstanceModeAsString()
 	{
 		switch (jenova::GlobalStorage::CurrentEngineMode)

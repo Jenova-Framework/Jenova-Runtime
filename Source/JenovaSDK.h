@@ -76,7 +76,7 @@
 			inline name##SelfActivator() {							\
 				RegisterBootEvent((FunctionPtr)&regfn);				\
 				RegisterShutdownEvent((FunctionPtr)&uregfn);		\
-			}} inline _self;
+			}} inline name##_self;
 #endif
 
 // C++ Runtime Imports

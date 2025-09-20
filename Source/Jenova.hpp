@@ -893,6 +893,7 @@ namespace jenova
 	std::string GenerateRandomHashString();
 	std::string GenerateTerminalLogTime();
 	jenova::EngineMode GetCurrentEngineInstanceMode();
+	bool IsEngineRuntimeExport();
 	String GetCurrentEngineInstanceModeAsString();
 	Ref<ImageTexture> CreateImageTextureFromByteArray(const uint8_t* imageDataPtr, size_t imageDataSize, ImageCreationFormat imageFormat = ImageCreationFormat::PNG);
 	Ref<ImageTexture> CreateImageTextureFromByteArrayEx(const uint8_t* imageDataPtr, size_t imageDataSize, const Vector2i& imageSize = Vector2i(), ImageCreationFormat imageFormat = ImageCreationFormat::PNG);

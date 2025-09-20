@@ -1840,7 +1840,7 @@ bool JenovaInterpreter::DeployFromDatabase(const std::string& moduleDatabaseName
     String defaultModuleDatabasePath = String(jenova::GlobalSettings::DefaultJenovaBootPath) + AS_GD_STRING(moduleDatabaseName);
 
     // Update Database File Path if In Editor/Debugging
-    if (QUERY_ENGINE_MODE(Editor) || QUERY_ENGINE_MODE(Debug))
+    if (QUERY_ENGINE_MODE(Editor) || QUERY_ENGINE_MODE(Debug) && !jenova::IsEngineRuntimeExport())
     {
         defaultModuleDatabasePath = String(jenova::GetJenovaCacheDirectory()) + AS_GD_STRING(moduleDatabaseName);
     }
@@ -1944,8 +1944,8 @@ bool JenovaInterpreter::IsDatabaseAvailable(const std::string& moduleDatabaseNam
     // Create Database File Path
     String defaultModuleDatabasePath = String(jenova::GlobalSettings::DefaultJenovaBootPath) + AS_GD_STRING(moduleDatabaseName);
 
-    // Update Database File Path if In Editor/Debugging
-    if (QUERY_ENGINE_MODE(Editor) || QUERY_ENGINE_MODE(Debug))
+    // Update Database File Path only if in Editor or Debug mode, but NOT in Runtime
+    if ((QUERY_ENGINE_MODE(Editor) || QUERY_ENGINE_MODE(Debug)) && !jenova::IsEngineRuntimeExport())
     {
         defaultModuleDatabasePath = String(jenova::GetJenovaCacheDirectory()) + AS_GD_STRING(moduleDatabaseName);
     }
