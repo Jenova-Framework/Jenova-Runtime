@@ -7606,7 +7606,7 @@ namespace jenova
 	}
 	std::string ResolveVariantValueAsString(const Variant* variantValue, jenova::PointerList& ptrList)
 	{
-		// Atomic types
+		// Atomic Types
 		if (variantValue->get_type() == Variant::BOOL) return (bool(*variantValue)) ? "true" : "false";
 		if (variantValue->get_type() == Variant::FLOAT) return jenova::Format("%lf", double(*variantValue));
 		if (variantValue->get_type() == Variant::INT) return jenova::Format("%lld", int64_t(*variantValue));
@@ -7617,7 +7617,7 @@ namespace jenova
 			return jenova::Format("(void*)0x%llx", value);
 		}
 
-		// Math types
+		// Math Types
 		if (variantValue->get_type() == Variant::VECTOR2)
 		{
 			Vector2* value = new Vector2(*variantValue);
@@ -7709,7 +7709,7 @@ namespace jenova
 			return jenova::Format("(void*)0x%llx", value);
 		}
 
-		// Misc types
+		// Misc Types
 		if (variantValue->get_type() == Variant::COLOR)
 		{
 			Color* value = new Color(*variantValue);
@@ -7763,7 +7763,7 @@ namespace jenova
 			return jenova::Format("(void*)0x%llx", value);
 		}
 
-		// Typed arrays
+		// Typed Arrays
 		if (variantValue->get_type() == Variant::PACKED_BYTE_ARRAY)
 		{
 			PackedByteArray* value = new PackedByteArray(*variantValue);
@@ -8424,6 +8424,7 @@ namespace jenova
 				scriptProp.propertyName = String(scriptProperty["PropertyName"].get<std::string>().c_str());
 				scriptProp.propertyInfo.type = jenova::GetVariantTypeFromStdString(scriptProperty["PropertyType"].get<std::string>());
 				scriptProp.defaultValue = UtilityFunctions::str_to_var(String(scriptProperty["PropertyDefault"].get<std::string>().c_str()));
+				if (scriptProp.defaultValue.get_type() == Variant::NIL) scriptProp.defaultValue = jenova::CreateDefaultVariantFromType(scriptProp.propertyInfo.type);
 				scriptProp.propertyInfo.name = bool(scriptProperty.contains("PropertyGroup")) ?
 					StringName(String(scriptProperty["PropertyGroup"].get<std::string>().c_str()) + "/" + String(scriptProperty["PropertyName"].get<std::string>().c_str())) :
 					StringName(String(scriptProperty["PropertyName"].get<std::string>().c_str()));
@@ -8869,6 +8870,60 @@ namespace jenova
 
 		// All Good
 		return true;
+	}
+	Variant CreateDefaultVariantFromType(Variant::Type variantType)
+	{
+		switch (variantType)
+		{
+			// Atomic Types
+			case Variant::BOOL: return Variant(false);
+			case Variant::INT: return Variant(int64_t(0));
+			case Variant::FLOAT: return Variant(0.0f);
+			case Variant::STRING: return Variant(String());
+
+			// Math Types
+			case Variant::VECTOR2: return Variant(Vector2());
+			case Variant::VECTOR2I: return Variant(Vector2i());
+			case Variant::RECT2: return Variant(Rect2());
+			case Variant::RECT2I: return Variant(Rect2i());
+			case Variant::VECTOR3: return Variant(Vector3());
+			case Variant::VECTOR3I: return Variant(Vector3i());
+			case Variant::TRANSFORM2D: return Variant(Transform2D());
+			case Variant::VECTOR4: return Variant(Vector4());
+			case Variant::VECTOR4I: return Variant(Vector4i());
+			case Variant::PLANE: return Variant(Plane());
+			case Variant::QUATERNION: return Variant(Quaternion());
+			case Variant::AABB: return Variant(AABB());
+			case Variant::BASIS: return Variant(Basis());
+			case Variant::TRANSFORM3D: return Variant(Transform3D());
+			case Variant::PROJECTION: return Variant(Projection());
+
+			// Misc Types
+			case Variant::COLOR: return Variant(Color());
+			case Variant::STRING_NAME: return Variant(StringName());
+			case Variant::NODE_PATH: return Variant(NodePath());
+			case Variant::RID: return Variant(RID());
+			case Variant::OBJECT: return Variant((Object*)nullptr);
+			case Variant::CALLABLE: return Variant(Callable());
+			case Variant::SIGNAL: return Variant(Signal());
+			case Variant::DICTIONARY: return Variant(Dictionary());
+			case Variant::ARRAY: return Variant(Array());
+
+			// Typed Arrays
+			case Variant::PACKED_BYTE_ARRAY: return Variant(PackedByteArray());
+			case Variant::PACKED_INT32_ARRAY: return Variant(PackedInt32Array());
+			case Variant::PACKED_INT64_ARRAY: return Variant(PackedInt64Array());
+			case Variant::PACKED_FLOAT32_ARRAY: return Variant(PackedFloat32Array());
+			case Variant::PACKED_FLOAT64_ARRAY: return Variant(PackedFloat64Array());
+			case Variant::PACKED_STRING_ARRAY: return Variant(PackedStringArray());
+			case Variant::PACKED_VECTOR2_ARRAY: return Variant(PackedVector2Array());
+			case Variant::PACKED_VECTOR3_ARRAY: return Variant(PackedVector3Array());
+			case Variant::PACKED_COLOR_ARRAY: return Variant(PackedColorArray());
+			case Variant::PACKED_VECTOR4_ARRAY: return Variant(PackedVector4Array());
+
+			// Fallback to NIL
+			default: return Variant();
+		}
 	}
 	std::string ParseClassNameFromScriptSource(const std::string& sourceCode)
 	{

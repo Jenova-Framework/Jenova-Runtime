@@ -991,6 +991,7 @@ namespace jenova
 	void* AllocateVariantBasedProperty(const std::string& typeName);
 	bool SetPropertyPointerValueFromVariant(jenova::PropertyPointer propertyPointer, const Variant& variantValue);
 	bool GetVariantFromPropertyPointer(const jenova::PropertyPointer propertyPointer, godot::Variant& variantValue, const Variant::Type& variantType);
+	Variant CreateDefaultVariantFromType(Variant::Type variantType);
 	std::string ParseClassNameFromScriptSource(const std::string& sourceCode);
 	jenova::ScriptFileState BackupScriptFileState(const std::string& scriptFilePath);
 	bool RestoreScriptFileState(const std::string& scriptFilePath, const jenova::ScriptFileState& scriptFileState);

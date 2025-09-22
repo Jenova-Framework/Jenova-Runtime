@@ -245,7 +245,17 @@ Variant CPPScriptInstance::callp(const StringName &p_method, const Variant **p_a
 		for (size_t i = 0; i < propContainer.scriptProperties.size(); i++)
 		{
 			jenova::ScriptProperty scriptProperty = propContainer.scriptProperties[i];
-			if (!this->instanceProperties.has(scriptProperty.propertyInfo.name)) this->instanceProperties[scriptProperty.propertyInfo.name] = scriptProperty.defaultValue;
+			if (!this->instanceProperties.has(scriptProperty.propertyInfo.name))
+			{
+				this->instanceProperties[scriptProperty.propertyInfo.name] = scriptProperty.defaultValue;
+			}
+			else
+			{
+				if (instanceProperties[scriptProperty.propertyInfo.name].get_type() == Variant::NIL)
+				{
+					this->instanceProperties[scriptProperty.propertyInfo.name] = scriptProperty.defaultValue;
+				}
+			}
 		}
 	}
 
