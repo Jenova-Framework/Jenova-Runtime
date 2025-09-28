@@ -20,13 +20,13 @@
 #define APP_COMPANYNAME					"MemarDesign™ LLC."
 #define APP_DESCRIPTION					"Real-Time C++ Scripting System for Godot Game Engine, Developed By Hamid.Memar."
 #define APP_COPYRIGHT					"Copyright MemarDesign™ LLC. (©) 2024-2025, All Rights Reserved."
-#define APP_VERSION						"0.3.8.0"
+#define APP_VERSION						"0.3.8.1"
 #define APP_VERSION_MIDDLEFIX			" "
 #define APP_VERSION_POSTFIX				"Beta"
 #define APP_VERSION_SINGLECHAR			"b"
-#define APP_VERSION_DATA				0, 3, 8, 0
+#define APP_VERSION_DATA				0, 3, 8, 1
 #define APP_VERSION_BUILD				"0"
-#define APP_VERSION_NAME				"Sigma"
+#define APP_VERSION_NAME				"Halo"
 
 #ifndef NO_JENOVA_RUNTIME_SDK
 
@@ -303,7 +303,6 @@ using namespace godot;
 #define CREATE_GLOBAL_TEMPLATE(a,b,c)		JenovaTemplateManager::get_singleton()->RegisterNewGlobalScriptTemplate(a, CODE_TEMPLATE(b), c);
 #define CREATE_CLASS_TEMPLATE(a,b,c,d)		JenovaTemplateManager::get_singleton()->RegisterNewClassScriptTemplate(a, b, CODE_TEMPLATE(c), d);
 #define QUERY_ENGINE_MODE(mode)				(jenova::GlobalStorage::CurrentEngineMode == jenova::EngineMode::mode)
-#define QUERY_SDK_LINKING_MODE(mode)		(jenova::GlobalStorage::SDKLinkingMode == jenova::SDKLinkingMode::mode)
 #define QUERY_PLATFORM(platform)			(TARGET_PLATFORM_CURRENT == jenova::TargetPlatform::platform)
 #define SCALED(value)						((double)value * (double)scaleFactor)
 
@@ -524,12 +523,6 @@ namespace jenova
 	{
 		Actual,
 		Virtual
-	};
-	enum class SDKLinkingMode
-	{
-		None,
-		Dynamically,
-		Statically
 	};
 	enum class ModuleCacheType : short
 	{
@@ -828,7 +821,6 @@ namespace jenova
 		extern jenova::BuildAndRunMode							CurrentBuildAndRunMode;
 		extern jenova::ChangesTriggerMode						CurrentChangesTriggerMode;
 		extern jenova::EditorVerboseOutput						CurrentEditorVerboseOutput;
-		extern jenova::SDKLinkingMode							SDKLinkingMode;
 		extern std::string										CurrentJenovaCacheDirectory;
 		extern std::string										CurrentJenovaGeneratedConfiguration;
 		extern std::string										CurrentJenovaRuntimeModulePath;
@@ -836,6 +828,7 @@ namespace jenova
 		extern bool												UseHotReloadAtRuntime;
 		extern bool												UseMonospaceFontForTerminal;
 		extern bool												UseManagedSafeExecution;
+		extern bool												UseBuiltinSDK;
 		extern bool												RefreshSceneTreeAfterBuild;
 		extern int												TerminalDefaultFontSize;
 	}

@@ -50,5 +50,4 @@ private:
 	std::string exportOutputFile				= "";
 	GDExtensionTarget extensionTarget			= GDExtensionTarget::Unknown;
 	GDExtensionType extensionType				= GDExtensionType::Unknown;
-
 };

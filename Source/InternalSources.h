@@ -10,7 +10,9 @@ static constexpr char JenovaModuleInitializerCPP[] = R"(
 	#include <Godot/godot.hpp>
 
 	// Jenova SDK
+	#ifndef JENOVA_SDK
 	#include <JenovaSDK.h>
+	#endif
 
 	// Namespaces
 	using namespace godot;

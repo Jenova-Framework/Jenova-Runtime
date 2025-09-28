@@ -124,8 +124,8 @@ namespace jenova
 			 String TerminalDefaultFontSizeConfigPath					= "jenova/terminal_default_font_size";
 			 String CompilerPackageConfigPath							= "jenova/compiler_package";
 			 String GodotKitPackageConfigPath							= "jenova/godot_kit_package";
-			 String SDKLinkingModeConfigPath							= "jenova/sdk_linking_mode_(_deprecated_)";
 			 String ManagedSafeExecutionConfigPath						= "jenova/managed_safe_execution";
+			 String UseBuiltinSDKConfigPath								= "jenova/use_builtin_jenova_sdk";
 			 String RefreshTreeAfterBuildConfigPath						= "jenova/refresh_scene_tree_after_build";
 			 String BuildToolButtonEditorConfigPath						= "jenova/build_tool_button_placement";
 
@@ -136,7 +136,6 @@ namespace jenova
 			const jenova::ChangesTriggerMode ExternalChangesDefaultTriggerMode = jenova::ChangesTriggerMode::DoNothing;
 			const jenova::EditorVerboseOutput EditorVerboseDefaultOutput = jenova::EditorVerboseOutput::JenovaTerminal;
 			const jenova::InterpreterBackend InterpreterBackendDefaultMode = jenova::InterpreterBackend::TinyCC;
-			const jenova::SDKLinkingMode SDKLinkingDefaultMode = jenova::SDKLinkingMode::None;
 
 			// Default Compiler
 			#if defined(TARGET_PLATFORM_WINDOWS)
@@ -479,11 +478,11 @@ namespace jenova
 						if (!editor_settings->has_setting(TerminalDefaultFontSizeConfigPath)) editor_settings->set(TerminalDefaultFontSizeConfigPath, jenova::GlobalSettings::JenovaTerminalLogFontSize);
 						if (!editor_settings->has_setting(CompilerPackageConfigPath)) editor_settings->set(CompilerPackageConfigPath, "Latest");
 						if (!editor_settings->has_setting(GodotKitPackageConfigPath)) editor_settings->set(GodotKitPackageConfigPath, "Latest");
-						if (!editor_settings->has_setting(SDKLinkingModeConfigPath)) editor_settings->set(SDKLinkingModeConfigPath, int32_t(SDKLinkingDefaultMode));
 						if (!editor_settings->has_setting(ManagedSafeExecutionConfigPath)) editor_settings->set(ManagedSafeExecutionConfigPath, true);
+						if (!editor_settings->has_setting(UseBuiltinSDKConfigPath)) editor_settings->set(UseBuiltinSDKConfigPath, true);
 						if (!editor_settings->has_setting(RefreshTreeAfterBuildConfigPath)) editor_settings->set(RefreshTreeAfterBuildConfigPath, false);
 						if (!editor_settings->has_setting(BuildToolButtonEditorConfigPath)) editor_settings->set(BuildToolButtonEditorConfigPath, int32_t(BuildToolButtonDefaultPlacement));
-				
+
 						// Add the Setting Descriptions to The Editor Settings
 						PropertyInfo RemoveSourcesFromBuildProperty(Variant::BOOL, RemoveSourcesFromBuildEditorConfigPath, 
 							PropertyHint::PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, JenovaEditorSettingsCategory);
@@ -594,18 +593,17 @@ namespace jenova
 						editor_settings->add_property_info(GodotKitPackageProperty);
 						editor_settings->set_initial_value(GodotKitPackageConfigPath, "Latest", false);
 
-						// SDK Linking Mode Property
-						PropertyInfo SDKLinkingModeProperty(Variant::INT, SDKLinkingModeConfigPath,
-							PropertyHint::PROPERTY_HINT_ENUM, "Don't Link, Dynamically, Statically",
-							PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED, JenovaEditorSettingsCategory);
-						editor_settings->add_property_info(SDKLinkingModeProperty);
-						editor_settings->set_initial_value(SDKLinkingModeConfigPath, int32_t(SDKLinkingDefaultMode), false);
-
 						// Managed Safe Execution (MSE) Property
 						PropertyInfo ManagedSafeExecutionProperty(Variant::BOOL, ManagedSafeExecutionConfigPath,
 							PropertyHint::PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, JenovaEditorSettingsCategory);
 						editor_settings->add_property_info(ManagedSafeExecutionProperty);
 						editor_settings->set_initial_value(ManagedSafeExecutionConfigPath, true, false);
+
+						// Managed Safe Execution (MSE) Property
+						PropertyInfo UseBuiltinSDKProperty(Variant::BOOL, UseBuiltinSDKConfigPath,
+							PropertyHint::PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, JenovaEditorSettingsCategory);
+						editor_settings->add_property_info(UseBuiltinSDKProperty);
+						editor_settings->set_initial_value(UseBuiltinSDKConfigPath, true, false);
 
 						// Refresh Scene Tree After Build Property
 						PropertyInfo RefreshTreeAfterBuildProperty(Variant::BOOL, RefreshTreeAfterBuildConfigPath,
@@ -689,15 +687,15 @@ namespace jenova
 				if (!GetEditorSetting(TerminalDefaultFontSizeConfigPath, terminalDefaultFontSize)) return false;
 				jenova::GlobalStorage::TerminalDefaultFontSize = int(terminalDefaultFontSize);
 
-				// Update SDK Linking Mode
-				Variant sdkLinkingMode;
-				if (!GetEditorSetting(SDKLinkingModeConfigPath, sdkLinkingMode)) return false;
-				jenova::GlobalStorage::SDKLinkingMode = jenova::SDKLinkingMode(int32_t(sdkLinkingMode));
-
 				// Update Managed Safe Execution
 				Variant useManagedSafeExecution;
 				if (!GetEditorSetting(ManagedSafeExecutionConfigPath, useManagedSafeExecution)) return false;
 				jenova::GlobalStorage::UseManagedSafeExecution = bool(useManagedSafeExecution);
+
+				// Update Use Built-In JenovaSDK
+				Variant useBuiltinSDK;
+				if (!GetEditorSetting(UseBuiltinSDKConfigPath, useBuiltinSDK)) return false;
+				jenova::GlobalStorage::UseBuiltinSDK = bool(useBuiltinSDK);
 
 				// Update SceneTree Refresh After Build
 				Variant refreshSceneTreeAfterBuild;
@@ -2431,7 +2429,6 @@ namespace jenova
 					jenovaConfiguration["AdditionalLibraryDirectories"] = AS_STD_STRING(String(additionalLibraryDirectories));
 					jenovaConfiguration["AdditionalDependencies"] = AS_STD_STRING(String(additionalDependencies));
 					jenovaConfiguration["GenerateDebugInformation"] = bool(generateDebugInformation);
-					jenovaConfiguration["SDKLinkingMode"] = jenova::GlobalStorage::SDKLinkingMode;
 
 					// Serialize Scripts Count
 					jenovaConfiguration["ScriptsCount"] = scriptEntityContainer.entityCount;
@@ -2492,6 +2489,7 @@ namespace jenova
 				if (setting_key == std::string("compiler_package")) return CompilerPackageConfigPath;
 				if (setting_key == std::string("godot_kit_package")) return GodotKitPackageConfigPath;
 				if (setting_key == std::string("managed_safe_execution")) return ManagedSafeExecutionConfigPath;
+				if (setting_key == std::string("use_builtin_jenova_sdk")) return UseBuiltinSDKConfigPath;
 				if (setting_key == std::string("refresh_scene_tree_after_build")) return RefreshTreeAfterBuildConfigPath;
 				if (setting_key == std::string("build_toolbutton_placement")) return BuildToolButtonEditorConfigPath;
 				return String("jenova/unknown");
@@ -2728,19 +2726,8 @@ namespace jenova
 				std::string extralibraryDirectories = AS_STD_STRING(String(jenovaCompiler->GetCompilerOption("cpp_extra_library_directories")));
 				std::string extraLibraries = AS_STD_STRING(String(jenovaCompiler->GetCompilerOption("cpp_extra_libs")));
 				std::string nativeLibraries = "libGodot.x64.lib;";
-				std::string delayedDlls = QUERY_SDK_LINKING_MODE(Dynamically) ? "Jenova.Runtime.Win64.dll;" : "";
-				std::string forcedHeaders = jenova::GlobalSettings::ForceJenovaSDKHeader ? "JenovaSDK.h;" : "";
-
-				// Handle JenovaSDK Linking
-				if (QUERY_SDK_LINKING_MODE(Dynamically))
-				{
-					nativeLibraries += "Jenova.SDK.x64.lib;";
-				}
-				if (QUERY_SDK_LINKING_MODE(Statically))
-				{
-					nativeLibraries += "Jenova.SDK.Static.x64.lib;";
-					cpp_definitions += ";JENOVA_SDK_STATIC";
-				}
+				std::string delayedDlls = "Jenova.Runtime.Win64.dll;";
+				std::string forcedHeaders = jenova::GlobalSettings::ForceJenovaSDKHeader && jenova::GlobalStorage::UseBuiltinSDK ? "JenovaSDK.h;" : "";
 
 				// Solve GodotKit Path
 				String selectedGodotKitPath = jenova::GetInstalledGodotKitPathFromPackages(jenovaCompiler->GetCompilerOption("cpp_godotsdk_path"));
@@ -3067,7 +3054,7 @@ namespace jenova
 				#endif
 				std::string cpp_definitions = AS_STD_STRING(String(jenovaCompiler->GetCompilerOption("cpp_definitions")));
 				std::string extraIncludeDirectories = AS_STD_STRING(String(jenovaCompiler->GetCompilerOption("cpp_extra_include_directories")));
-				std::string forcedHeaders = jenova::GlobalSettings::ForceJenovaSDKHeader ? "JenovaSDK.h;" : "";
+				std::string forcedHeaders = jenova::GlobalSettings::ForceJenovaSDKHeader && jenova::GlobalStorage::UseBuiltinSDK ? "JenovaSDK.h;" : "";
 
 				// Solve GodotKit Path
 				String selectedGodotKitPath = jenova::GetInstalledGodotKitPathFromPackages(jenovaCompiler->GetCompilerOption("cpp_godotsdk_path"));
@@ -3588,7 +3575,11 @@ namespace jenova
 						{
 							if (!moduleExporterSelector->is_disabled())
 							{
-								if (moduleExporterSelector->get_selected_id() == 0) (new GDExtensionExporter(GDExtensionTarget::Windows64, GDExtensionType::Binary))->Initialize();
+								if (moduleExporterSelector->get_selected_id() == 0)
+								{
+									// Disabled Due to Deprecation
+									jenova::ShowMessageBox("This feature has been disabled due to deprecation and will remain unavailable until it is reworked.", "Deprecated", MB_ICONERROR);
+								}
 							}
 						}
 						window->queue_free();
@@ -3773,7 +3764,7 @@ namespace jenova
 				open_web_button->add_theme_color_override("font_color", Color(0.427828, 0.675155, 0.933394, 1));
 				open_web_button->set_text("Open Projekt Jenova Website");
 				jenova_about_ui->add_child(open_web_button);
-				open_web_button->grab_focus();
+				open_web_button->call_deferred("grab_focus");
 
 				// Define Internal UI Callback Handler
 				class AboutEventManager : public RefCounted
@@ -4757,10 +4748,6 @@ namespace jenova
 								preprocessorDefinitions += "#define JENOVA_COMPILER \"Microsoft Visual C++ Compiler\"\n";
 								preprocessorDefinitions += "#define MSVC_COMPILER\n";
 
-								// Preprocessor Definitions [Linking]
-								if (jenovaConfiguration["SDKLinkingMode"].get<SDKLinkingMode>() == SDKLinkingMode::Statically) preprocessorDefinitions += "#define JENOVA_SDK_STATIC_LINKING\n";
-								if (jenovaConfiguration["SDKLinkingMode"].get<SDKLinkingMode>() == SDKLinkingMode::Dynamically) preprocessorDefinitions += "#define JENOVA_SDK_DYNAMIC_LINKING\n";
-
 								// Preprocessor Definitions [User]
 								auto userPreprocessorDefinitions = jenova::SplitStdStringToArguments(jenovaConfiguration["PreprocessorDefinitions"].get<std::string>(), ';');
 								for (const auto& definition : userPreprocessorDefinitions) if (!definition.empty()) preprocessorDefinitions += "#define " + definition + "\n";
@@ -4940,7 +4927,6 @@ namespace jenova
 		jenova::BuildAndRunMode CurrentBuildAndRunMode = jenova::BuildAndRunMode::DoNothing;
 		jenova::ChangesTriggerMode CurrentChangesTriggerMode = jenova::ChangesTriggerMode::DoNothing;
 		jenova::EditorVerboseOutput CurrentEditorVerboseOutput = jenova::EditorVerboseOutput::StandardOutput;
-		jenova::SDKLinkingMode SDKLinkingMode = jenova::SDKLinkingMode::Dynamically;
 
 		// Database
 		std::string CurrentJenovaCacheDirectory = "";
@@ -4952,6 +4938,7 @@ namespace jenova
 		bool UseHotReloadAtRuntime = true;
 		bool UseMonospaceFontForTerminal = true;
 		bool UseManagedSafeExecution = true;
+		bool UseBuiltinSDK = true;
 		bool RefreshSceneTreeAfterBuild = false;
 
 		// Values

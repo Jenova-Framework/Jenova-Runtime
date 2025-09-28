@@ -164,10 +164,6 @@ namespace jenova
                 preprocessorDefinitions += "#define MSVC_LLVM_COMPILER\n";
             }
 
-            // Preprocessor Definitions [Linking]
-            if (jenova::GlobalStorage::SDKLinkingMode == SDKLinkingMode::Statically) preprocessorDefinitions += "#define JENOVA_SDK_STATIC_LINKING\n";
-            if (jenova::GlobalStorage::SDKLinkingMode == SDKLinkingMode::Dynamically) preprocessorDefinitions += "#define JENOVA_SDK_DYNAMIC_LINKING\n";
-
             // Preprocessor Definitions [User]
             String userPreprocessorDefinitions = preprocessorSettings["PreprocessorDefinitions"];
             PackedStringArray userPreprocessorDefinitionsList = userPreprocessorDefinitions.split(";");
@@ -289,7 +285,6 @@ namespace jenova
             compilerArgument += bool(compilerSettings["cpp_conformance_mode"]) ? "/permissive- " : "/permissive ";
             if (int(compilerSettings["cpp_exception_handling"]) == 1) compilerArgument += "/EHsc ";
             if (int(compilerSettings["cpp_exception_handling"]) == 2) compilerArgument += "/EHa ";
-            if (QUERY_SDK_LINKING_MODE(Statically)) compilerArgument += "/D \"JENOVA_SDK_STATIC\" ";
             compilerArgument += GeneratePreprocessDefinitions(compilerSettings["cpp_definitions"]);
             compilerArgument += "/I \"./\" ";
             compilerArgument += "/I \"" + this->includePath + "\" ";
@@ -297,7 +292,7 @@ namespace jenova
             compilerArgument += "/I \"" + this->godotSDKPath + "\" ";
 
             // Force Include JenovaSDK Header
-            if (jenova::GlobalSettings::ForceJenovaSDKHeader) compilerArgument += "/FI JenovaSDK.h ";
+            if (jenova::GlobalSettings::ForceJenovaSDKHeader && jenova::GlobalStorage::UseBuiltinSDK) compilerArgument += "/FI JenovaSDK.h ";
 
             // Add Additional Include Directories
             compilerArgument += GenerateAdditionalIncludeDirectories(compilerSettings["cpp_extra_include_directories"]);
@@ -783,10 +778,6 @@ namespace jenova
             linkerArgument += "/LIBPATH:\"" + this->jenovaSDKPath + "\" ";
             linkerArgument += "/LIBPATH:\"" + this->godotSDKPath + "\" ";
 
-            // Handle JenovaSDK Linking
-            if (QUERY_SDK_LINKING_MODE(Dynamically)) linkerArgument += "Jenova.SDK.x64.lib ";
-            if (QUERY_SDK_LINKING_MODE(Statically)) linkerArgument += "Jenova.SDK.Static.x64.lib ";
-
             // Add Additional Library Directories
             linkerArgument += GenerateAdditionalLibraryDirectories(linkerSettings["cpp_extra_library_directories"]);
 
@@ -818,7 +809,7 @@ namespace jenova
             linkerArgument += AS_STD_STRING(String(linkerSettings["cpp_extra_linker"])) + " ";
 
             // Add Delayed DLLs
-            if (QUERY_SDK_LINKING_MODE(Dynamically)) linkerArgument += AS_STD_STRING(String(linkerSettings["cpp_delayed_dll"])) + " ";
+            linkerArgument += AS_STD_STRING(String(linkerSettings["cpp_delayed_dll"])) + " ";
 
             // Dump Linker Command If Developer Mode Enabled
             if (jenova::GlobalStorage::DeveloperModeActivated) jenova::WriteStdStringToFile(jenovaCachePath + "LinkerCommand.txt", linkerArgument);
@@ -1135,10 +1126,6 @@ namespace jenova
                 preprocessorDefinitions += "#define MINGW_GCC_COMPILER\n";
             }
 
-            // Preprocessor Definitions [Linking]
-            if (jenova::GlobalStorage::SDKLinkingMode == SDKLinkingMode::Statically) preprocessorDefinitions += "#define JENOVA_SDK_STATIC_LINKING\n";
-            if (jenova::GlobalStorage::SDKLinkingMode == SDKLinkingMode::Dynamically) preprocessorDefinitions += "#define JENOVA_SDK_DYNAMIC_LINKING\n";
-
             // Preprocessor Definitions [User]
             String userPreprocessorDefinitions = preprocessorSettings["PreprocessorDefinitions"];
             PackedStringArray userPreprocessorDefinitionsList = userPreprocessorDefinitions.split(";");
@@ -1250,7 +1237,6 @@ namespace jenova
             if (bool(compilerSettings["cpp_multithreaded"])) compilerArgument += "-static ";
             if (bool(compilerSettings["cpp_debug_database"]) && bool(compilerSettings["cpp_generate_debug_info"])) compilerArgument += "-ggdb ";
             if (bool(compilerSettings["cpp_exception_handling"]) == true) compilerArgument += "-fexceptions ";
-            if (QUERY_SDK_LINKING_MODE(Statically)) compilerArgument += "/D \"JENOVA_SDK_STATIC\" ";
             compilerArgument += GeneratePreprocessDefinitions(compilerSettings["cpp_definitions"]);
             compilerArgument += "-I\"./\" ";
             compilerArgument += "-I\"" + this->projectPath + "\" ";
@@ -1262,7 +1248,7 @@ namespace jenova
             compilerArgument += GeneratePreprocessDefinitions(compilerSettings["cpp_extra_include_directories"]);
 
             // Force Include JenovaSDK Header
-            if (jenova::GlobalSettings::ForceJenovaSDKHeader) compilerArgument += "-include JenovaSDK.h ";
+            if (jenova::GlobalSettings::ForceJenovaSDKHeader && jenova::GlobalStorage::UseBuiltinSDK) compilerArgument += "-include JenovaSDK.h ";
 
             // Add Packages Headers (Addons, Libraries etc.)
             for (const auto& addonConfig : jenova::GetInstalledAddons())
@@ -1626,17 +1612,7 @@ namespace jenova
             linkerArgument += AS_STD_STRING(String(linkerSettings["cpp_extra_linker"])) + " ";
 
             // Add Delayed DLLs
-            if (QUERY_SDK_LINKING_MODE(Dynamically)) linkerArgument += AS_STD_STRING(String(linkerSettings["cpp_delayed_dll"])) + " ";
-
-            // Handle JenovaSDK Linking
-            if (QUERY_SDK_LINKING_MODE(Dynamically)) linkerArgument += "-l:Jenova.SDK.x64.a ";
-            if (QUERY_SDK_LINKING_MODE(Statically))
-            {
-                result.buildResult = false;
-                result.hasError = true;
-                result.buildError = "L667 : Statically SDK Linking is not Supported on MinGW Compiler!";
-                return result;
-            }
+            linkerArgument += AS_STD_STRING(String(linkerSettings["cpp_delayed_dll"])) + " ";
 
             // Add Libraries [GCC Requires Libraries to be Added at the End]
             linkerArgument += GenerateLibraries(linkerSettings["cpp_native_libs"], true);
@@ -1941,10 +1917,6 @@ namespace jenova
             preprocessorDefinitions += "#define JENOVA_COMPILER \"GNU Compiler Collection\"\n";
             preprocessorDefinitions += "#define GCC_COMPILER\n";
 
-            // Preprocessor Definitions [Linking]
-            if (jenova::GlobalStorage::SDKLinkingMode == SDKLinkingMode::Statically) preprocessorDefinitions += "#define JENOVA_SDK_STATIC_LINKING\n";
-            if (jenova::GlobalStorage::SDKLinkingMode == SDKLinkingMode::Dynamically) preprocessorDefinitions += "#define JENOVA_SDK_DYNAMIC_LINKING\n";
-
             // Preprocessor Definitions [User]
             String userPreprocessorDefinitions = preprocessorSettings["PreprocessorDefinitions"];
             PackedStringArray userPreprocessorDefinitionsList = userPreprocessorDefinitions.split(";");
@@ -2157,7 +2129,7 @@ namespace jenova
                 compilerArgument += "-I\"" + this->godotSDKPath + "\" ";
 
                 // Force Include JenovaSDK Header
-                if (jenova::GlobalSettings::ForceJenovaSDKHeader) compilerArgument += "-include JenovaSDK.h ";
+                if (jenova::GlobalSettings::ForceJenovaSDKHeader && jenova::GlobalStorage::UseBuiltinSDK) compilerArgument += "-include JenovaSDK.h ";
 
                 // Add Additional Include Directories
                 compilerArgument += GenerateAdditionalIncludeDirectories(compilerSettings["cpp_extra_include_directories"]);
@@ -2695,10 +2667,6 @@ namespace jenova
             // Preprocessor Definitions [Compiler]
             preprocessorDefinitions += "#define JENOVA_COMPILER \"LLVM Clang Compiler\"\n";
             preprocessorDefinitions += "#define CLANG_COMPILER\n";
-
-            // Preprocessor Definitions [Linking]
-            if (jenova::GlobalStorage::SDKLinkingMode == SDKLinkingMode::Statically) preprocessorDefinitions += "#define JENOVA_SDK_STATIC_LINKING\n";
-            if (jenova::GlobalStorage::SDKLinkingMode == SDKLinkingMode::Dynamically) preprocessorDefinitions += "#define JENOVA_SDK_DYNAMIC_LINKING\n";
 
             // Preprocessor Definitions [User]
             String userPreprocessorDefinitions = preprocessorSettings["PreprocessorDefinitions"];
