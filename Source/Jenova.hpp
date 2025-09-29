@@ -213,6 +213,7 @@
 #include <classes/image.hpp>
 #include <classes/image_texture.hpp>
 #include <classes/semaphore.hpp>
+#include <classes/performance.hpp>
 #include <classes/script.hpp>
 #include <classes/script_editor.hpp>
 #include <classes/script_editor_base.hpp>
@@ -670,6 +671,11 @@ namespace jenova
 		GDExtensionClassLibraryPtr				godotExtensionClassLibraryPtr;
 		GDExtensionInitialization*				godotExtensionInitialization;
 		JenovaSDKInterface						jenovaSDKInterface = nullptr;
+	};
+	struct PerformanceSample
+	{
+		double timestampStart;
+		double timestampEnd;
 	};
 	struct VisualStudioInstance
 	{

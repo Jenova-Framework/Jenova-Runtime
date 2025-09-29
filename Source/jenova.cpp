@@ -3578,7 +3578,7 @@ namespace jenova
 								if (moduleExporterSelector->get_selected_id() == 0)
 								{
 									// Disabled Due to Deprecation
-									jenova::ShowMessageBox("This feature has been disabled due to deprecation and will remain unavailable until it is reworked.", "Deprecated", MB_ICONERROR);
+									jenova::ShowMessageBox("This feature has been disabled due to deprecation and will remain unavailable until it is reworked.", "Deprecated", 0x00000010L);
 								}
 							}
 						}
@@ -3890,7 +3890,7 @@ namespace jenova
 			GDCLASS(JenovaExportPlugin, EditorExportPlugin);
 
 		private:
-			String JenovaExportPluginName = "JenovaGodotExportPlugin";
+			String JenovaExportPluginName = "JenovaExportPlugin";
 
 		private:
 			bool ExcludeSourcesFromBuild = true;
@@ -4041,43 +4041,34 @@ namespace jenova
 			GDCLASS(JenovaDebuggerPlugin, EditorDebuggerPlugin);
 
 		private:
-			String JenovaDebuggerPluginName = "JenovaGodotDebuggerPlugin";
-
-		private:
 			int32_t currentSessionID = -1;
 			static void _bind_methods() {}
 
 		public:
 			void _setup_session(int32_t p_session_id) override
 			{
-				jenova::Verbose("_setup_session %d", p_session_id);
 				currentSessionID = p_session_id;
 			}
 			bool _has_capture(const String& p_capture) const override
 			{
-				jenova::Output("_has_capture %s", AS_C_STRING(p_capture));
 				return false;
 			}
 			bool _capture(const String& p_message, const Array& p_data, int32_t p_session_id) override
 			{
-				jenova::Output("_capture %s %d", AS_C_STRING(p_message), p_session_id);
 				return false;
 			}
 			void _goto_script_line(const Ref<Script>& p_script, int32_t p_line) override
 			{
-				jenova::Output("_goto_script_line %s %d", AS_C_STRING(p_script->get_path()), p_line);
 			}
 			void _breakpoints_cleared_in_tree() override
 			{
-				jenova::Output("_breakpoints_cleared_in_tree");
 			}
 			void _breakpoint_set_in_tree(const Ref<Script>& p_script, int32_t p_line, bool p_enabled) override
 			{
-				jenova::Output("_breakpoint_set_in_tree %s %d %s", AS_C_STRING(p_script->get_path()), p_line, p_enabled ? "true" : "false");
 			}
 		};
 
-		// Runtime Plugins
+		// Runtime Implementation
 		class JenovaRuntime : public Node
 		{
 			GDCLASS(JenovaRuntime, Node)
@@ -4142,6 +4133,9 @@ namespace jenova
 					jenova::ExitWithCode(jenova::ErrorCode::RUNTIME_INIT_FAILED);
 				}
 
+				// Register Profiler
+				VALIDATE_FUNCTION(RegisterRuntimeProfiler());
+
 				// Verbose
 				jenova::Output("Jenova Runtime (%s%s%s) Initialized.", APP_VERSION, APP_VERSION_MIDDLEFIX, APP_VERSION_POSTFIX);
 			}
@@ -4168,6 +4162,9 @@ namespace jenova
 
 				// Release Singleton
 				if (singleton && !enteredSceneTree) memdelete(singleton);
+
+				// Unregister Profiler
+				VALIDATE_FUNCTION(UnRegisterRuntimeProfiler());
 
 				// Verbose
 				jenova::Output("Jenova Runtime (%s%s%s) Uninitialized.", APP_VERSION, APP_VERSION_MIDDLEFIX, APP_VERSION_POSTFIX);
@@ -4284,7 +4281,19 @@ namespace jenova
 			void StartNetworkPeer(const Dictionary& peerSettings)
 			{
 			}
-
+			
+		private:
+			static bool RegisterRuntimeProfiler()
+			{
+				// All Good
+				return true;
+			}
+			static bool UnRegisterRuntimeProfiler()
+			{
+				// All Good
+				return true;
+			}
+		
 		private:
 			// Signals
 			bool OnDebuggerMessageReceived(const String& msgCommand, const Array& args)
@@ -4484,16 +4493,14 @@ namespace jenova
 				jenova::ProcessCommandLineArguments();
 
 				// Register Classes
-				ClassDB::register_class<CPPScript>();
-				ClassDB::register_class<CPPHeader>();
-				ClassDB::register_class<CPPScriptLanguage>();
-				ClassDB::register_class<CPPHeaderLanguage>();
-				ClassDB::register_class<CPPScriptResourceLoader>();
-				ClassDB::register_class<CPPScriptResourceSaver>();
-				ClassDB::register_class<CPPHeaderResourceLoader>();
-				ClassDB::register_class<CPPHeaderResourceSaver>();
-
-				// Register Internal Classes
+				ClassDB::register_internal_class<CPPScript>();
+				ClassDB::register_internal_class<CPPHeader>();
+				ClassDB::register_internal_class<CPPScriptLanguage>();
+				ClassDB::register_internal_class<CPPHeaderLanguage>();
+				ClassDB::register_internal_class<CPPScriptResourceLoader>();
+				ClassDB::register_internal_class<CPPScriptResourceSaver>();
+				ClassDB::register_internal_class<CPPHeaderResourceLoader>();
+				ClassDB::register_internal_class<CPPHeaderResourceSaver>();
 				ClassDB::register_internal_class<JenovaScriptManager>();
 
 				// Initialize Classes
