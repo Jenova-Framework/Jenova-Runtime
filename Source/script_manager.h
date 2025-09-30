@@ -40,7 +40,8 @@ public:
     bool remove_script_instance(CPPScriptInstance* scriptInstance);
     size_t get_script_instance_count();
     CPPScriptInstance* get_script_instance(size_t index);
-    bool register_runtime_start_event(jenova::VoidFunc_t callbackPtr);
+    bool register_script_runtime_start_event(jenova::VoidFunc_t callbackPtr);
+    bool open_script_manager_window();
 
 public:
     static void init();
@@ -48,7 +49,7 @@ public:
     static JenovaScriptManager* get_singleton();
 
 protected:
-    static inline bool IsRuntimeStarted = false;
+    static inline bool IsScriptRuntimeStarted = false;
 };
 
 // Define ALternative Name

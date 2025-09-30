@@ -32,6 +32,7 @@ public:
     static bool UnloadModule(const jenova::ModuleUnloadStage& unloadStage);
     static bool LoadDebugSymbol(const std::string symbolFilePath);
     static intptr_t GetModuleBaseAddress();
+    static std::string GetScriptPath(const std::string& scriptUID);
     static jenova::FunctionList GetFunctionsList(const std::string& scriptUID);
     static jenova::FunctionAddress GetFunctionAddress(const std::string& functionName, const std::string& scriptUID);
     static jenova::ParameterTypeList GetFunctionParameters(const std::string& functionName, const std::string& scriptUID);
@@ -43,9 +44,6 @@ public:
     static Variant CallFunction(const godot::Object* objectPtr, const std::string& functionName, std::string& scriptUID, const Variant** functionParameters, const int functionParametersCount);
     static void SetExecutionState(bool executionState);
     static Variant GenerateFunctionCallError(const std::string& functionName, const String& errorReason);
-    static jenova::SerializedData GenerateModuleMetadata(const std::string& mapFilePath, const jenova::ModuleList& scriptModules, const jenova::BuildResult& buildResult);
-    static bool UpdateConfigurationsFromMetaData(const jenova::SerializedData& metaData);
-    static bool UpdatePropertyStorageFromMetaData();
     static bool FlushPropertyStorage();
     static jenova::PropertyList GetPropertiesList(std::string& scriptUID);
     static std::string GetPropertyType(const std::string& propertyName, std::string& scriptUID);
@@ -57,6 +55,13 @@ public:
     static jenova::FunctionPointer SolveVirtualFunction(jenova::ModuleHandle moduleHandle, const char* functionName);
     static void SetDebugModeExecutionState(bool debugModeState);
     static jenova::ModuleHandle LoadShellModule(const uint8_t* moduleDataPtr, const size_t moduleSize);
+
+public:
+// Metadata Management API
+    static jenova::SerializedData GenerateModuleMetadata(const std::string& mapFilePath, const jenova::ModuleList& scriptModules, const jenova::BuildResult& buildResult);
+    static void GenerateExtraMetadata(jenova::json_t& metaData, const jenova::BuildResult& buildResult);
+    static bool UpdateConfigurationsFromMetaData(const jenova::SerializedData& metaData);
+    static bool UpdatePropertyStorageFromMetaData();
 
 // Module Database API
 public:

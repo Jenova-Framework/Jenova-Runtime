@@ -33,7 +33,6 @@ protected:
 private:
 	// Internal Values
 	String source_code;
-	StringName globalName = jenova::GlobalSettings::JenovaScriptType;
 	Ref<Mutex> scriptMutex;
 	bool IsTool = false;
 

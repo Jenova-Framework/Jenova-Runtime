@@ -827,7 +827,7 @@ void Clektron::init()
     singleton = memnew(Clektron);
 
     // Verbose
-    jenova::Output("Jenova Asset Monitor Initialized.");
+    jenova::Verbose("Clektron Engine Initialized.");
 }
 void Clektron::deinit()
 {

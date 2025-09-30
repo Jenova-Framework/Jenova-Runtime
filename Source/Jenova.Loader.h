@@ -55,7 +55,7 @@ public:
 	{
 		// Release Module Loader Shell
 		NTSTATUS ntResult = ReleaseMemoryModuleLoader();
-		bool result = ((ntResult) >= 0);
+		bool result = (ntResult >= 0 || ntResult == STATUS_NOT_SUPPORTED);
 
 		// Delete Temporary Module Loader Shell
 		if (!QUERY_ENGINE_MODE(Editor))

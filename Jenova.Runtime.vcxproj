@@ -95,6 +95,7 @@ ren "$(BuildPath)JenovaSDK\$(TargetName).lib" "Jenova.SDK.x64.lib"
     <ClCompile Include="Source\script_compiler.cpp" />
     <ClCompile Include="Source\script_interpreter.cpp" />
     <ClCompile Include="Source\script_manager.cpp" />
+    <ClCompile Include="Source\script_profiler.cpp" />
     <ClCompile Include="Source\script_resource.cpp" />
     <ClCompile Include="Source\script_object.cpp" />
     <ClCompile Include="Source\script_instance_base.cpp" />
@@ -114,6 +115,7 @@ ren "$(BuildPath)JenovaSDK\$(TargetName).lib" "Jenova.SDK.x64.lib"
     <ClInclude Include="Source\InternalSources.h" />
     <ClInclude Include="Source\BuiltinFonts.h" />
     <ClInclude Include="Source\CodeTemplates.h" />
+    <ClInclude Include="Source\script_profiler.h" />
     <ClInclude Include="Source\task_system.h" />
     <ClInclude Include="Source\TypesIcons.h" />
     <ClInclude Include="Source\Documentation.h" />

@@ -44,8 +44,7 @@ Ref<Script> CPPScript::_get_base_script() const
 }
 StringName CPPScript::_get_global_name()
 {
-	globalName = StringName("JenovaScript_" + GetScriptIdentity());
-	return globalName;
+	return StringName("JenovaScript_" + GetScriptIdentity());
 }
 bool CPPScript::_inherits_script(const Ref<Script>& p_script) const
 {

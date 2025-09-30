@@ -50,6 +50,9 @@
     <ClCompile Include="Source\clektron.cpp">
       <Filter>Core\Engine\Clektron</Filter>
     </ClCompile>
+    <ClCompile Include="Source\script_profiler.cpp">
+      <Filter>Core\Engine\C++</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Resources">
@@ -165,6 +168,9 @@
     </ClInclude>
     <ClInclude Include="Source\InternalSources.h">
       <Filter>Resources\Storage</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\script_profiler.h">
+      <Filter>Core\Engine\C++</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

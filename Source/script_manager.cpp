@@ -74,10 +74,10 @@ Ref<CPPScript> JenovaScriptManager::get_script_object(size_t index)
 bool JenovaScriptManager::add_script_instance(CPPScriptInstance* scriptInstance)
 {
 	// Rise Events
-	if (JenovaScriptManager::IsRuntimeStarted == false)
+	if (JenovaScriptManager::IsScriptRuntimeStarted == false)
 	{
 		for (const auto& callBack : runtimeStartEvents) reinterpret_cast<void(*)()>(callBack)();
-		JenovaScriptManager::IsRuntimeStarted = true;
+		JenovaScriptManager::IsScriptRuntimeStarted = true;
 	}
 
 	// Add Script Instance
@@ -102,8 +102,16 @@ CPPScriptInstance* JenovaScriptManager::get_script_instance(size_t index)
 {
 	return scriptInstances[index];
 }
-bool JenovaScriptManager::register_runtime_start_event(jenova::VoidFunc_t callbackPtr)
+bool JenovaScriptManager::register_script_runtime_start_event(jenova::VoidFunc_t callbackPtr)
 {
 	runtimeStartEvents.push_back(callbackPtr);
+	return true;
+}
+
+
+// Jenova Script Manager Window Implementation
+bool JenovaScriptManager::open_script_manager_window()
+{
+	// All Good
 	return true;
 }

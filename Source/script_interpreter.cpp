@@ -74,7 +74,6 @@ bool JenovaInterpreter::IsInterpreterInitialized()
 }
 bool JenovaInterpreter::ReleaseInterpreter()
 {
-    return true;
     // Doesn't Require Clean Up In Debug Mode
     if (executeInDebugMode) return true;
 
@@ -135,6 +134,8 @@ bool JenovaInterpreter::LoadModule(const uint8_t* moduleDataPtr, const size_t mo
         return false;
     }
 
+
+
     // Resolve And Load Addon Modules
     if (!jenova::ResolveAndLoadAddonModulesAtRuntime())
     {
@@ -149,16 +150,16 @@ bool JenovaInterpreter::LoadModule(const uint8_t* moduleDataPtr, const size_t mo
         return false;
     }
 
-    // Call Module Boot Event If Exists
-    if (!jenova::CallModuleEvent(jenova::GlobalSettings::JenovaModuleBootEventName, moduleHandle, jenova::ModuleCallMode::Virtual))
-    {
-        jenova::Warning("Jenova Interpreter", "Module Boot Event Failed. Unexpected Behaviors May Occur.");
-    }
-
     // Call Module Internal Boot Event
     if (!jenova::CallModuleEvent(jenova::Format("_%s", jenova::GlobalSettings::JenovaModuleBootEventName), moduleHandle, jenova::ModuleCallMode::Virtual))
     {
         jenova::Warning("Jenova Interpreter", "Module Internal Boot Event Failed. Unexpected Behaviors May Occur.");
+    }
+
+    // Call Module Boot Event If Exists
+    if (!jenova::CallModuleEvent(jenova::GlobalSettings::JenovaModuleBootEventName, moduleHandle, jenova::ModuleCallMode::Virtual))
+    {
+        jenova::Warning("Jenova Interpreter", "Module Boot Event Failed. Unexpected Behaviors May Occur.");
     }
 
     // Enable Execution
@@ -198,16 +199,16 @@ bool JenovaInterpreter::UnloadModule(const jenova::ModuleUnloadStage& unloadStag
         return false;
     }
 
-    // Call Module Internal Shutdown Event
-    if (!jenova::CallModuleEvent(jenova::Format("_%s", jenova::GlobalSettings::JenovaModuleShutdownEventName), moduleHandle, jenova::ModuleCallMode::Virtual))
-    {
-        jenova::Warning("Jenova Interpreter", "Module Internal Shutdown Event Failed. Unexpected Behaviors May Occur.");
-    }
-
     // Call Module Shutdown Event If Exists
     if (!jenova::CallModuleEvent(jenova::GlobalSettings::JenovaModuleShutdownEventName, moduleHandle, jenova::ModuleCallMode::Virtual))
     {
         jenova::Warning("Jenova Interpreter", "Module Shutdown Event Failed. Unexpected Behaviors May Occur.");
+    }
+
+    // Call Module Internal Shutdown Event
+    if (!jenova::CallModuleEvent(jenova::Format("_%s", jenova::GlobalSettings::JenovaModuleShutdownEventName), moduleHandle, jenova::ModuleCallMode::Virtual))
+    {
+        jenova::Warning("Jenova Interpreter", "Module Internal Shutdown Event Failed. Unexpected Behaviors May Occur.");
     }
 
     // If Debug Mode is Activated Unload Module Loaded From Disk
@@ -234,6 +235,17 @@ bool JenovaInterpreter::LoadDebugSymbol(const std::string symbolFilePath)
 intptr_t JenovaInterpreter::GetModuleBaseAddress()
 {
 	return moduleBaseAddress;
+}
+std::string JenovaInterpreter::GetScriptPath(const std::string& scriptUID)
+{
+    try
+    {
+        return moduleMetaData["Scripts"][scriptUID]["path"].get<std::string>();
+    }
+    catch (const std::exception&)
+    {
+        return "Unknown";
+    }
 }
 jenova::FunctionList JenovaInterpreter::GetFunctionsList(const std::string& scriptUID)
 {
@@ -436,11 +448,12 @@ Variant JenovaInterpreter::CallFunction(const godot::Object* objectPtr, const st
     if (!allowExecution) return GenerateFunctionCallError(functionName, "ERROR::EXECUTION_DENIED");
     if (!moduleHandle || !moduleBaseAddress) return GenerateFunctionCallError(functionName, "ERROR::INVALID_MODULE");
 
-    // Create Profiler Checkpoint [Not Required For Now]
-    /* JenovaTinyProfiler::CreateCheckpoint("InterpreterCallFunction"); */
-
     // Verbose
     jenova::VerboseByID(__LINE__, "Interpreter Calling Function [%s] From Script [%s] On Object [%p]", functionName.c_str(), scriptUID.c_str(), objectPtr);
+
+    // Get Script Path
+    std::string scriptPath = "";
+    if (JenovaProfiler::IsEnabled()) scriptPath = GetScriptPath(scriptUID);
 
     // Get Function Address Offset
     jenova::FunctionAddress functionAddress = JenovaInterpreter::GetFunctionAddress(functionName, scriptUID);
@@ -561,7 +574,18 @@ Variant JenovaInterpreter::CallFunction(const godot::Object* objectPtr, const st
                 jitRuntime.add(&callerFunction, &code);
 
                 // Call the JIT-generated Function
-                Variant result = callerFunction();
+                Variant result = Variant::NIL;
+                if (JenovaProfiler::IsEnabled())
+                {
+                    JenovaTinyProfiler::CreateCheckpoint("NitroJITExecution");
+                    result = callerFunction();
+                    double executionDuration = JenovaTinyProfiler::GetCheckpointTimeAndDispose("NitroJITExecution");
+                    JenovaProfiler::AddExecutionRecord(StringName(scriptPath.c_str()), StringName(functionName.c_str()), executionDuration);
+                }
+                else
+                {
+                    result = callerFunction();
+                }
 
                 // Release Generated Code When Done
                 jitRuntime.release(callerFunction);
@@ -679,7 +703,18 @@ Variant JenovaInterpreter::CallFunction(const godot::Object* objectPtr, const st
         }
 
         // Execute Caller
-        Variant* result = interpreterCaller();
+        Variant* result = nullptr;
+        if (JenovaProfiler::IsEnabled())
+        {
+            JenovaTinyProfiler::CreateCheckpoint("MeteoraExecution");
+            result = interpreterCaller();
+            double executionDuration = JenovaTinyProfiler::GetCheckpointTimeAndDispose("MeteoraExecution");
+            JenovaProfiler::AddExecutionRecord(StringName(scriptPath.c_str()), StringName(functionName.c_str()), executionDuration);
+        }
+        else
+        {
+            result = interpreterCaller();
+        }
 
         // Release Allocated Values
         for (void* ptr : ptrList) if (ptr) delete ptr;
@@ -700,13 +735,9 @@ Variant JenovaInterpreter::CallFunction(const godot::Object* objectPtr, const st
         }
         return Variant(true);
     }
-    if (interpreterBackend == jenova::InterpreterBackend::AkiraJIT)
+    if (interpreterBackend == jenova::InterpreterBackend::LibFFI)
     {
-        // Removed
-    }
-    if (interpreterBackend == jenova::InterpreterBackend::SecureAngel)
-    {
-        // Removed
+        // Not Implemented Yet
     }
 
     // No Valid Backend
@@ -725,6 +756,147 @@ Variant JenovaInterpreter::GenerateFunctionCallError(const std::string& function
     // Return Error Reason
     return String(errorReason);
 }
+bool JenovaInterpreter::FlushPropertyStorage()
+{
+    for (auto scriptProperty : propertyStorage)
+    {
+        if (scriptProperty.second) delete scriptProperty.second;
+    }
+    propertyStorage.clear();
+    return true;
+}
+jenova::PropertyList JenovaInterpreter::GetPropertiesList(std::string& scriptUID)
+{
+    try
+    {
+        // Create Property List
+        jenova::PropertyList propertyNames;
+
+        // Get Script Metadata by UID
+        jenova::json_t scriptMetadata = moduleMetaData["Scripts"][scriptUID]["properties"];
+
+        // Add Property to List
+        for (const auto& propertyName : scriptMetadata.items()) propertyNames.push_back(propertyName.key());
+
+        // Return List
+        return propertyNames;
+    }
+    catch (const std::exception&)
+    {
+        return jenova::PropertyList();
+    }
+}
+std::string JenovaInterpreter::GetPropertyType(const std::string& propertyName, std::string& scriptUID)
+{
+    try
+    {
+        // Validate Script UID
+        if (!moduleMetaData["Scripts"].contains(scriptUID)) return std::string();
+
+        // Get Script Metadata by UID
+        jenova::json_t scriptMetadata = moduleMetaData["Scripts"][scriptUID]["properties"];
+
+        // Find and Return Property Type
+        for (const auto& prop : scriptMetadata.items())
+        {
+            if (prop.key() == propertyName) return prop.value()["Type"].get<std::string>();
+        }
+    }
+    catch (const std::exception&)
+    {
+        return std::string();
+    }
+
+    // Property was not found
+    return std::string();
+}
+jenova::PropertyAddress JenovaInterpreter::GetPropertyAddress(const std::string& propertyName, std::string& scriptUID)
+{
+    try
+    {
+        // Validate Script UID
+        if (!moduleMetaData["Scripts"].contains(scriptUID)) return 0;
+
+        // Get Script Metadata by UID
+        jenova::json_t scriptMetadata = moduleMetaData["Scripts"][scriptUID]["properties"];
+
+        // Find and return Property Address
+        for (const auto& prop : scriptMetadata.items())
+        {
+            if (prop.key() == propertyName)
+            {
+                // Calculate Offset + BaseAddress and Return the Address
+                jenova::PropertyAddress propertyOffset = prop.value()["Offset"].get<jenova::PropertyAddress>();
+                return moduleBaseAddress + propertyOffset;
+            }
+        }
+    }
+    catch (const std::exception&)
+    {
+        return 0;
+    }
+
+    // Property was not found
+    return 0;
+}
+jenova::PropertyPointer JenovaInterpreter::GetPropertyPointer(const String& propertyName, const String& scriptUID)
+{
+    // Create Property Key
+    std::string propertyKey = AS_STD_STRING(scriptUID + String("_") + propertyName.get_file());
+
+    // Validate Property
+    if (!propertyStorage.contains(propertyKey)) return nullptr;
+
+    // Get Property Pointer from Storage
+    jenova::PropertyPointer propertyPtr = propertyStorage[propertyKey];
+
+    // Return Property Pointer
+    return propertyPtr;
+}
+bool JenovaInterpreter::SetPropertyValueFromVariant(const String& propertyName, const Variant& propertyValue, const String& scriptUID)
+{
+    // Get Property Pointer from Storage
+    jenova::PropertyPointer propertyPtr = GetPropertyPointer(propertyName, scriptUID);
+
+    // Validate Property Pointer
+    if (propertyPtr == nullptr) return false;
+
+    // Set Property Value from Variant
+    if (!jenova::SetPropertyPointerValueFromVariant(propertyPtr, propertyValue)) return false;
+
+    // Get Property Address
+    jenova::PropertyAddress propertyAddress = JenovaInterpreter::GetPropertyAddress(AS_STD_STRING(propertyName.get_file()), AS_STD_STRING(scriptUID));
+    if (!propertyAddress) return false;
+
+    // Set Property Pointer
+    if (propertySetMethod == jenova::PropertySetMethod::DirectAssign) *(void**)propertyAddress = propertyPtr;
+    if (propertySetMethod == jenova::PropertySetMethod::MemoryCopy) memcpy((void*)propertyAddress, &propertyPtr, sizeof(propertyPtr));
+
+    // All Good
+    return true;
+}
+jenova::InterpreterBackend JenovaInterpreter::GetInterpreterBackend()
+{
+    return interpreterBackend;
+}
+void JenovaInterpreter::SetInterpreterBackend(jenova::InterpreterBackend newBackend)
+{
+    interpreterBackend = newBackend;
+}
+jenova::FunctionPointer JenovaInterpreter::SolveVirtualFunction(jenova::ModuleHandle moduleHandle, const char* functionName)
+{
+    return JenovaLoader::GetVirtualFunction(moduleHandle, functionName);
+}
+void JenovaInterpreter::SetDebugModeExecutionState(bool debugModeState)
+{
+    executeInDebugMode = debugModeState;
+}
+jenova::ModuleHandle JenovaInterpreter::LoadShellModule(const uint8_t* moduleDataPtr, const size_t moduleSize)
+{
+    return JenovaLoader::LoadModule((void*)moduleDataPtr, moduleSize);
+}
+
+// Jenova Interpreter Implementation :: Metadata Management
 jenova::SerializedData JenovaInterpreter::GenerateModuleMetadata(const std::string& mapFilePath, const jenova::ModuleList& scriptModules, const jenova::BuildResult& buildResult)
 {
     // Windows Compilers
@@ -742,7 +914,12 @@ jenova::SerializedData JenovaInterpreter::GenerateModuleMetadata(const std::stri
             uint64_t imageBaseAddress = 0;
 
             // Serialize Script Modules
-            for (const auto& scriptModule : scriptModules) serializer["Scripts"][AS_STD_STRING(scriptModule.scriptUID)] = jenova::json_t::object();
+            for (const auto& scriptModule : scriptModules)
+            {
+                if (scriptModule.scriptFilename == "JenovaModuleLoader") continue;
+                serializer["Scripts"][AS_STD_STRING(scriptModule.scriptUID)] = jenova::json_t::object();
+                serializer["Scripts"][AS_STD_STRING(scriptModule.scriptUID)]["path"] = AS_STD_STRING(scriptModule.scriptFilename);
+            }
 
             // Open Map File
             if (!std::filesystem::exists(mapFilePath))
@@ -775,7 +952,7 @@ jenova::SerializedData JenovaInterpreter::GenerateModuleMetadata(const std::stri
                     {
                         imageBaseAddress = std::stoull(match[1], nullptr, 16);
                         serializer["ImageBaseAddress"] = imageBaseAddress;
-                        continue;  // Skip to the next line after extracting __ImageBase
+                        continue;
                     }
 
                     // Parse Functions Name and Offsets
@@ -845,14 +1022,14 @@ jenova::SerializedData JenovaInterpreter::GenerateModuleMetadata(const std::stri
                             jenova::VerboseByID(__LINE__, "[Map-Parser] Demangled Function Name: [%s], UID: [%s]", demangledFunctionSignature.c_str(), scriptUID.c_str());
                         }
 
-                        // Store function name and metadata in the serializer
+                        // Store Function Name and Metadata in the Serializer
                         if (serializer["Scripts"].contains(scriptUID))
                         {
                             serializer["Scripts"][scriptUID]["methods"][functionName] = funcSerializer;
                         }
                         else 
                         {
-                            serializer["Scripts"][scriptUID]["methods"] = { { functionName, funcSerializer } };
+                            serializer["Scripts"][scriptUID]["methods"] = {{ functionName, funcSerializer }};
                         }
 
                         // Verbose
@@ -950,7 +1127,7 @@ jenova::SerializedData JenovaInterpreter::GenerateModuleMetadata(const std::stri
                     {
                         imageBaseAddress = std::stoull(match[1], nullptr, 16);
                         serializer["ImageBaseAddress"] = imageBaseAddress;
-                        continue;  // Skip to the next line after extracting __ImageBase
+                        continue;
                     }
 
                     // Parse Jenova Symbols
@@ -1134,19 +1311,7 @@ jenova::SerializedData JenovaInterpreter::GenerateModuleMetadata(const std::stri
             }
 
             // Add Extra Info
-            if (buildResult.hasDebugInformation)
-            {
-                serializer["HasDebugInformation"] = true;
-                serializer["BuildPath"] = buildResult.buildPath;
-            }
-            else
-            {
-                serializer["HasDebugInformation"] = false;
-            }
-            serializer["ModuleBinarySize"] = buildResult.builtModuleData.size();
-            serializer["InterpreterBackend"] = JenovaInterpreter::GetInterpreterBackend();
-            serializer["DeveloperMode"] = jenova::GlobalStorage::DeveloperModeActivated;
-            serializer["ManagedSafeExecution"] = jenova::GlobalStorage::UseManagedSafeExecution;
+            JenovaInterpreter::GenerateExtraMetadata(serializer, buildResult);
 
             // Dump Metadata If Developer Mode Activated
             if (jenova::GlobalStorage::DeveloperModeActivated)
@@ -1170,6 +1335,14 @@ jenova::SerializedData JenovaInterpreter::GenerateModuleMetadata(const std::stri
         {
             // Create JSON Serializer
             jenova::json_t serializer;
+
+            // Serialize Script Modules
+            for (const auto& scriptModule : scriptModules)
+            {
+                if (scriptModule.scriptFilename == "JenovaModuleLoader") continue;
+                serializer["Scripts"][AS_STD_STRING(scriptModule.scriptUID)] = jenova::json_t::object();
+                serializer["Scripts"][AS_STD_STRING(scriptModule.scriptUID)]["path"] = AS_STD_STRING(scriptModule.scriptFilename);
+            }
 
             // Generate Extra Paths
             std::string moduleFilePath = buildResult.buildPath + "Jenova.Module.so";
@@ -1201,13 +1374,10 @@ jenova::SerializedData JenovaInterpreter::GenerateModuleMetadata(const std::stri
                     std::vector<std::string> params = jenova::ExtractParameterTypesFromSignature(cleanedSignature, buildResult.compilerModel);
                     std::string returnType = jenova::ExtractReturnTypeFromSignature(cleanedSignature, buildResult.compilerModel);
 
-                    // If the function has no parameters, Add A Dummy Parameter
+                    // If the Function has no Parameters, Add A Dummy Parameter
                     if (params.empty()) params.push_back("void");
 
-                    // Add Function
-                    if (!serializer["Scripts"].contains(scriptUID)) serializer["Scripts"][scriptUID]["methods"] = jenova::json_t::object();
-
-                    // Add Parameter Count & Return Type
+                    // Add Function Parameter Count & Return Type
                     serializer["Scripts"][scriptUID]["methods"][funcName] = { {"ParamCount", params.size()}, {"ReturnType", returnType} };
 
                     // Add Parameter Types
@@ -1312,19 +1482,7 @@ jenova::SerializedData JenovaInterpreter::GenerateModuleMetadata(const std::stri
             }
 
             // Add Extra Info
-            if (buildResult.hasDebugInformation)
-            {
-                serializer["HasDebugInformation"] = true;
-                serializer["BuildPath"] = buildResult.buildPath;
-            }
-            else
-            {
-                serializer["HasDebugInformation"] = false;
-            }
-            serializer["ModuleBinarySize"] = buildResult.builtModuleData.size();
-            serializer["InterpreterBackend"] = JenovaInterpreter::GetInterpreterBackend();
-            serializer["DeveloperMode"] = jenova::GlobalStorage::DeveloperModeActivated;
-            serializer["ManagedSafeExecution"] = jenova::GlobalStorage::UseManagedSafeExecution;
+            JenovaInterpreter::GenerateExtraMetadata(serializer, buildResult);
 
             // Dump Metadata If Developer Mode Activated
             if (jenova::GlobalStorage::DeveloperModeActivated)
@@ -1353,6 +1511,14 @@ jenova::SerializedData JenovaInterpreter::GenerateModuleMetadata(const std::stri
         {
             // Create JSON Serializer
             jenova::json_t serializer;
+
+            // Serialize Script Modules
+            for (const auto& scriptModule : scriptModules)
+            {
+                if (scriptModule.scriptFilename == "JenovaModuleLoader") continue;
+                serializer["Scripts"][AS_STD_STRING(scriptModule.scriptUID)] = jenova::json_t::object();
+                serializer["Scripts"][AS_STD_STRING(scriptModule.scriptUID)]["path"] = AS_STD_STRING(scriptModule.scriptFilename);
+            }
 
             // Generate Extra Paths
             std::string moduleFilePath = buildResult.buildPath + "Jenova.Module.so";
@@ -1384,13 +1550,10 @@ jenova::SerializedData JenovaInterpreter::GenerateModuleMetadata(const std::stri
                     std::vector<std::string> params = jenova::ExtractParameterTypesFromSignature(cleanedSignature, buildResult.compilerModel);
                     std::string returnType = jenova::ExtractReturnTypeFromSignature(cleanedSignature, buildResult.compilerModel);
 
-                    // If the function has no parameters, Add A Dummy Parameter
+                    // If the Function has no Parameters, Add A Dummy Parameter
                     if (params.empty()) params.push_back("void");
 
-                    // Add Function
-                    if (!serializer["Scripts"].contains(scriptUID)) serializer["Scripts"][scriptUID]["methods"] = jenova::json_t::object();
-
-                    // Add Parameter Count & Return Type
+                    // Add Function Parameter Count & Return Type
                     serializer["Scripts"][scriptUID]["methods"][funcName] = { {"ParamCount", params.size()}, {"ReturnType", returnType} };
 
                     // Add Parameter Types
@@ -1495,18 +1658,7 @@ jenova::SerializedData JenovaInterpreter::GenerateModuleMetadata(const std::stri
             }
 
             // Add Extra Info
-            if (buildResult.hasDebugInformation)
-            {
-                serializer["HasDebugInformation"] = true;
-                serializer["BuildPath"] = buildResult.buildPath;
-            }
-            else
-            {
-                serializer["HasDebugInformation"] = false;
-            }
-            serializer["ModuleBinarySize"] = buildResult.builtModuleData.size();
-            serializer["InterpreterBackend"] = JenovaInterpreter::GetInterpreterBackend();
-            serializer["DeveloperMode"] = jenova::GlobalStorage::DeveloperModeActivated;
+            JenovaInterpreter::GenerateExtraMetadata(serializer, buildResult);
 
             // Dump Metadata If Developer Mode Activated
             if (jenova::GlobalStorage::DeveloperModeActivated)
@@ -1528,6 +1680,25 @@ jenova::SerializedData JenovaInterpreter::GenerateModuleMetadata(const std::stri
 	// Generation Failed, Return Empty Data
 	return jenova::SerializedData();
 }
+void JenovaInterpreter::GenerateExtraMetadata(jenova::json_t& metaData, const jenova::BuildResult& buildResult)
+{
+    // Add Extra Information to Metadata
+    if (buildResult.hasDebugInformation)
+    {
+        metaData["HasDebugInformation"] = true;
+        metaData["BuildPath"] = buildResult.buildPath;
+    }
+    else
+    {
+        metaData["HasDebugInformation"] = false;
+    }
+    metaData["ModuleBinarySize"] = buildResult.builtModuleData.size();
+    metaData["CompilerModel"] = buildResult.compilerModel;
+    metaData["InterpreterBackend"] = JenovaInterpreter::GetInterpreterBackend();
+    metaData["ProfilingMode"] = jenova::GlobalStorage::CurrentProfilingMode;
+    metaData["DeveloperMode"] = jenova::GlobalStorage::DeveloperModeActivated;
+    metaData["ManagedSafeExecution"] = jenova::GlobalStorage::UseManagedSafeExecution;
+}
 bool JenovaInterpreter::UpdateConfigurationsFromMetaData(const jenova::SerializedData& metaData)
 {
     try
@@ -1541,20 +1712,17 @@ bool JenovaInterpreter::UpdateConfigurationsFromMetaData(const jenova::Serialize
             SetInterpreterBackend(moduleMetaData["InterpreterBackend"].get<jenova::InterpreterBackend>());
         }
 
+        // Set Profiling Mode
+        if (moduleMetaData.contains("ProfilingMode"))
+        {
+            JenovaProfiler::SetProfilingMode(moduleMetaData["ProfilingMode"].get<jenova::ProfilingMode>());
+        }
+
         // Set Has Debug Information If Present
         if (moduleMetaData["HasDebugInformation"].get<bool>() == true)
         {
             hasDebugInformation = true;
             moduleDiskPath = std::filesystem::absolute(moduleMetaData["BuildPath"].get<std::string>()).string();
-        }
-
-        // Set Debug Mode If Present
-        if (moduleMetaData.contains("DebugMode"))
-        {
-            if (moduleMetaData["DebugMode"].get<bool>() == true)
-            {
-                executeInDebugMode = true;
-            }
         }
 
         // Update Global Storage From Metadata
@@ -1632,145 +1800,6 @@ bool JenovaInterpreter::UpdatePropertyStorageFromMetaData()
         jenova::Error("Jenova Interpreter", "Failed to Parse Metadata, Parser Error : %s", err.what());
         return false;
     }
-}
-bool JenovaInterpreter::FlushPropertyStorage()
-{
-    for (auto scriptProperty : propertyStorage)
-    {
-        if (scriptProperty.second) delete scriptProperty.second;
-    }
-    propertyStorage.clear();
-    return true;
-}
-jenova::PropertyList JenovaInterpreter::GetPropertiesList(std::string& scriptUID)
-{
-    try
-    {
-        // Create Property List
-        jenova::PropertyList propertyNames;
-
-        // Get Script Metadata by UID
-        jenova::json_t scriptMetadata = moduleMetaData["Scripts"][scriptUID]["properties"];
-
-        // Add Property to List
-        for (const auto& propertyName : scriptMetadata.items()) propertyNames.push_back(propertyName.key());
-
-        // Return List
-        return propertyNames;
-    }
-    catch (const std::exception&)
-    {
-        return jenova::PropertyList();
-    }
-}
-std::string JenovaInterpreter::GetPropertyType(const std::string& propertyName, std::string& scriptUID)
-{
-    try
-    {
-        // Validate Script UID
-        if (!moduleMetaData["Scripts"].contains(scriptUID)) return std::string();
-
-        // Get Script Metadata by UID
-        jenova::json_t scriptMetadata = moduleMetaData["Scripts"][scriptUID]["properties"];
-
-        // Find and Return Property Type
-        for (const auto& prop : scriptMetadata.items())
-        {
-            if (prop.key() == propertyName) return prop.value()["Type"].get<std::string>();
-        }
-    }
-    catch (const std::exception&)
-    {
-        return std::string();
-    }
-
-    // Property was not found
-    return std::string();
-}
-jenova::PropertyAddress JenovaInterpreter::GetPropertyAddress(const std::string& propertyName, std::string& scriptUID)
-{
-    try
-    {
-        // Validate Script UID
-        if (!moduleMetaData["Scripts"].contains(scriptUID)) return 0;
-
-        // Get Script Metadata by UID
-        jenova::json_t scriptMetadata = moduleMetaData["Scripts"][scriptUID]["properties"];
-
-        // Find and return Property Address
-        for (const auto& prop : scriptMetadata.items())
-        {
-            if (prop.key() == propertyName)
-            {
-                // Calculate Offset + BaseAddress and Return the Address
-                jenova::PropertyAddress propertyOffset = prop.value()["Offset"].get<jenova::PropertyAddress>();
-                return moduleBaseAddress + propertyOffset;
-            }
-        }
-    }
-    catch (const std::exception&)
-    {
-        return 0;
-    }
-
-    // Property was not found
-    return 0;
-}
-jenova::PropertyPointer JenovaInterpreter::GetPropertyPointer(const String& propertyName, const String& scriptUID)
-{
-    // Create Property Key
-    std::string propertyKey = AS_STD_STRING(scriptUID + String("_") + propertyName.get_file());
-
-    // Validate Property
-    if (!propertyStorage.contains(propertyKey)) return nullptr;
-
-    // Get Property Pointer from Storage
-    jenova::PropertyPointer propertyPtr = propertyStorage[propertyKey];
-
-    // Return Property Pointer
-    return propertyPtr;
-}
-bool JenovaInterpreter::SetPropertyValueFromVariant(const String& propertyName, const Variant& propertyValue, const String& scriptUID)
-{
-    // Get Property Pointer from Storage
-    jenova::PropertyPointer propertyPtr = GetPropertyPointer(propertyName, scriptUID);
-
-    // Validate Property Pointer
-    if (propertyPtr == nullptr) return false;
-
-    // Set Property Value from Variant
-    if (!jenova::SetPropertyPointerValueFromVariant(propertyPtr, propertyValue)) return false;
-
-    // Get Property Address
-    jenova::PropertyAddress propertyAddress = JenovaInterpreter::GetPropertyAddress(AS_STD_STRING(propertyName.get_file()), AS_STD_STRING(scriptUID));
-    if (!propertyAddress) return false;
-
-    // Set Property Pointer
-    if (propertySetMethod == jenova::PropertySetMethod::DirectAssign) *(void**)propertyAddress = propertyPtr;
-    if (propertySetMethod == jenova::PropertySetMethod::MemoryCopy) memcpy((void*)propertyAddress, &propertyPtr, sizeof(propertyPtr));
-
-    // All Good
-    return true;
-}
-jenova::InterpreterBackend JenovaInterpreter::GetInterpreterBackend()
-{
-    return interpreterBackend;
-}
-void JenovaInterpreter::SetInterpreterBackend(jenova::InterpreterBackend newBackend)
-{
-    interpreterBackend = newBackend;
-}
-jenova::FunctionPointer JenovaInterpreter::SolveVirtualFunction(jenova::ModuleHandle moduleHandle, const char* functionName)
-{
-    return JenovaLoader::GetVirtualFunction(moduleHandle, functionName);
-}
-void JenovaInterpreter::SetDebugModeExecutionState(bool debugModeState)
-{
-    executeInDebugMode = debugModeState;
-}
-jenova::ModuleHandle JenovaInterpreter::LoadShellModule(const uint8_t* moduleDataPtr, const size_t moduleSize)
-{
-    return JenovaLoader::LoadModule((void*)moduleDataPtr, moduleSize);
 }
 
 // Jenova Interpreter Implementation :: Module Database

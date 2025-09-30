@@ -305,11 +305,11 @@ TypedArray<Dictionary> CPPScriptLanguage::_get_public_annotations() const
 }
 void CPPScriptLanguage::_profiling_start()
 {
-	jenova::Output("Jenova Profiler Started.");
+	JenovaProfiler::StartRecording();
 }
 void CPPScriptLanguage::_profiling_stop()
 {
-	jenova::Output("Jenova Profiler Stopped.");
+	JenovaProfiler::StopRecording();
 }
 void CPPScriptLanguage::_profiling_set_save_native_calls(bool p_enable)
 {
@@ -325,7 +325,7 @@ int32_t CPPScriptLanguage::_profiling_get_frame_data(ScriptLanguageExtensionProf
 }
 void CPPScriptLanguage::_frame()
 {
-	// Process
+	JenovaProfiler::Frame();
 }
 bool CPPScriptLanguage::_handles_global_class_type(const String& p_type) const
 {

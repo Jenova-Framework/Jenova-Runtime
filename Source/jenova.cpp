@@ -112,6 +112,7 @@ namespace jenova
 			 String MultiThreadedCompilationConfigPath					= "jenova/multi_threaded_compilation";
 			 String GenerateDebugInformationConfigPath					= "jenova/generate_debug_information";
 			 String InterpreterBackendConfigPath						= "jenova/interpreter_backend";
+			 String ProfilingModeConfigPath								= "jenova/profiling_mode";
 			 String BuildAndRunModeConfigPath							= "jenova/build_and_run_mode";
 			 String PreprocessorDefinitionsConfigPath					= "jenova/preprocessor_definitions";
 			 String AdditionalIncludeDirectoriesConfigPath				= "jenova/additional_include_directories";
@@ -131,11 +132,12 @@ namespace jenova
 
 		private:
 			// Default Settings
-			const jenova::BuildToolButtonPlacement BuildToolButtonDefaultPlacement = jenova::BuildToolButtonPlacement::AfterRunbar;
+			const jenova::InterpreterBackend InterpreterBackendDefaultMode = jenova::InterpreterBackend::TinyCC;
+			const jenova::ProfilingMode ProfilingModeDefaultMode = jenova::ProfilingMode::Disabled;
 			const jenova::BuildAndRunMode BuildAndRunDefaultMode = jenova::BuildAndRunMode::DoNothing;
 			const jenova::ChangesTriggerMode ExternalChangesDefaultTriggerMode = jenova::ChangesTriggerMode::DoNothing;
 			const jenova::EditorVerboseOutput EditorVerboseDefaultOutput = jenova::EditorVerboseOutput::JenovaTerminal;
-			const jenova::InterpreterBackend InterpreterBackendDefaultMode = jenova::InterpreterBackend::TinyCC;
+			const jenova::BuildToolButtonPlacement BuildToolButtonDefaultPlacement = jenova::BuildToolButtonPlacement::AfterRunbar;
 
 			// Default Compiler
 			#if defined(TARGET_PLATFORM_WINDOWS)
@@ -149,6 +151,7 @@ namespace jenova
 		private:
 			// Internal Objects
 			bool isEditorPluginInitialized = false;
+			bool isTerminalVisible = false;
 			Ref<JenovaExportPlugin> exportPlugin;
 			Ref<JenovaDebuggerPlugin> debuggerPlugin;
 			jenova::ModuleList scriptModules;
@@ -460,12 +463,13 @@ namespace jenova
 					Ref<EditorSettings> editor_settings = editor_interface->get_editor_settings();
 					if (!editor_settings.is_null()) 
 					{
-						// Check if the Settings Already Exists, If Not Define Them
+						// Check if the Settings Already Exist, If not Define Them
 						if (!editor_settings->has_setting(RemoveSourcesFromBuildEditorConfigPath)) editor_settings->set(RemoveSourcesFromBuildEditorConfigPath, true);
 						if (!editor_settings->has_setting(CompilerModelConfigPath)) editor_settings->set(CompilerModelConfigPath, int32_t(CompilerDefaultModel));
 						if (!editor_settings->has_setting(MultiThreadedCompilationConfigPath)) editor_settings->set(MultiThreadedCompilationConfigPath, true);
 						if (!editor_settings->has_setting(GenerateDebugInformationConfigPath)) editor_settings->set(GenerateDebugInformationConfigPath, true);
 						if (!editor_settings->has_setting(InterpreterBackendConfigPath)) editor_settings->set(InterpreterBackendConfigPath, int32_t(InterpreterBackendDefaultMode));
+						if (!editor_settings->has_setting(ProfilingModeConfigPath)) editor_settings->set(ProfilingModeConfigPath, int32_t(ProfilingModeDefaultMode));
 						if (!editor_settings->has_setting(BuildAndRunModeConfigPath)) editor_settings->set(BuildAndRunModeConfigPath, int32_t(BuildAndRunDefaultMode));
 						if (!editor_settings->has_setting(PreprocessorDefinitionsConfigPath)) editor_settings->set(PreprocessorDefinitionsConfigPath, "JENOVA_CUSTOM");
 						if (!editor_settings->has_setting(AdditionalIncludeDirectoriesConfigPath)) editor_settings->set(AdditionalIncludeDirectoriesConfigPath, "");
@@ -513,10 +517,16 @@ namespace jenova
 
 						// Interpreter Backend Property
 						PropertyInfo InterpreterBackendProperty(Variant::INT, InterpreterBackendConfigPath,
-							PropertyHint::PROPERTY_HINT_ENUM, "NitroJIT (Fastest),Meteora (Fast),A.K.I.R.A (Unavailable),AngelVM (Unavailable)",
+							PropertyHint::PROPERTY_HINT_ENUM, "NitroJIT (Fastest),Meteora (Fast),Halo (Soon)",
 							PROPERTY_USAGE_DEFAULT, JenovaEditorSettingsCategory);
 						editor_settings->add_property_info(InterpreterBackendProperty);
 						editor_settings->set_initial_value(InterpreterBackendConfigPath, int32_t(InterpreterBackendDefaultMode), false);
+
+						// Profiling Mode Property
+						PropertyInfo ProfilingModeProperty(Variant::INT, ProfilingModeConfigPath,
+							PropertyHint::PROPERTY_HINT_ENUM, "Disabled,Echo,Sentinel,Monitor", PROPERTY_USAGE_DEFAULT, JenovaEditorSettingsCategory);
+						editor_settings->add_property_info(ProfilingModeProperty);
+						editor_settings->set_initial_value(ProfilingModeConfigPath, int32_t(ProfilingModeDefaultMode), false);
 
 						// Build And Run Mode Property
 						PropertyInfo BuildAndRunModeProperty(Variant::INT, BuildAndRunModeConfigPath, 
@@ -656,6 +666,11 @@ namespace jenova
 				Variant interpreterBackend;
 				if (!GetEditorSetting(InterpreterBackendConfigPath, interpreterBackend)) return false;
 				JenovaInterpreter::SetInterpreterBackend(jenova::InterpreterBackend(int32_t(interpreterBackend)));
+
+				// Update Profiling Mode
+				Variant profilingMode;
+				if (!GetEditorSetting(ProfilingModeConfigPath, profilingMode)) return false;
+				jenova::GlobalStorage::CurrentProfilingMode = jenova::ProfilingMode(int32_t(profilingMode));
 
 				// Update Build And Run Mode
 				Variant buildAndRunMode;
@@ -1099,15 +1114,6 @@ namespace jenova
 				clearButton->connect("pressed", callable_mp(this, &JenovaEditorPlugin::ClearLogs));
 				copyButton->connect("pressed", callable_mp(this, &JenovaEditorPlugin::CopyLogs));
 
-				// Add Terminal to Bottom Panel
-				Button* terminalButton = this->add_control_to_bottom_panel(jenovaTerminal, " Terminal");
-				if (!terminalButton) return false;
-				terminalButton->set_tooltip_text("Jenova Built-In Terminal System");
-
-				// Set Terminal Icon
-				auto jenovaIcon = jenova::CreateImageTextureFromByteArrayEx(BUFFER_PTR_SIZE_PARAM(JENOVA_RESOURCE(PNG_JENOVA_ICON_64)), Vector2i(15, 15));
-				terminalButton->set_button_icon(jenovaIcon);
-
 				// Update Terminal
 				UpdateTerminal();
 
@@ -1120,6 +1126,9 @@ namespace jenova
 				{
 					// Remove Terminal from Bottom Panel
 					this->remove_control_from_bottom_panel(jenovaTerminal);
+
+					// Update Flags
+					isTerminalVisible = false;
 
 					// Remove Log Output from Terminal
 					jenovaTerminal->remove_child(jenovaLogOutput);
@@ -1244,7 +1253,7 @@ namespace jenova
 					jenova::Error("Jenova Main Menu", "Feature Not Implemented Yet");
 					break;
 				case jenova::EditorMenuID::OpenScriptManager:
-					jenova::Error("Jenova Main Menu", "Feature Not Implemented Yet");
+					if (!JenovaScriptManager::get_singleton()->open_script_manager_window()) jenova::Error("Jenova Script Manager", "Failed to Initialize Script Manager Window.");
 					break;
 				case jenova::EditorMenuID::OpenPackageManager:
 					if (JenovaPackageManager::get_singleton())
@@ -1298,8 +1307,14 @@ namespace jenova
 						jenova::UpdateScriptTemplates();
 					}
 
-					// Update Terminal If Options Changed
+					// Update Terminal Font If Options Changed
 					if (changedEditorSetting == UseMonospaceFontForTerminalConfigPath || changedEditorSetting == TerminalDefaultFontSizeConfigPath)
+					{
+						UpdateTerminal();
+					}
+				
+					// Update Terminal Panel
+					if (changedEditorSetting == EditorVerboseOutputConfigPath)
 					{
 						UpdateTerminal();
 					}
@@ -2272,6 +2287,42 @@ namespace jenova
 				// Validate Log Output
 				if (!jenovaLogOutput) return;
 
+				// Update Visiblity
+				if (jenova::GlobalStorage::CurrentEditorVerboseOutput == EditorVerboseOutput::JenovaTerminal)
+				{
+					// Add Terminal to Bottom Panel
+					if (!isTerminalVisible)
+					{
+						// Add Terminal to Bottom Panel
+						Button* terminalButton = this->add_control_to_bottom_panel(jenovaTerminal, " Terminal");
+						if (terminalButton)
+						{
+							// Set Terminal Tooltip
+							terminalButton->set_tooltip_text("Jenova Built-In Terminal System");
+
+							// Set Terminal Icon
+							auto jenovaIcon = jenova::CreateImageTextureFromByteArrayEx(BUFFER_PTR_SIZE_PARAM(JENOVA_RESOURCE(PNG_JENOVA_ICON_64)), Vector2i(15, 15));
+							terminalButton->set_button_icon(jenovaIcon);
+
+							// Update Flags
+							isTerminalVisible = true;
+						}
+						else
+						{
+							jenova::Error("Jenova Terminal", "Failed to Create Jenova Terminal Panel.");
+						}
+					}
+				}
+				else
+				{
+					if (isTerminalVisible)
+					{
+						// Remove Terminal from Bottom Panel
+						this->remove_control_from_bottom_panel(jenovaTerminal);
+						isTerminalVisible = false;
+					}
+				}
+
 				// Customize Font
 				if (jenova::GlobalStorage::UseMonospaceFontForTerminal)
 				{
@@ -2476,6 +2527,7 @@ namespace jenova
 				if (setting_key == std::string("multi_threaded_compilation")) return MultiThreadedCompilationConfigPath;
 				if (setting_key == std::string("generate_debug_information")) return GenerateDebugInformationConfigPath;
 				if (setting_key == std::string("interpreter_backend")) return InterpreterBackendConfigPath;
+				if (setting_key == std::string("profiling_mode")) return ProfilingModeConfigPath;
 				if (setting_key == std::string("build_and_run_mode")) return BuildAndRunModeConfigPath;
 				if (setting_key == std::string("preprocessor_definitions")) return PreprocessorDefinitionsConfigPath;
 				if (setting_key == std::string("additional_include_directories")) return AdditionalIncludeDirectoriesConfigPath;
@@ -3619,15 +3671,15 @@ namespace jenova
 				}
 
 				// Create Window
-				Window* jenva_about_window = memnew(Window);
-				jenva_about_window->set_title("About Projekt Jenova");
-				jenva_about_window->set_size(Vector2i(SCALED(750), SCALED(650)));
-				jenva_about_window->set_flag(Window::Flags::FLAG_RESIZE_DISABLED, true);
-				jenva_about_window->set_flag(Window::Flags::FLAG_POPUP, true);
+				Window* jenova_about_window = memnew(Window);
+				jenova_about_window->set_title("About Projekt Jenova");
+				jenova_about_window->set_size(Vector2i(SCALED(750), SCALED(650)));
+				jenova_about_window->set_flag(Window::Flags::FLAG_RESIZE_DISABLED, true);
+				jenova_about_window->set_flag(Window::Flags::FLAG_POPUP, true);
 
 				// Show Window [Must Be Here]
-				jenva_about_window->hide();
-				jenva_about_window->popup_exclusive_centered(EditorInterface::get_singleton()->get_base_control());
+				jenova_about_window->hide();
+				jenova_about_window->popup_exclusive_centered(EditorInterface::get_singleton()->get_base_control());
 
 				// Create UI Stage
 				Control* jenova_about_ui = memnew(Control);
@@ -3635,7 +3687,7 @@ namespace jenova
 				jenova_about_ui->set_anchors_preset(Control::PRESET_FULL_RECT);
 				jenova_about_ui->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 				jenova_about_ui->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-				jenva_about_window->add_child(jenova_about_ui);
+				jenova_about_window->add_child(jenova_about_ui);
 
 				// Add Background ColorRect
 				ColorRect* background = memnew(ColorRect);
@@ -3788,16 +3840,16 @@ namespace jenova
 				};
 
 				// Create Event Manager
-				AboutEventManager* aboutEventMan = memnew(AboutEventManager(jenva_about_window));
+				AboutEventManager* aboutEventMan = memnew(AboutEventManager(jenova_about_window));
 
 				// Create & Assign Callbacks
 				open_web_button->connect("pressed", callable_mp(aboutEventMan, &AboutEventManager::OnWebButtonClick));
-				jenva_about_window->connect("close_requested", callable_mp(aboutEventMan, &AboutEventManager::OnWindowClose));
+				jenova_about_window->connect("close_requested", callable_mp(aboutEventMan, &AboutEventManager::OnWindowClose));
 
 				// Prepare Pop Up Window
-				if (!jenova::AssignPopUpWindow(jenva_about_window))
+				if (!jenova::AssignPopUpWindow(jenova_about_window))
 				{
-					jenva_about_window->queue_free();
+					jenova_about_window->queue_free();
 				}
 			}
 
@@ -4462,7 +4514,6 @@ namespace jenova
 				// Initialize Classes
 				JenovaPackageManager::init();
 				JenovaTemplateManager::init();
-				JenovaAssetMonitor::init();
 
 				// Load Module At Initialization [Editor]
 				if (QUERY_ENGINE_MODE(Editor))
@@ -4511,6 +4562,13 @@ namespace jenova
 				CPPHeaderResourceLoader::init();
 				CPPHeaderResourceSaver::init();
 				JenovaScriptManager::init();
+				JenovaAssetMonitor::init();
+
+				// Initialzie Profiler
+				if (!JenovaProfiler::Initialize())
+				{
+					jenova::Error("Jenova Core", "Failed to Initialize Jenova Profiler.");
+				}
 
 				// Initialize Clektron Engine
 				Clektron::init();
@@ -4521,8 +4579,8 @@ namespace jenova
 					if (jenova::GlobalSettings::DefaultModuleLoadStage == ModuleLoadStage::LoadModuleAtInitialization) JenovaInterpreter::BootInterpreter();
 				}
 
-				// Register Callbacks
-				JenovaScriptManager::get_singleton()->register_runtime_start_event(&OnRuntimeStarted);
+				// Register Script Runtime Callbacks
+				JenovaScriptManager::get_singleton()->register_script_runtime_start_event(&OnRuntimeStarted);
 
 				// Set the Custom Crash Handler
 				#ifdef TARGET_PLATFORM_WINDOWS 
@@ -4544,7 +4602,6 @@ namespace jenova
 				// UnInitialize Classes
 				JenovaPackageManager::deinit();
 				JenovaTemplateManager::deinit();
-				JenovaAssetMonitor::deinit();
 
 				// Unload Tool Packages [Editor]
 				if (QUERY_ENGINE_MODE(Editor) && jenova::GlobalSettings::LoadAndUnloadToolPackages)
@@ -4570,9 +4627,16 @@ namespace jenova
 				CPPHeaderResourceLoader::deinit();
 				CPPHeaderResourceSaver::deinit();
 				JenovaScriptManager::deinit();
+				JenovaAssetMonitor::deinit();
 
 				// Uninitialize Clektron Engine
 				Clektron::deinit();
+
+				// Uninitialize Profiler
+				if (!JenovaProfiler::Shutdown())
+				{
+					jenova::Error("Jenova Core", "Failed to Shutdown Jenova Profiler.");
+				}
 
 				// Unload Module
 				if (JenovaInterpreter::GetModuleBaseAddress() != 0)
@@ -4931,6 +4995,7 @@ namespace jenova
 
 		// Configurations
 		jenova::EngineMode CurrentEngineMode = jenova::EngineMode::Unknown;
+		jenova::ProfilingMode CurrentProfilingMode = jenova::ProfilingMode::Disabled;
 		jenova::BuildAndRunMode CurrentBuildAndRunMode = jenova::BuildAndRunMode::DoNothing;
 		jenova::ChangesTriggerMode CurrentChangesTriggerMode = jenova::ChangesTriggerMode::DoNothing;
 		jenova::EditorVerboseOutput CurrentEditorVerboseOutput = jenova::EditorVerboseOutput::StandardOutput;
