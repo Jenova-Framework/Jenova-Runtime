@@ -1,4 +1,4 @@
-
+﻿
 /*-------------------------------------------------------------+
 |                                                              |
 |                   _________   ______ _    _____              |
@@ -16,10 +16,11 @@
 #include "Jenova.hpp"
 
 // Storage
-HashMap<StringName, double> stageTimings;
-HashMap<StringName, HashMap<StringName, double>> executionTimings;
+std::unordered_map<std::string, double> stageTimings;
+std::unordered_map<std::string, std::unordered_map<std::string, double>> executionTimings;
+std::vector<StringName> activeMonitors;
 
-// Jenova Profiler Implementation
+// Jenova Profiler Implementation :: Main
 bool JenovaProfiler::Initialize()
 {
 	// Verbose
@@ -32,6 +33,17 @@ bool JenovaProfiler::Shutdown()
 {
 	// Clear Storage
 	ClearRecords();
+
+	// Release Monitors
+	if (JenovaProfiler::profilingMode == jenova::ProfilingMode::Monitor)
+	{
+		Performance* perf = Performance::get_singleton();
+		for (const StringName& id : activeMonitors)
+		{
+			if (perf->has_custom_monitor(id)) perf->remove_custom_monitor(id);
+		}
+		activeMonitors.clear();
+	}
 
 	// All Good
 	return true;
@@ -50,10 +62,38 @@ bool JenovaProfiler::IsEnabled()
 		return false;
 	}
 }
+bool JenovaProfiler::Prepare(jenova::json_t& data)
+{
+	// Validate Profiler
+	if (JenovaProfiler::profilingMode == jenova::ProfilingMode::Disabled) return false;
+
+	// Prepare for Monitor Mode
+	if (JenovaProfiler::profilingMode == jenova::ProfilingMode::Monitor)
+	{
+		Performance* perf = Performance::get_singleton();
+		activeMonitors.clear();
+		for (auto& [scriptUID, scriptData] : data["Scripts"].items())
+		{
+			std::string scriptPath = scriptData["path"];
+			auto& methods = scriptData["methods"];
+			for (auto& [functionName, methodData] : methods.items())
+			{
+				StringName monitorID = String(scriptPath.c_str()).replace("res://", "") + "/" + String(functionName.c_str()) + "_(µs)";
+				if (perf->has_custom_monitor(monitorID)) perf->remove_custom_monitor(monitorID);
+				Callable monitorCallable = callable_mp_static(&JenovaProfiler::MonitorReport).bind(String(scriptPath.c_str()), String(functionName.c_str()));
+				perf->add_custom_monitor(monitorID, monitorCallable);
+				activeMonitors.push_back(monitorID);
+			}
+		}
+	}
+
+	// All Good
+	return true;
+}
 void JenovaProfiler::SetProfilingMode(jenova::ProfilingMode profilingMode)
 {
 	// Update Profiling Mode
-	JenovaProfiler::profilingMode = profilingMode;
+	JenovaProfiler::profilingMode = QUERY_ENGINE_MODE(Editor) ? jenova::ProfilingMode::Disabled : profilingMode;
 }
 void JenovaProfiler::StartRecording()
 {
@@ -69,29 +109,29 @@ void JenovaProfiler::ClearRecords()
 	stageTimings.clear();
 	executionTimings.clear();
 }
-bool JenovaProfiler::AddStageRecord(const StringName& stageName, double duration)
+bool JenovaProfiler::AddStageRecord(const std::string& stageName, double duration)
 {
-	if (JenovaProfiler::profilingMode == jenova::ProfilingMode::Disabled) return;
+	if (JenovaProfiler::profilingMode == jenova::ProfilingMode::Disabled) return false;
 	stageTimings[stageName] = duration;
 	return true;
 }
-bool JenovaProfiler::AddExecutionRecord(const StringName& scriptPath, const StringName& functionName, double duration)
+bool JenovaProfiler::AddExecutionRecord(const std::string& scriptPath, const std::string& functionName, double duration)
 {
-	if (JenovaProfiler::profilingMode == jenova::ProfilingMode::Disabled) return;
+	if (JenovaProfiler::profilingMode == jenova::ProfilingMode::Disabled) return false;
 	executionTimings[scriptPath][functionName] = duration;
 	return true;
 }
-double JenovaProfiler::GetStageRecord(const StringName& stageName)
+double JenovaProfiler::GetStageRecord(const std::string& stageName)
 {
-	if (stageTimings.has(stageName)) return stageTimings[stageName];
-	return 0.0
+	if (stageTimings.contains(stageName)) return stageTimings[stageName];
+	return 0.0;
 }
-double JenovaProfiler::GetExecutionRecord(const StringName& scriptPath, const StringName& functionName)
+double JenovaProfiler::GetExecutionRecord(const std::string& scriptPath, const std::string& functionName)
 {
-	if (executionTimings.has(scriptPath))
+	if (executionTimings.contains(scriptPath))
 	{
-		const HashMap<StringName, double>& functionMap = executionTimings[scriptPath];
-		if (functionMap.has(functionName)) return functionMap[functionName];
+		const auto& functionMap = executionTimings.at(scriptPath);
+		if (functionMap.contains(functionName)) return functionMap.at(functionName);
 	}
 	return 0.0;
 }
@@ -100,4 +140,22 @@ void JenovaProfiler::Frame()
 	// Validate Profiler
 	if (JenovaProfiler::profilingMode == jenova::ProfilingMode::Disabled) return;
 	if (JenovaProfiler::isRecording == false) return;
+}
+
+// Jenova Profiler Implementation :: Callbacks
+double JenovaProfiler::MonitorReport(const String& scriptPath, const String& functionName)
+{
+	auto scriptIt = executionTimings.find(AS_STD_STRING(scriptPath));
+	if (scriptIt != executionTimings.end())
+	{
+		auto& functionMap = scriptIt->second;
+		auto funcIt = functionMap.find(AS_STD_STRING(functionName));
+		if (funcIt != functionMap.end())
+		{
+			double value = funcIt->second;
+			funcIt->second = 0.0;
+			return value * 1000.0;
+		}
+	}
+	return 0.0;
 }

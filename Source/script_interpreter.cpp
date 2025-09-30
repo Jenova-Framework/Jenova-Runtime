@@ -134,7 +134,8 @@ bool JenovaInterpreter::LoadModule(const uint8_t* moduleDataPtr, const size_t mo
         return false;
     }
 
-
+    // Prepare Profiler
+    if (JenovaProfiler::IsEnabled()) JenovaProfiler::Prepare(moduleMetaData);
 
     // Resolve And Load Addon Modules
     if (!jenova::ResolveAndLoadAddonModulesAtRuntime())
@@ -580,7 +581,7 @@ Variant JenovaInterpreter::CallFunction(const godot::Object* objectPtr, const st
                     JenovaTinyProfiler::CreateCheckpoint("NitroJITExecution");
                     result = callerFunction();
                     double executionDuration = JenovaTinyProfiler::GetCheckpointTimeAndDispose("NitroJITExecution");
-                    JenovaProfiler::AddExecutionRecord(StringName(scriptPath.c_str()), StringName(functionName.c_str()), executionDuration);
+                    JenovaProfiler::AddExecutionRecord(scriptPath, functionName, executionDuration);
                 }
                 else
                 {
@@ -709,7 +710,7 @@ Variant JenovaInterpreter::CallFunction(const godot::Object* objectPtr, const st
             JenovaTinyProfiler::CreateCheckpoint("MeteoraExecution");
             result = interpreterCaller();
             double executionDuration = JenovaTinyProfiler::GetCheckpointTimeAndDispose("MeteoraExecution");
-            JenovaProfiler::AddExecutionRecord(StringName(scriptPath.c_str()), StringName(functionName.c_str()), executionDuration);
+            JenovaProfiler::AddExecutionRecord(scriptPath, functionName, executionDuration);
         }
         else
         {

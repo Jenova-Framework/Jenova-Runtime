@@ -24,15 +24,19 @@ public:
 	static bool Initialize();
 	static bool Shutdown();
 	static bool IsEnabled();
+	static bool Prepare(jenova::json_t& data);
 	static void SetProfilingMode(jenova::ProfilingMode profilingMode);
 	static void StartRecording();
 	static void StopRecording();
 	static void ClearRecords();
-	static bool AddStageRecord(const StringName& stageName, double duration);
-	static bool AddExecutionRecord(const StringName& scriptPath, const StringName& functionName, double duration);
-	static double GetStageRecord(const StringName& stageName);
-	static double GetExecutionRecord(const StringName& scriptPath, const StringName& functionName);
+	static bool AddStageRecord(const std::string& stageName, double duration);
+	static bool AddExecutionRecord(const std::string& scriptPath, const std::string& functionName, double duration);
+	static double GetStageRecord(const std::string& stageName);
+	static double GetExecutionRecord(const std::string& scriptPath, const std::string& functionName);
 	static void Frame();
+
+public:
+	static double MonitorReport(const String& scriptPath, const String& functionName);
 
 private:
 	static inline bool isRecording = false;
