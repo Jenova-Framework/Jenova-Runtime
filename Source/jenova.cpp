@@ -118,6 +118,8 @@ namespace jenova
 			 String AdditionalIncludeDirectoriesConfigPath				= "jenova/additional_include_directories";
 			 String AdditionalLibraryDirectoriesConfigPath				= "jenova/additional_library_directories";
 			 String AdditionalDependenciesConfigPath					= "jenova/additional_dependencies";
+			 String CustomCompilerCommandsConfigPath					= "jenova/custom_compiler_commands";
+			 String CustomLinkerCommandsConfigPath						= "jenova/custom_linker_commands";
 			 String ExternalChangesTriggerModeConfigPath				= "jenova/external_changes_trigger_mode";
 			 String UseHotReloadAtRuntimeConfigPath						= "jenova/use_hot_reload_at_runtime";
 			 String EditorVerboseOutputConfigPath						= "jenova/editor_verbose_output";
@@ -475,6 +477,8 @@ namespace jenova
 						if (!editor_settings->has_setting(AdditionalIncludeDirectoriesConfigPath)) editor_settings->set(AdditionalIncludeDirectoriesConfigPath, "");
 						if (!editor_settings->has_setting(AdditionalLibraryDirectoriesConfigPath)) editor_settings->set(AdditionalLibraryDirectoriesConfigPath, "");
 						if (!editor_settings->has_setting(AdditionalDependenciesConfigPath)) editor_settings->set(AdditionalDependenciesConfigPath, "");
+						if (!editor_settings->has_setting(CustomCompilerCommandsConfigPath)) editor_settings->set(CustomCompilerCommandsConfigPath, "");
+						if (!editor_settings->has_setting(CustomLinkerCommandsConfigPath)) editor_settings->set(CustomLinkerCommandsConfigPath, "");
 						if (!editor_settings->has_setting(ExternalChangesTriggerModeConfigPath)) editor_settings->set(ExternalChangesTriggerModeConfigPath, int32_t(ExternalChangesDefaultTriggerMode));
 						if (!editor_settings->has_setting(UseHotReloadAtRuntimeConfigPath)) editor_settings->set(UseHotReloadAtRuntimeConfigPath, true);
 						if (!editor_settings->has_setting(EditorVerboseOutputConfigPath)) editor_settings->set(EditorVerboseOutputConfigPath, int32_t(EditorVerboseDefaultOutput));
@@ -558,6 +562,18 @@ namespace jenova
 							PropertyHint::PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, JenovaEditorSettingsCategory);
 						editor_settings->add_property_info(AdditionalDependenciesProperty);
 						editor_settings->set_initial_value(AdditionalDependenciesConfigPath, "", false);
+
+						// Custom Compiler Commands Property
+						PropertyInfo CustomCompilerCommandsProperty(Variant::STRING, CustomCompilerCommandsConfigPath,
+							PropertyHint::PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, JenovaEditorSettingsCategory);
+						editor_settings->add_property_info(CustomCompilerCommandsProperty);
+						editor_settings->set_initial_value(CustomCompilerCommandsConfigPath, "", false);
+
+						// Custom Linker Commands Property
+						PropertyInfo CustomLinkerCommandsProperty(Variant::STRING, CustomLinkerCommandsConfigPath,
+							PropertyHint::PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, JenovaEditorSettingsCategory);
+						editor_settings->add_property_info(CustomLinkerCommandsProperty);
+						editor_settings->set_initial_value(CustomLinkerCommandsConfigPath, "", false);
 
 						// External Changes Trigger Mode Property
 						PropertyInfo ExternalChangesTriggerModeProperty(Variant::INT, ExternalChangesTriggerModeConfigPath, 
@@ -892,6 +908,8 @@ namespace jenova
 				// Add Tools Menu Items
 				toolsMenu->add_item("  Clear Cache Database", EDITOR_MENU_ID(ClearCacheDatabase));
 				toolsMenu->add_separator();
+				toolsMenu->add_item("  Generate User Interface...", EDITOR_MENU_ID(GenerateUserInterface));
+				toolsMenu->add_separator();
 				toolsMenu->add_item("  Generate Encryption Key...  ", EDITOR_MENU_ID(GenerateEncryptionKey));
 				toolsMenu->add_item("  Backup Current Encryption Key...  ", EDITOR_MENU_ID(BackupCurrentEncryptionKey));
 				toolsMenu->add_separator();
@@ -927,6 +945,7 @@ namespace jenova
 				auto lightningIcon = CREATE_SVG_MENU_ICON(JENOVA_RESOURCE(SVG_LIGHTNING_ICON));
 				auto eraserIcon = CREATE_SVG_MENU_ICON(JENOVA_RESOURCE(SVG_ERASER_ICON));
 				auto updateIcon = CREATE_SVG_MENU_ICON(JENOVA_RESOURCE(SVG_UPDATE_ICON));
+				auto userInterfaceIcon = CREATE_SVG_MENU_ICON(JENOVA_RESOURCE(SVG_USER_INTERFACE_ICON));
 				auto keyTealIcon = CREATE_SVG_MENU_ICON(JENOVA_RESOURCE(SVG_KEY_TEAL_ICON));
 				auto keyMaroonIcon = CREATE_SVG_MENU_ICON(JENOVA_RESOURCE(SVG_KEY_MAROON_ICON));
 				auto compilerIcon = CREATE_SVG_MENU_ICON(JENOVA_RESOURCE(SVG_COMPILER_ICON));
@@ -951,6 +970,7 @@ namespace jenova
 				jenovaMenu->set_item_icon(jenovaMenu->get_item_index(EDITOR_MENU_ID(Documentation)), diamondIcon);
 				jenovaMenu->set_item_icon(jenovaMenu->get_item_index(EDITOR_MENU_ID(CheckForUpdates)), updateIcon);
 				toolsMenu->set_item_icon(toolsMenu->get_item_index(EDITOR_MENU_ID(ClearCacheDatabase)), eraserIcon);
+				toolsMenu->set_item_icon(toolsMenu->get_item_index(EDITOR_MENU_ID(GenerateUserInterface)), userInterfaceIcon);
 				toolsMenu->set_item_icon(toolsMenu->get_item_index(EDITOR_MENU_ID(GenerateEncryptionKey)), keyTealIcon);
 				toolsMenu->set_item_icon(toolsMenu->get_item_index(EDITOR_MENU_ID(BackupCurrentEncryptionKey)), keyMaroonIcon);
 				toolsMenu->set_item_icon(toolsMenu->get_item_index(EDITOR_MENU_ID(ReloadScriptDocumentation)), bookIcon);
@@ -1236,6 +1256,9 @@ namespace jenova
 						};
 					}
 					else jenova::Output("Jenova Module Cache Doesn't Exists, Operation Aborted.");
+					break;
+				case jenova::EditorMenuID::GenerateUserInterface:
+					jenova::Error("Jenova Main Menu", "Feature Not Implemented Yet");
 					break;
 				case jenova::EditorMenuID::GenerateEncryptionKey:
 					jenova::Error("Jenova Main Menu", "Feature is Removed.");
@@ -2145,6 +2168,10 @@ namespace jenova
 				if (!GetEditorSetting(AdditionalLibraryDirectoriesConfigPath, additionalLibraryDirectories)) return false;
 				Variant additionalDependencies;
 				if (!GetEditorSetting(AdditionalDependenciesConfigPath, additionalDependencies)) return false;
+				Variant customCompilerCommands;
+				if (!GetEditorSetting(CustomCompilerCommandsConfigPath, customCompilerCommands)) return false;
+				Variant customLinkerCommands;
+				if (!GetEditorSetting(CustomLinkerCommandsConfigPath, customLinkerCommands)) return false;
 				Variant compilerPackage;
 				if (!GetEditorSetting(CompilerPackageConfigPath, compilerPackage)) return false;
 				Variant godotKitPackage;
@@ -2242,6 +2269,18 @@ namespace jenova
 				if (!jenovaCompiler->SetCompilerOption("cpp_extra_libs", String(additionalDependencies)))
 				{
 					jenova::Error("Jenova Builder", "Failed to Set Compiler Setting 'Additional Dependencies'");
+					DisposeCompiler();
+					return false;
+				};
+				if (!jenovaCompiler->SetCompilerOption("cpp_custom_compiler_commands", String(customCompilerCommands)))
+				{
+					jenova::Error("Jenova Builder", "Failed to Set Compiler Setting 'Custom Compiler Commands'");
+					DisposeCompiler();
+					return false;
+				};
+				if (!jenovaCompiler->SetCompilerOption("cpp_custom_linker_commands", String(customLinkerCommands)))
+				{
+					jenova::Error("Jenova Builder", "Failed to Set Compiler Setting 'Custom Linker Commands'");
 					DisposeCompiler();
 					return false;
 				};
@@ -2468,6 +2507,10 @@ namespace jenova
 				if (!GetEditorSetting(AdditionalLibraryDirectoriesConfigPath, additionalLibraryDirectories)) return false;
 				Variant additionalDependencies;
 				if (!GetEditorSetting(AdditionalDependenciesConfigPath, additionalDependencies)) return false;
+				Variant customCompilerCommands;
+				if (!GetEditorSetting(CustomCompilerCommandsConfigPath, customCompilerCommands)) return false;
+				Variant customLinkerCommands;
+				if (!GetEditorSetting(CustomLinkerCommandsConfigPath, customLinkerCommands)) return false;
 				Variant generateDebugInformation;
 				if (!GetEditorSetting(GenerateDebugInformationConfigPath, generateDebugInformation)) return false;
 
@@ -2479,6 +2522,8 @@ namespace jenova
 					jenovaConfiguration["AdditionalIncludeDirectories"] = AS_STD_STRING(String(additionalIncludeDirectories));
 					jenovaConfiguration["AdditionalLibraryDirectories"] = AS_STD_STRING(String(additionalLibraryDirectories));
 					jenovaConfiguration["AdditionalDependencies"] = AS_STD_STRING(String(additionalDependencies));
+					jenovaConfiguration["CustomCompilerCommands"] = AS_STD_STRING(String(customCompilerCommands));
+					jenovaConfiguration["CustomLinkerCommands"] = AS_STD_STRING(String(customLinkerCommands));
 					jenovaConfiguration["GenerateDebugInformation"] = bool(generateDebugInformation);
 
 					// Serialize Scripts Count
@@ -2533,6 +2578,8 @@ namespace jenova
 				if (setting_key == std::string("additional_include_directories")) return AdditionalIncludeDirectoriesConfigPath;
 				if (setting_key == std::string("additional_library_directories")) return AdditionalLibraryDirectoriesConfigPath;
 				if (setting_key == std::string("additional_dependencies")) return AdditionalDependenciesConfigPath;
+				if (setting_key == std::string("custom_compiler_commands")) return CustomCompilerCommandsConfigPath;
+				if (setting_key == std::string("custom_linker_commands")) return CustomLinkerCommandsConfigPath;
 				if (setting_key == std::string("external_changes_trigger_mode")) return ExternalChangesTriggerModeConfigPath;
 				if (setting_key == std::string("use_hot_reload_at_runtime")) return UseHotReloadAtRuntimeConfigPath;
 				if (setting_key == std::string("editor_verbose_output")) return EditorVerboseOutputConfigPath;

@@ -434,6 +434,9 @@ namespace jenova
             // Add Extra Options
             compilerArgument += AS_STD_STRING(String(compilerSettings["cpp_extra_compiler"])) + " ";
 
+            // Add Custom Options
+            compilerArgument += AS_STD_STRING(String(compilerSettings["cpp_custom_compiler_commands"])) + " ";
+
             // Dump Compiler Command If Developer Mode Enabled
             if (jenova::GlobalStorage::DeveloperModeActivated) jenova::WriteStdStringToFile(jenovaCachePath + "CompilerCommand.txt", compilerArgument);
 
@@ -807,6 +810,9 @@ namespace jenova
 
             // Add Extra Options
             linkerArgument += AS_STD_STRING(String(linkerSettings["cpp_extra_linker"])) + " ";
+
+            // Add Custom Options
+            linkerArgument += AS_STD_STRING(String(linkerSettings["cpp_custom_linker_commands"])) + " ";
 
             // Add Delayed DLLs
             linkerArgument += AS_STD_STRING(String(linkerSettings["cpp_delayed_dll"])) + " ";
@@ -1274,6 +1280,9 @@ namespace jenova
             // Add Extra Options
             compilerArgument += AS_STD_STRING(String(compilerSettings["cpp_extra_compiler"])) + " ";
 
+            // Add Custom Options
+            compilerArgument += AS_STD_STRING(String(compilerSettings["cpp_custom_compiler_commands"])) + " ";
+
             // Load Cache if Exists
             bool buildCacheFileFound = false;
             jenova::json_t buildCacheDatabase;
@@ -1610,6 +1619,9 @@ namespace jenova
 
             // Add Extra Options
             linkerArgument += AS_STD_STRING(String(linkerSettings["cpp_extra_linker"])) + " ";
+
+            // Add Custom Options
+            linkerArgument += AS_STD_STRING(String(linkerSettings["cpp_custom_linker_commands"])) + " ";
 
             // Add Delayed DLLs
             linkerArgument += AS_STD_STRING(String(linkerSettings["cpp_delayed_dll"])) + " ";
@@ -2119,6 +2131,9 @@ namespace jenova
                 // Extra Compiler Flags
                 compilerArgument += AS_STD_STRING(String(compilerSettings["cpp_extra_compiler"])) + " ";
 
+                // Add Custom Options
+                compilerArgument += AS_STD_STRING(String(compilerSettings["cpp_custom_compiler_commands"])) + " ";
+
                 // Preprocessor Definitions
                 compilerArgument += GeneratePreprocessDefinitions(compilerSettings["cpp_definitions"]);
 
@@ -2379,6 +2394,9 @@ namespace jenova
 
             // Add Extra Options
             linkerArgument += AS_STD_STRING(String(linkerSettings["cpp_extra_linker"])) + " ";
+
+            // Add Custom Options
+            linkerArgument += AS_STD_STRING(String(linkerSettings["cpp_custom_linker_commands"])) + " ";
 
             // Add Libraries [GCC Requires Libraries to be Added at the End]
             linkerArgument += GenerateLibraries(linkerSettings["cpp_native_libs"], true);

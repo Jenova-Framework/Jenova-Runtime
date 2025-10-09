@@ -140,7 +140,7 @@ static bool OverrideClassAPIType(const godot::StringName& className, jenova::sdk
 		jenova::ShowMessageBox("You are attempting to Hot-Reload runtime with Nested Extensions and "
 			"your engine build does not contain the required feature.\n\n"
 			"To use this feature you need a compatible build.\n\n"
-			"Godot Jenova Edition, Redot and Lithium IDE support this feature.\n", "Warning", 0x00000030L);
+			"Godot Jenova Compatible, Deicidium and Lithium IDE support this feature.\n", "Warning", 0x00000030L);
 
 		// Failed
 		return false;
@@ -526,7 +526,7 @@ namespace jenova::sdk
 						"your engine build does not contain the required feature.\n\n"
 						"To use this feature you need a compatible build, "
 						"If you have any nested nodes in your other opened scene, It will lead to a crash when switching to them.\n\n"
-						"Godot 4.5+, Godot Jenova Edition, Lithium IDE and Redot support this feature.\n", "Warning", 0x00000030L);
+						"Godot Jenova Compatible, Deicidium and Lithium IDE support this feature.\n", "Warning", 0x00000030L);
 
 					// Fallback to Active Scene
 					openedScenes.push_back(GetTree()->get_root());

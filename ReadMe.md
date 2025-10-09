@@ -142,5 +142,7 @@ Jenova Proprietary version includes only Microsoft Visual C++ (MSVC) and Microso
 > The Jenova Runtime Proprietary version is no longer available for public access. The last version released was 0.3.6.0 Alpha.
 > Open-Source version will continue to receive all future updates from the proprietary version, Except those related to security.
 
+![RepoBeats](https://repobeats.axiom.co/api/embed/292d48b5da1eb7a8a7db9362fe92577877ec5b51.svg "Repobeats Analytics Image")
+
 ----
 Developed & Designed By **Hamid.Memar (MemarDesign™ LLC.)**
