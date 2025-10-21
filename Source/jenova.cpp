@@ -3396,7 +3396,20 @@ namespace jenova
 					cmake << "cmake_minimum_required(VERSION 3.10)\n";
 					cmake << "project(Jenova-Framework)\n";
 					cmake << "set(CMAKE_CXX_STANDARD 20)\n\n";
-					cmake << "file(GLOB SRC_FILES \"${CMAKE_CURRENT_SOURCE_DIR}/*.cpp\")\n\n";
+					cmake << "file(GLOB_RECURSE ALL_SRC_FILES \"${CMAKE_CURRENT_SOURCE_DIR}/*.cpp\")\n\n";
+					cmake << "set(EXCLUDED_DIRS \"jenova\" \"Jenova\")\n";
+					cmake << "set(SRC_FILES \"\")\n\n";
+					cmake << "foreach(file ${ALL_SRC_FILES})\n";
+					cmake << "    set(exclude FALSE)\n";
+					cmake << "    foreach(excluded ${EXCLUDED_DIRS})\n";
+					cmake << "        if(file MATCHES \".*/${excluded}/.*\")\n";
+					cmake << "            set(exclude TRUE)\n";
+					cmake << "        endif()\n";
+					cmake << "    endforeach()\n";
+					cmake << "    if(NOT exclude)\n";
+					cmake << "        list(APPEND SRC_FILES ${file})\n";
+					cmake << "    endif()\n";
+					cmake << "endforeach()\n\n";
 					cmake << "add_library(Jenova SHARED ${SRC_FILES})\n\n";
 
 					// Include Directories
