@@ -108,4 +108,5 @@ static constexpr char JenovaModuleInitializerCPP[] = R"(
 	}
 
 )";
+static constexpr char JenovaGitIngoreTemplate[] = "# Godot 4+ Jenova specific ignores\n.vs/\n.vscode/\n.idea/\n.godot/\n.jenova/\nJenova/\n/vc*.pdb\ncmake-build-*/\nCMakeFiles/\nCMakeCache.txt\nMakefile\ncmake_install.cmake\ncompile_commands.json\ncompile_flags.txt\n";
 }

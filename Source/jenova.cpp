@@ -895,6 +895,7 @@ namespace jenova
 				jenovaMenu->add_separator();
 				jenovaMenu->add_shortcut(CreateShortcut("  Export to Visual Studio...  ", Key(KEY_MASK_CTRL | KEY_MASK_SHIFT | KEY_E)), EDITOR_MENU_ID(ExportToVisualStudio));
 				jenovaMenu->add_shortcut(CreateShortcut("  Export to Visual Studio Code...  ", Key(KEY_MASK_ALT | KEY_MASK_SHIFT | KEY_E)), EDITOR_MENU_ID(ExportToVisualStudioCode));
+				jenovaMenu->add_shortcut(CreateShortcut("  Export to JetBrains CLion...  ", Key(KEY_MASK_ALT | KEY_MASK_SHIFT | KEY_C)), EDITOR_MENU_ID(ExportToCLion));
 				jenovaMenu->add_shortcut(CreateShortcut("  Export to Neovim...  ", Key(KEY_MASK_ALT | KEY_MASK_SHIFT | KEY_N)), EDITOR_MENU_ID(ExportToNeovim));
 				jenovaMenu->add_item("  Export Jenova Module...  ", EDITOR_MENU_ID(ExportJenovaModule));
 				jenovaMenu->add_separator();
@@ -937,6 +938,7 @@ namespace jenova
 				auto jenovaIcon = CREATE_PNG_MENU_ICON(JENOVA_RESOURCE(PNG_JENOVA_ICON_64));
 				auto vsIcon = CREATE_SVG_MENU_ICON(JENOVA_RESOURCE(SVG_VISUAL_STUDIO_ICON));
 				auto vsCodeIcon = CREATE_SVG_MENU_ICON(JENOVA_RESOURCE(SVG_VISUAL_STUDIO_CODE_ICON));
+				auto clionIcon = CREATE_SVG_MENU_ICON(JENOVA_RESOURCE(SVG_CLION_ICON));
 				auto neovimIcon = CREATE_SVG_MENU_ICON(JENOVA_RESOURCE(SVG_NEOVIM_ICON));
 				auto codeTealIcon = CREATE_SVG_MENU_ICON(JENOVA_RESOURCE(SVG_CODEBLOCK_TEAL_ICON));
 				auto codeRedIcon = CREATE_SVG_MENU_ICON(JENOVA_RESOURCE(SVG_CODEBLOCK_RED_ICON));
@@ -962,6 +964,7 @@ namespace jenova
 				jenovaMenu->set_item_icon(jenovaMenu->get_item_index(EDITOR_MENU_ID(ConfigureBuild)), configureIcon);
 				jenovaMenu->set_item_icon(jenovaMenu->get_item_index(EDITOR_MENU_ID(ExportToVisualStudio)), vsIcon);
 				jenovaMenu->set_item_icon(jenovaMenu->get_item_index(EDITOR_MENU_ID(ExportToVisualStudioCode)), vsCodeIcon);
+				jenovaMenu->set_item_icon(jenovaMenu->get_item_index(EDITOR_MENU_ID(ExportToCLion)), clionIcon);
 				jenovaMenu->set_item_icon(jenovaMenu->get_item_index(EDITOR_MENU_ID(ExportToNeovim)), neovimIcon);
 				jenovaMenu->set_item_icon(jenovaMenu->get_item_index(EDITOR_MENU_ID(ExportJenovaModule)), lightningIcon);
 				jenovaMenu->set_item_icon(jenovaMenu->get_item_index(EDITOR_MENU_ID(DeveloperMode)), jenova::GlobalSettings::VerboseEnabled ? codeTealIcon : codeRedIcon);
@@ -1230,6 +1233,9 @@ namespace jenova
 				case jenova::EditorMenuID::ExportToVisualStudioCode:
 					if (!ExportVisualStudioCodeProject()) jenova::Error("Jenova Visual Studio Code Exporter", "Failed to Export Jenova Solution to Visual Studio Code.");
 					break;
+				case jenova::EditorMenuID::ExportToCLion:
+					if (!ExportCLionProject()) jenova::Error("Jenova CLion Exporter", "Failed to Export Jenova Solution to CLion.");
+					break;
 				case jenova::EditorMenuID::ExportToNeovim:
 					if (!ExportNeovimProject()) jenova::Error("Jenova Neovim Exporter", "Failed to Export Jenova Solution to Neovim.");
 					break;
@@ -1311,6 +1317,26 @@ namespace jenova
 				if (!UpdateStorageConfigurations())
 				{
 					jenova::Warning("Jenova Settings", "Unable to Update Storage Configurations!");
+
+					// Request Restart to Finish Configuration
+					static bool didRequestedRestart = false;
+					if (jenova::GlobalSettings::RequestRestartOnFirstRun && !didRequestedRestart)
+					{
+						// Avoid Restart Request Spam
+						didRequestedRestart = true;
+
+						// Prompt User for Restarting Editor
+						ConfirmationDialog* dialog = memnew(ConfirmationDialog);
+						dialog->set_title("[ A Restart Required ]");
+						dialog->set_text("First-time Jenova run detected, A restart required to configure. Restart now?");
+						dialog->get_ok_button()->set_text("Restart Editor");
+						dialog->get_cancel_button()->set_text("No Thanks!");
+						dialog->connect("confirmed", callable_mp(EditorInterface::get_singleton(), &EditorInterface::restart_editor).bind(true));
+						dialog->connect("confirmed", callable_mp((Node*)dialog, &ConfirmationDialog::queue_free));
+						dialog->connect("canceled", callable_mp((Node*)dialog, &ConfirmationDialog::queue_free));
+						add_child(dialog);
+						dialog->popup_centered();
+					}
 				}
 
 				// Take Action On Changed Settings
@@ -2804,7 +2830,6 @@ namespace jenova
 				std::string projectFile			= scriptCollection.rootPath + jenova::GlobalSettings::VisualStudioProjectFile;
 				std::string projectFiltersFile	= scriptCollection.rootPath + jenova::GlobalSettings::VisualStudioProjectFile + ".filters";
 				std::string projectUserFile		= scriptCollection.rootPath + jenova::GlobalSettings::VisualStudioProjectFile + ".user";
-				std::string gitIgnoreFile		= scriptCollection.rootPath + ".gitignore";
 
 				// Generate Solution File
 				jenova::Output("Generating Visual Studio Solution...");
@@ -3004,8 +3029,7 @@ namespace jenova
 				if (!jenova::WriteStdStringToFile(projectUserFile, projectUserTemplate)) return false;
 
 				// Generate Source Control Git Ignore
-				std::string gitIgnoreTemplate = std::string(BUFFER_PTR_SIZE_PARAM(jenova::visualstudio::VS_SCRIPT_GIT_IGNORE));
-				if (!jenova::WriteStdStringToFile(gitIgnoreFile, gitIgnoreTemplate)) return false;
+				if (!CreateSourceControlFiles(scriptCollection.rootPath)) return false;
 
 				// Create Deployer Module If Exporting from Core Build
 				#ifdef JENOVA_STATIC_BUILD
@@ -3130,7 +3154,6 @@ namespace jenova
 				// Generate VSCode Files Path
 				std::string cppPropertiesFile = vsCodeDirectory + "/" + "c_cpp_properties.json";
 				std::string vsCodeSettingsFile = vsCodeDirectory + "/" + "settings.json";
-				std::string gitIgnoreFile = projectPath + ".gitignore";
 
 				// Create Compiler [For Obtaining Settings Only]
 				if (!CreateCompiler()) return false;
@@ -3250,8 +3273,7 @@ namespace jenova
 					}
 
 					// Generate Source Control Git Ignore
-					std::string gitIgnoreTemplate = std::string(BUFFER_PTR_SIZE_PARAM(jenova::visualstudio::VS_SCRIPT_GIT_IGNORE));
-					if (!jenova::WriteStdStringToFile(gitIgnoreFile, gitIgnoreTemplate)) return false;
+					if (!CreateSourceControlFiles(projectPath)) return false;
 
 					// Check If User Wants to Launch VS Code
 					if (jenova::GlobalSettings::AskAboutOpeningVSCode)
@@ -3292,6 +3314,187 @@ namespace jenova
 
 				// Open Project in VSCode
 				std::thread([](std::string path) {std::string command = "code \"" + path + "\""; std::system(command.c_str()); }, projectPath).detach();
+
+				// All Good
+				return true;
+			}
+
+			// CLion Integration [Experimental]
+			bool ExportCLionProject()
+			{
+				// Verbose
+				jenova::Output("Initializing CLion Project Exporter...");
+
+				// Update Storage Configurations
+				if (!UpdateStorageConfigurations())
+				{
+					jenova::Error("Jenova Settings", "Unable to Update Storage Configurations!");
+					return false;
+				}
+
+				// Create Required Paths
+				std::string projectPath = AS_STD_STRING(jenova::GetJenovaProjectDirectory());
+				std::string cacheDirectoryPath = AS_STD_STRING(jenova::GetJenovaCacheDirectory());
+				std::string cmakeFile = projectPath + "CMakeLists.txt";
+
+				// Create Compiler [For Obtaining Settings Only]
+				if (!CreateCompiler()) return false;
+
+				// Solve Compiler Settings
+				if (!bool(jenovaCompiler->ExecuteCommand("Solve-Compiler-Settings", Dictionary()))) return false;
+
+				// Get Settings from Compiler
+				std::string cpp_definitions = AS_STD_STRING(String(jenovaCompiler->GetCompilerOption("cpp_definitions")));
+				std::string extraIncludeDirectories = AS_STD_STRING(String(jenovaCompiler->GetCompilerOption("cpp_extra_include_directories")));
+				std::string forcedHeaders = jenova::GlobalSettings::ForceJenovaSDKHeader && jenova::GlobalStorage::UseBuiltinSDK ? "JenovaSDK.h;" : "";
+
+				// Solve GodotKit Path
+				String selectedGodotKitPath = jenova::GetInstalledGodotKitPathFromPackages(jenovaCompiler->GetCompilerOption("cpp_godotsdk_path"));
+				if (selectedGodotKitPath == "Missing-GodotKit-1.0.0")
+				{
+					jenova::Error("CLion Exporter", "No GodotSDK Detected On Build System, Install At Least One From Package Manager!");
+					return false;
+				}
+				std::string solvedGodotKitPath = "./" + AS_STD_STRING(selectedGodotKitPath.replace("res://", ""));
+
+				// Adjust Compiler Settings
+				if (!extraIncludeDirectories.empty() && extraIncludeDirectories.back() != ';') extraIncludeDirectories.push_back(';');
+
+				// Add Packages Include/Linkage (Addons, Libraries etc.)
+				for (const auto& addonConfig : jenova::GetInstalledAddons())
+				{
+					// Check For Addon Type
+					if (addonConfig.Type == "RuntimeModule")
+					{
+						if (!addonConfig.Header.empty())
+						{
+							if (addonConfig.Global) forcedHeaders += addonConfig.Path + "/" + addonConfig.Header + ";";
+							extraIncludeDirectories += addonConfig.Path + ";";
+						}
+					}
+				}
+
+				// Dispose Compiler
+				DisposeCompiler();
+
+				// Helper Functions
+				auto SplitList = [&](std::string input) -> std::vector<std::string>
+					{
+						if (!input.empty() && input.back() == ';') input.pop_back();
+						std::stringstream ss(input);
+						std::string item;
+						std::vector<std::string> elements;
+						while (std::getline(ss, item, ';')) if (!item.empty()) elements.push_back(item);
+						return elements;
+					};
+
+				// Generate CLion Project
+				try
+				{
+					// Build CMake Lists
+					std::ostringstream cmake;
+					cmake << "cmake_minimum_required(VERSION 3.10)\n";
+					cmake << "project(Jenova-Framework)\n";
+					cmake << "set(CMAKE_CXX_STANDARD 20)\n\n";
+					cmake << "file(GLOB SRC_FILES \"${CMAKE_CURRENT_SOURCE_DIR}/*.cpp\")\n\n";
+					cmake << "add_library(Jenova SHARED ${SRC_FILES})\n\n";
+
+					// Include Directories
+					cmake << "target_include_directories(Jenova PRIVATE\n";
+					cmake << "    ${CMAKE_CURRENT_SOURCE_DIR}\n";
+					cmake << "    ${CMAKE_CURRENT_SOURCE_DIR}/Jenova/JenovaSDK\n";
+					cmake << "    ${CMAKE_CURRENT_SOURCE_DIR}/" << solvedGodotKitPath << "\n";
+					for (auto& inc : SplitList(extraIncludeDirectories)) cmake << "    \"" << jenova::NormalizePath(inc) << "\"\n";
+					cmake << ")\n\n";
+
+					// Add Definitions
+					auto defs = SplitList(cpp_definitions);
+					if (!defs.empty())
+					{
+						cmake << "target_compile_definitions(Jenova PRIVATE\n";
+						for (auto& def : defs) cmake << "    " << def << "\n";
+						cmake << ")\n\n";
+					}
+
+					// Add Forced Headers
+					auto headers = SplitList(forcedHeaders);
+					if (!headers.empty())
+					{
+						std::ostringstream fh;
+						fh << "// Auto-Generated by Jenova CLion Exporter\n";
+						fh << "#pragma once\n\n";
+						for (auto& hdr : headers) fh << "#include \"" << jenova::NormalizePath(hdr) << "\"\n";
+						std::string forcedHeaderFile = jenova::NormalizePath(cacheDirectoryPath + "/forcedHeaders.h");
+						if (!jenova::WriteStdStringToFile(forcedHeaderFile, fh.str()))
+						{
+							jenova::Error("Jenova CLion Exporter", "Unable to Create Forced Headers!");
+							return false;
+						}
+						cmake << "target_compile_options(Jenova PRIVATE\n";
+						cmake << "    $<$<CXX_COMPILER_ID:MSVC>:/FI\"" << forcedHeaderFile << "\" >\n";
+						cmake << "    $<$<CXX_COMPILER_ID:Clang>:-include \"" << forcedHeaderFile << "\" >\n";
+						cmake << "    $<$<CXX_COMPILER_ID:GNU>:-include \"" << forcedHeaderFile << "\" >\n";
+						cmake << ")\n\n";
+					}
+
+					// Write CMake Lists
+					if (!jenova::WriteStdStringToFile(cmakeFile, cmake.str()))
+					{
+						jenova::Error("Jenova CLion Exporter", "Unable to Create CMake Lists!");
+						return false;
+					}
+
+					// Generate Source Control Git Ignore
+					if (!CreateSourceControlFiles(projectPath)) return false;
+
+					// Check If User Wants to Launch CLion
+					if (jenova::GlobalSettings::AskAboutOpeningCLion)
+					{
+						// Prompt User for Opening CLion
+						ConfirmationDialog* dialog = memnew(ConfirmationDialog);
+						dialog->set_title("[ JetBrains CLion Integration ]");
+						dialog->set_text("CLion Project Successfully Generated. Would you like to open it now?");
+						dialog->get_ok_button()->set_text("Open CLion");
+						dialog->get_cancel_button()->set_text("No Thanks!");
+
+						// Create & Assign UI Callback to Dialog
+						dialog->connect("confirmed", callable_mp(this, &JenovaEditorPlugin::OpenProjectInCLion));
+						dialog->connect("confirmed", callable_mp((Node*)dialog, &ConfirmationDialog::queue_free));
+						dialog->connect("canceled", callable_mp((Node*)dialog, &ConfirmationDialog::queue_free));
+
+						// Add Dialog to Engine & Show
+						add_child(dialog);
+						dialog->popup_centered();
+					}
+
+					// Verbose
+					jenova::OutputColored("#425af5", "Jenova Project Has Been Successfully Exported to CLion (CMake Configuration).");
+
+					// All Good
+					return true;
+				}
+				catch (const std::exception& error)
+				{
+					jenova::Error("Jenova CLion Exporter", "CLion Project Generation Failed.");
+					return false;
+				}
+			}
+			bool OpenProjectInCLion()
+			{
+				// Get Project Path
+				std::string projectPath = AS_STD_STRING(jenova::GetJenovaProjectDirectory());
+
+				// Validate Platform
+				if (!QUERY_PLATFORM(Windows) && !QUERY_PLATFORM(Linux)) return false;
+
+				// Open Project in CLion
+				std::thread([](std::string path)
+				{
+					std::string command;
+					if (QUERY_PLATFORM(Windows)) command = "start \"\" \"clion64.exe\" \"" + path + "\"";
+					if (QUERY_PLATFORM(Linux)) command = "clion \"" + path + "\"";
+					std::system(command.c_str());
+				}, projectPath).detach();
 
 				// All Good
 				return true;
@@ -3361,6 +3564,9 @@ namespace jenova
 					jenova::Error("Neovim Exporter", "Unable to write compile_flags.txt!");
 					return false;
 				}
+
+				// Generate Source Control Git Ignore
+				if (!CreateSourceControlFiles(projectPath)) return false;
 
 				// Check If User Wants to Launch Neo Vim
 				if (jenova::GlobalSettings::AskAboutOpeningNeoVim)
@@ -9483,7 +9689,21 @@ namespace jenova
 		// Unsupported Platform
 		return false;
 	}
-	std::string GetVisualStudioInstancesMetadata(std::string arguments)
+	bool CreateSourceControlFiles(const std::string& rootPath)
+	{
+		std::string gitIgnoreFile = rootPath + ".gitignore";
+		if (!std::filesystem::exists(gitIgnoreFile))
+		{
+			std::string gitIgnoreTemplate = std::string(BUFFER_PTR_SIZE_PARAM(jenova::resources::JenovaGitIngoreTemplate));
+			if (!jenova::WriteStdStringToFile(gitIgnoreFile, gitIgnoreTemplate)) return false;
+		}
+		else
+		{
+			jenova::Warning("Source Control", "GitHub Ignore file already exists. Delete it first if you want to regenerate.");
+		}
+		return true;
+	}
+	std::string GetVisualStudioInstancesMetadata(const std::string& arguments)
 	{
 		// Windows Implementation
 		#ifdef TARGET_PLATFORM_WINDOWS

@@ -20,11 +20,11 @@
 #define APP_COMPANYNAME					"MemarDesign™ LLC."
 #define APP_DESCRIPTION					"Real-Time C++ Scripting System for Godot Game Engine, Developed By Hamid.Memar."
 #define APP_COPYRIGHT					"Copyright MemarDesign™ LLC. (©) 2024-2025, All Rights Reserved."
-#define APP_VERSION						"0.3.8.4"
+#define APP_VERSION						"0.3.8.5"
 #define APP_VERSION_MIDDLEFIX			" "
 #define APP_VERSION_POSTFIX				"Beta"
 #define APP_VERSION_SINGLECHAR			"b"
-#define APP_VERSION_DATA				0, 3, 8, 4
+#define APP_VERSION_DATA				0, 3, 8, 5
 #define APP_VERSION_BUILD				"0"
 #define APP_VERSION_NAME				"Halo"
 
@@ -483,6 +483,7 @@ namespace jenova
 		ConfigureBuild,
 		ExportToVisualStudio,
 		ExportToVisualStudioCode,
+		ExportToCLion,
 		ExportToNeovim,
 		ExportJenovaModule,
 		DeveloperMode,
@@ -766,7 +767,9 @@ namespace jenova
 		constexpr bool HandlePreLaunchErrors					= true;
 		constexpr bool AskAboutOpeningVisualStudio				= true;
 		constexpr bool AskAboutOpeningVSCode					= true;
+		constexpr bool AskAboutOpeningCLion						= true;
 		constexpr bool AskAboutOpeningNeoVim					= true;
+		constexpr bool RequestRestartOnFirstRun					= true;
 		constexpr bool CreateSymbolicAddonModules				= true;
 		constexpr bool CopyRuntimeModuleOnExport				= true;
 		constexpr bool RespectSourceFilesEncoding				= true;
@@ -1017,7 +1020,8 @@ namespace jenova
 	bool ResolveAndLoadAddonModulesAtRuntime();
 	std::string CreateTemporaryModuleCache(const uint8_t* moduleDataPtr, const size_t moduleSize);
 	bool ReleaseTemporaryModuleCache();
-	std::string GetVisualStudioInstancesMetadata(std::string arguments);
+	bool CreateSourceControlFiles(const std::string& rootPath);
+	std::string GetVisualStudioInstancesMetadata(const std::string& arguments);
 	std::string GetRuntimeCompilerName();
 	bool InstallBuiltInScriptTemplates();
 	bool UpdateScriptTemplates();
