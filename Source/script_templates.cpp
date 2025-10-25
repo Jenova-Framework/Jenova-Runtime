@@ -122,8 +122,7 @@ void JenovaTemplateManager::ClearScriptTemplates()
 bool JenovaTemplateManager::InstallBuiltInScriptTemplates()
 {
 	// Create Templates Directory
-	String projectPath = jenova::GetJenovaProjectDirectory();
-	std::string templatesDirectory = AS_STD_STRING(projectPath + jenova::GlobalSettings::JenovaScriptTemplatesPath);
+	std::string templatesDirectory = AS_STD_STRING(ProjectSettings::get_singleton()->globalize_path(jenova::GlobalSettings::JenovaScriptTemplatesPath));
 	if (!templatesDirectory.empty() && (templatesDirectory.back() == '\\' || templatesDirectory.back() == '/')) templatesDirectory.pop_back();
 
 	// Validate Templates Directory Path
@@ -221,7 +220,7 @@ bool JenovaTemplateManager::InstallBuiltInScriptTemplates()
 bool JenovaTemplateManager::UpdateScriptTemplates()
 {
 	// Create Templates Directory
-	String templatesDirectory = ProjectSettings::get_singleton()->globalize_path("res://" + String(jenova::GlobalSettings::JenovaScriptTemplatesPath));
+	String templatesDirectory = ProjectSettings::get_singleton()->globalize_path(jenova::GlobalSettings::JenovaScriptTemplatesPath);
 
 	// Validate Templates Directory Path
 	if (!std::filesystem::exists(AS_STD_STRING(templatesDirectory)))

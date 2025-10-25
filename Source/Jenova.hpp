@@ -20,11 +20,11 @@
 #define APP_COMPANYNAME					"MemarDesign™ LLC."
 #define APP_DESCRIPTION					"Real-Time C++ Scripting System for Godot Game Engine, Developed By Hamid.Memar."
 #define APP_COPYRIGHT					"Copyright MemarDesign™ LLC. (©) 2024-2025, All Rights Reserved."
-#define APP_VERSION						"0.3.8.5"
+#define APP_VERSION						"0.3.8.6"
 #define APP_VERSION_MIDDLEFIX			" "
 #define APP_VERSION_POSTFIX				"Beta"
 #define APP_VERSION_SINGLECHAR			"b"
-#define APP_VERSION_DATA				0, 3, 8, 5
+#define APP_VERSION_DATA				0, 3, 8, 6
 #define APP_VERSION_BUILD				"0"
 #define APP_VERSION_NAME				"Halo"
 
@@ -821,8 +821,8 @@ namespace jenova
 		constexpr char* JenovaTemporaryBootScriptFile			= "Jenova.Temporary.Boot.ctron";
 		constexpr char* JenovaPackageDatabaseURL				= "https://raw.githubusercontent.com";
 		constexpr char* JenovaReleaseMetadataURL				= "https://raw.githubusercontent.com";
-		constexpr char* JenovaPackageRepositoryPath				= "Jenova/Packages/";
-		constexpr char* JenovaScriptTemplatesPath				= "Jenova/Templates/";
+		constexpr char* JenovaPackageRepositoryPath				= "res://Jenova/Packages";
+		constexpr char* JenovaScriptTemplatesPath				= "res://Jenova/Templates";
 
 		constexpr int JenovaTerminalLogFontSize					= 12;
 
@@ -948,6 +948,7 @@ namespace jenova
 	MemoryBuffer DecompressBuffer(void* bufferPtr, size_t bufferSize);
 	float CalculateCompressionRatio(size_t baseSize, size_t compressedSize);
 	Ref<Texture2D> GetEditorIcon(const String& iconName);
+	Variant GetEditorSetting(const String& settingKey);
 	bool DumpThemeColors(const Ref<Theme> theme);
 	ArgumentsArray ProcessDeployerArguments(const std::string& cmdLine);
 	bool WriteStringToFile(const String& filePath, const String& str);

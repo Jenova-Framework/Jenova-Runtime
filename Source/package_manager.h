@@ -28,14 +28,14 @@ protected:
 	static void _bind_methods();
 
 private:
-	Timer* taskTimer;
-	Window* currentWindow = nullptr;
-	GridContainer* browserContent = nullptr;
-	RichTextLabel* statusLabel = nullptr;
-	jenova::TaskID currentTaskID = 0;
-	int64_t currentTabID = 0;
-	std::string currentDatabaseURL = "";
-	bool isBusy = false;
+	Timer* taskTimer				= nullptr;
+	Window* currentWindow			= nullptr;
+	GridContainer* browserContent	= nullptr;
+	RichTextLabel* statusLabel		= nullptr;
+	jenova::TaskID currentTaskID	= 0;
+	int64_t currentTabID			= 0;
+	std::string currentDatabaseURL	= "";
+	bool isBusy						= false;
 
 public:
 	static void init();

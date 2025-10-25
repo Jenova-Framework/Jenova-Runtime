@@ -130,6 +130,7 @@ namespace jenova
 			 String ManagedSafeExecutionConfigPath						= "jenova/managed_safe_execution";
 			 String UseBuiltinSDKConfigPath								= "jenova/use_builtin_jenova_sdk";
 			 String RefreshTreeAfterBuildConfigPath						= "jenova/refresh_scene_tree_after_build";
+			 String PackageRepositoryPathConfigPath						= "jenova/package_repository_path";
 			 String BuildToolButtonEditorConfigPath						= "jenova/build_tool_button_placement";
 
 		private:
@@ -489,6 +490,7 @@ namespace jenova
 						if (!editor_settings->has_setting(ManagedSafeExecutionConfigPath)) editor_settings->set(ManagedSafeExecutionConfigPath, true);
 						if (!editor_settings->has_setting(UseBuiltinSDKConfigPath)) editor_settings->set(UseBuiltinSDKConfigPath, true);
 						if (!editor_settings->has_setting(RefreshTreeAfterBuildConfigPath)) editor_settings->set(RefreshTreeAfterBuildConfigPath, false);
+						if (!editor_settings->has_setting(PackageRepositoryPathConfigPath)) editor_settings->set(PackageRepositoryPathConfigPath, jenova::GlobalSettings::JenovaPackageRepositoryPath);
 						if (!editor_settings->has_setting(BuildToolButtonEditorConfigPath)) editor_settings->set(BuildToolButtonEditorConfigPath, int32_t(BuildToolButtonDefaultPlacement));
 
 						// Add the Setting Descriptions to The Editor Settings
@@ -636,6 +638,12 @@ namespace jenova
 							PropertyHint::PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, JenovaEditorSettingsCategory);
 						editor_settings->add_property_info(RefreshTreeAfterBuildProperty);
 						editor_settings->set_initial_value(RefreshTreeAfterBuildConfigPath, false, false);
+
+						// Package Repository Path Property
+						PropertyInfo PackageRepositoryPathProperty(Variant::STRING, PackageRepositoryPathConfigPath,
+							PropertyHint::PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, JenovaEditorSettingsCategory);
+						editor_settings->add_property_info(PackageRepositoryPathProperty);
+						editor_settings->set_initial_value(PackageRepositoryPathConfigPath, jenova::GlobalSettings::JenovaPackageRepositoryPath, false);
 
 						// Build Tool Button Placement Property
 						String buttonPlacements = "Before Main Menu,After Main Menu,Before Stage Selector,After Stage Selector,Before Run Bar,After Run Bar,After Render Method";
@@ -2616,6 +2624,7 @@ namespace jenova
 				if (setting_key == std::string("managed_safe_execution")) return ManagedSafeExecutionConfigPath;
 				if (setting_key == std::string("use_builtin_jenova_sdk")) return UseBuiltinSDKConfigPath;
 				if (setting_key == std::string("refresh_scene_tree_after_build")) return RefreshTreeAfterBuildConfigPath;
+				if (setting_key == std::string("package_repository_path")) return PackageRepositoryPathConfigPath;
 				if (setting_key == std::string("build_toolbutton_placement")) return BuildToolButtonEditorConfigPath;
 				return String("jenova/unknown");
 			}
@@ -6402,8 +6411,6 @@ namespace jenova
 	bool QueueProjectBuild(bool deferred, bool restart)
 	{
 		if (!jenova::plugin::JenovaEditorPlugin::get_singleton()) return false;
-		jenova::plugin::JenovaEditorPlugin::get_singleton()->call_deferred("BuildProject");
-		return true;
 		if (deferred)
 		{
 			jenova::plugin::JenovaEditorPlugin::get_singleton()->call_deferred("BuildProject");
@@ -7100,6 +7107,14 @@ namespace jenova
 	Ref<Texture2D> GetEditorIcon(const String& iconName)
 	{
 		return EditorInterface::get_singleton()->get_editor_theme()->get_icon(iconName, "EditorIcons");
+	}
+	Variant GetEditorSetting(const String& settingKey)
+	{
+		if (!jenova::plugin::JenovaEditorPlugin::get_singleton()) return false;
+		Variant settingValue;
+		String settingName = jenova::plugin::JenovaEditorPlugin::get_singleton()->GetEditorSettingStringPath(AS_STD_STRING(settingKey));
+		if (!jenova::plugin::JenovaEditorPlugin::get_singleton()->GetEditorSetting(settingName, settingValue)) return Variant::NIL;
+		return settingValue;
 	}
 	bool DumpThemeColors(const Ref<Theme> theme)
 	{

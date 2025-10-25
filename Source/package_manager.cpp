@@ -28,7 +28,36 @@
 #include "IconDatabase.h"
 
 // Helper Macros
-#define BIND_TOOL_ACTION(toolBtn, toolID)	toolBtn->connect("pressed", callable_mp(pacmanEventManager, &PackmanEventManager::OnToolPressed).bind(String(toolID)));
+#define BIND_TOOL_ACTION(toolBtn, toolID) toolBtn->connect("pressed", callable_mp(pacmanEventManager, &PackmanEventManager::OnToolPressed).bind(String(toolID)));
+
+// Utilities
+static String GetPackageRepositoryPath(bool globalize = false)
+{
+	String path = String(jenova::GetEditorSetting("package_repository_path")).replace("\\", "/");
+	if (path.contains("res://")) path = globalize ? ProjectSettings::get_singleton()->globalize_path(path) : path;
+	if (!path.ends_with("/")) path += "/";
+	return path;
+}
+static String SolvePackageDestination(const String& packageDestination)
+{
+	String packageRepositoryPath = GetPackageRepositoryPath(); // For Future Validation Logic
+	return packageDestination.replace(jenova::GlobalSettings::JenovaPackageRepositoryPath, packageRepositoryPath);
+}
+static String SolvePackageDestination(const std::string& packageDestination)
+{
+	return SolvePackageDestination(String(packageDestination.c_str()));
+}
+static String GetPackageDatabasePath()
+{
+	if (GetPackageRepositoryPath(false).contains(jenova::GlobalSettings::JenovaPackageRepositoryPath))
+	{
+		return jenova::GetJenovaProjectDirectory() + "Jenova/" + jenova::GlobalSettings::JenovaInstalledPackagesFile;
+	}
+	else
+	{
+		return GetPackageRepositoryPath(true) + jenova::GlobalSettings::JenovaInstalledPackagesFile;
+	}
+}
 
 // Configuration
 constexpr const char* packageDatabaseFileURL = "/Jenova-Framework/Jenova-Packages/refs/heads/main/Jenova.Package.Database.json";
@@ -320,13 +349,13 @@ bool JenovaPackageManager::OpenPackageManager(const String& packageDatabaseURL)
 			// Open Local Package Database
 			if (toolID == "OpenPackageDatabase")
 			{
-				String installedPackageFile = jenova::GetJenovaProjectDirectory() + "Jenova/" + jenova::GlobalSettings::JenovaInstalledPackagesFile;
+				String installedPackageFile = GetPackageDatabasePath();
 				jenova::RunFile(AS_C_STRING(installedPackageFile));
 			}
 			// Open Packages Directory
 			if (toolID == "OpenPackagesDirectory")
 			{
-				String localPackagesRepository = jenova::GetJenovaProjectDirectory() + jenova::GlobalSettings::JenovaPackageRepositoryPath;
+				String localPackagesRepository = GetPackageRepositoryPath(true);
 				jenova::RunFile(AS_C_STRING(localPackagesRepository));
 			}
 		}
@@ -638,7 +667,7 @@ bool JenovaPackageManager::FetchOnlinePackages(const String& packageDatabaseURL)
 			newPackage.pkgSize = packageItem["pkgSize"].get<uint32_t>();
 			newPackage.pkgDate = String(packageItem["pkgDate"].get<std::string>().c_str());
 			newPackage.pkgURL = String(packageItem["pkgURL"].get<std::string>().c_str());
-			newPackage.pkgDestination = String(packageItem["pkgDestination"].get<std::string>().c_str());
+			newPackage.pkgDestination = SolvePackageDestination(packageItem["pkgDestination"].get<std::string>());
 			newPackage.pkgInstallScript = packageItem["pkgInstallScript"].get<bool>();
 			newPackage.pkgUninstallScript = packageItem["pkgUninstallScript"].get<bool>();
 
@@ -668,7 +697,7 @@ bool JenovaPackageManager::ObtainInstalledPackages()
 
 	// Create Installed Package File Path
 	String projectPath = jenova::GetJenovaProjectDirectory();
-	String installedPackageFile = projectPath + "Jenova/" + jenova::GlobalSettings::JenovaInstalledPackagesFile;
+	String installedPackageFile = GetPackageDatabasePath();
 
 	// Validate Package Database File
 	if (!std::filesystem::exists(AS_STD_STRING(installedPackageFile)))
@@ -698,7 +727,7 @@ bool JenovaPackageManager::ObtainInstalledPackages()
 			newPackage.pkgHash = String(packageItem["pkgHash"].get<std::string>().c_str());
 			newPackage.pkgType = packageItem["pkgType"].get<jenova::PackageType>();
 			newPackage.pkgPlatform = packageItem["pkgPlatform"].get<jenova::PackagePlatform>();
-			newPackage.pkgDestination = String(packageItem["pkgDestination"].get<std::string>().c_str());
+			newPackage.pkgDestination = SolvePackageDestination(packageItem["pkgDestination"].get<std::string>());
 			newPackage.pkgInstallScript = packageItem["pkgInstallScript"].get<bool>();
 			newPackage.pkgUninstallScript = packageItem["pkgUninstallScript"].get<bool>();
 
@@ -722,7 +751,7 @@ bool JenovaPackageManager::CacheInstalledPackages()
 {
 	// Create Installed Package File Path
 	String projectPath = jenova::GetJenovaProjectDirectory();
-	String installedPackageFile = projectPath + "Jenova/" + jenova::GlobalSettings::JenovaInstalledPackagesFile;
+	String installedPackageFile = GetPackageDatabasePath();
 
 	// Serialize Package Database
 	try
@@ -743,7 +772,7 @@ bool JenovaPackageManager::CacheInstalledPackages()
 			packageItem["pkgHash"] = AS_STD_STRING(installedPackage.pkgHash);
 			packageItem["pkgType"] = installedPackage.pkgType;
 			packageItem["pkgPlatform"] = installedPackage.pkgPlatform;
-			packageItem["pkgDestination"] = AS_STD_STRING(installedPackage.pkgDestination);
+			packageItem["pkgDestination"] = AS_STD_STRING(SolvePackageDestination(installedPackage.pkgDestination));
 			packageItem["pkgInstallScript"] = installedPackage.pkgInstallScript;
 			packageItem["pkgUninstallScript"] = installedPackage.pkgUninstallScript;
 
@@ -1318,7 +1347,7 @@ bool JenovaPackageManager::InstallCustomPackage(const jenova::CustomPackageInsta
 				auto pkgFilename = packageFilePath.get_basename().get_file();
 
 				// Create Package Destination
-				std::string packageRepositoryPath = AS_STD_STRING(jenova::GetJenovaProjectDirectory() + jenova::GlobalSettings::JenovaPackageRepositoryPath);
+				std::string packageRepositoryPath = AS_STD_STRING(GetPackageRepositoryPath(true));
 				if (!packageRepositoryPath.empty() && (packageRepositoryPath.back() == '\\' || packageRepositoryPath.back() == '/')) packageRepositoryPath.pop_back();
 				std::string pkgDestination = packageRepositoryPath + "/" + AS_STD_STRING(pkgFilename);
 
@@ -1654,7 +1683,7 @@ bool JenovaPackageManager::PreparePackageManager()
 	String projectPath = jenova::GetJenovaProjectDirectory();
 
 	// Create Package Directory If Not Exists
-	std::string packageRepositoryPath = AS_STD_STRING(projectPath + jenova::GlobalSettings::JenovaPackageRepositoryPath);
+	std::string packageRepositoryPath = AS_STD_STRING(GetPackageRepositoryPath(true));
 	if (!packageRepositoryPath.empty() && (packageRepositoryPath.back() == '\\' || packageRepositoryPath.back() == '/')) packageRepositoryPath.pop_back();
 	if (!std::filesystem::exists(packageRepositoryPath))
 	{
@@ -1662,7 +1691,7 @@ bool JenovaPackageManager::PreparePackageManager()
 	}
 	
 	// Create Package Directory .gdignore If Not Exists
-	String gdIgnoreFilePath = projectPath + jenova::GlobalSettings::JenovaPackageRepositoryPath + ".gdignore";
+	String gdIgnoreFilePath = GetPackageRepositoryPath(true) + ".gdignore";
 	if (!std::filesystem::exists(AS_STD_STRING(gdIgnoreFilePath)))
 	{
 		if (!jenova::WriteStringToFile(gdIgnoreFilePath, " ")) return false;
