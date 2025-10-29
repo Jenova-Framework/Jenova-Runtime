@@ -22,13 +22,13 @@ BEGIN
 BLOCK "040904b0"
 BEGIN
 VALUE "FileVersion", APP_VERSION " " APP_VERSION_POSTFIX
-VALUE "InternalName", "Jenova::Runtime"
+VALUE "InternalName", "Jenova::Deployer"
 
 VALUE "LegalCopyright", APP_COPYRIGHT
 VALUE "CompanyName", APP_COMPANYNAME
 VALUE "FileDescription", APP_DESCRIPTION
 
-VALUE "OriginalFilename", "Jenova.Runtime.x64"
+VALUE "OriginalFilename", "Jenova.Deployer.x64"
 VALUE "ProductName", APP_NAME
 VALUE "ProductVersion", APP_VERSION " " APP_VERSION_POSTFIX " Build " APP_VERSION_BUILD " (" APP_VERSION_NAME ")"
 END
