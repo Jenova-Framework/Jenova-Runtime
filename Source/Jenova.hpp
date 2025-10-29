@@ -20,11 +20,11 @@
 #define APP_COMPANYNAME					"MemarDesign™ LLC."
 #define APP_DESCRIPTION					"Real-Time C++ Scripting System for Godot Game Engine, Developed By Hamid.Memar."
 #define APP_COPYRIGHT					"Copyright MemarDesign™ LLC. (©) 2024-2025, All Rights Reserved."
-#define APP_VERSION						"0.3.8.7"
+#define APP_VERSION						"0.3.8.8"
 #define APP_VERSION_MIDDLEFIX			" "
 #define APP_VERSION_POSTFIX				"Beta"
 #define APP_VERSION_SINGLECHAR			"b"
-#define APP_VERSION_DATA				0, 3, 8, 7
+#define APP_VERSION_DATA				0, 3, 8, 8
 #define APP_VERSION_BUILD				"0"
 #define APP_VERSION_NAME				"Halo"
 
@@ -992,7 +992,7 @@ namespace jenova
 	jenova::InstalledTools GetInstalledTools();
 	String GetInstalledCompilerPathFromPackages(const String& compilerIdentity, const jenova::CompilerModel& compilerModel);
 	String GetInstalledGodotKitPathFromPackages(const String& godotKitIdentity);
-	std::string ResolveVariantValueAsString(const Variant* variantValue, jenova::PointerList& ptrList);
+	std::string ResolveVariantValueAsString(const Variant* variantValue, const std::string& variantType, jenova::PointerList& ptrList);
 	std::string ResolveVariantTypeAsString(const Variant* variantValue);
 	std::string ResolveReturnTypeForJIT(const std::string& returnType);
 	Variant* MakeVariantFromReturnType(Variant* variantPtr, const char* returnType);

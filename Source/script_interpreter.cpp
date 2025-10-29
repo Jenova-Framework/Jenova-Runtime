@@ -640,7 +640,7 @@ Variant JenovaInterpreter::CallFunction(const godot::Object* objectPtr, const st
         for (int i = 0; i < functionParametersCount; i++)
         {
             if (i == 0 && needsPassingOwner) interpreterCallerCode += ",";
-            interpreterCallerCode += jenova::ResolveVariantValueAsString(functionParameters[i], ptrList);
+            interpreterCallerCode += jenova::ResolveVariantValueAsString(functionParameters[i], functionParametersType[i], ptrList);
             if (i != functionParametersCount - 1) interpreterCallerCode += ",";
         }
         interpreterCallerCode += ");\n";

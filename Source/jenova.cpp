@@ -7969,8 +7969,14 @@ namespace jenova
 		}
 		return "Missing-GodotKit-1.0.0";
 	}
-	std::string ResolveVariantValueAsString(const Variant* variantValue, jenova::PointerList& ptrList)
+	std::string ResolveVariantValueAsString(const Variant* variantValue, const std::string& variantType, jenova::PointerList& ptrList)
 	{
+		// Bypass Variant
+		if (variantType == "godot::Variant&" || variantType == "godot::Variant*" || variantType == "godot::Variant")
+		{
+			return jenova::Format("(void*)0x%llx", (void*)variantValue);
+		}
+
 		// Atomic Types
 		if (variantValue->get_type() == Variant::BOOL) return (bool(*variantValue)) ? "true" : "false";
 		if (variantValue->get_type() == Variant::FLOAT) return jenova::Format("%lf", double(*variantValue));
