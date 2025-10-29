@@ -18,7 +18,7 @@
 // String Resources
 #define APP_NAME						"Jenova Runtime for Godot Engine"
 #define APP_COMPANYNAME					"MemarDesign™ LLC."
-#define APP_DESCRIPTION					"Real-Time C++ Scripting System for Godot Game Engine, Developed By Hamid.Memar."
+#define APP_DESCRIPTION					"Real-Time C++ Scripting System for Godot Engine, Developed By Hamid.Memar."
 #define APP_COPYRIGHT					"Copyright MemarDesign™ LLC. (©) 2024-2025, All Rights Reserved."
 #define APP_VERSION						"0.3.8.8"
 #define APP_VERSION_MIDDLEFIX			" "
