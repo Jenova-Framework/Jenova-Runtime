@@ -772,7 +772,7 @@ bool JenovaPackageManager::CacheInstalledPackages()
 			packageItem["pkgHash"] = AS_STD_STRING(installedPackage.pkgHash);
 			packageItem["pkgType"] = installedPackage.pkgType;
 			packageItem["pkgPlatform"] = installedPackage.pkgPlatform;
-			packageItem["pkgDestination"] = AS_STD_STRING(SolvePackageDestination(installedPackage.pkgDestination));
+			packageItem["pkgDestination"] = jenova::NormalizePathForEngine(AS_STD_STRING(SolvePackageDestination(installedPackage.pkgDestination)));
 			packageItem["pkgInstallScript"] = installedPackage.pkgInstallScript;
 			packageItem["pkgUninstallScript"] = installedPackage.pkgUninstallScript;
 

@@ -626,7 +626,7 @@ Variant JenovaInterpreter::CallFunction(const godot::Object* objectPtr, const st
         interpreterCallerCode += "{\n";
         interpreterCallerCode += "typedef " + jenova::ResolveReturnTypeForJIT(functionReturnType) + "(*function_t)(";
         if (needsPassingOwner) interpreterCallerCode  += "void*";
-        for (size_t i = 0; i < functionParametersCount; i++)
+        for (int i = 0; i < functionParametersCount; i++)
         {
             if (i == 0 && needsPassingOwner) interpreterCallerCode += ",";
             interpreterCallerCode += jenova::ResolveVariantTypeAsString(functionParameters[i]);
@@ -637,7 +637,7 @@ Variant JenovaInterpreter::CallFunction(const godot::Object* objectPtr, const st
         if (callMustReturn) interpreterCallerCode += jenova::ResolveReturnTypeForJIT(functionReturnType) + " result = ";
         interpreterCallerCode += "_func(";
         if (needsPassingOwner) interpreterCallerCode += jenova::Format("(void*)0x%llx", resolvedParameters[0]);
-        for (size_t i = 0; i < functionParametersCount; i++)
+        for (int i = 0; i < functionParametersCount; i++)
         {
             if (i == 0 && needsPassingOwner) interpreterCallerCode += ",";
             interpreterCallerCode += jenova::ResolveVariantValueAsString(functionParameters[i], ptrList);

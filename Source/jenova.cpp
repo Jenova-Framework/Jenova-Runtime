@@ -1862,7 +1862,12 @@ namespace jenova
 				{
 					if (!JenovaInterpreter::LoadModule(buildResult))
 					{
-						jenova::Error("Jenova Interpreter", "Unable to Load Compiled Jenova Module, Check for Missing Dependencies.");
+						jenova::Error("Jenova Interpreter", "Unable to Load Compiled Jenova Module, Check for Missing Dependencies.\n\n"
+							"This error may be caused by one of the following:\n"
+							"  1. A Godot type is defined in global scope which is not allowed by Godot design.\n"
+							"  2. A required linked library is missing, Make sure all dependencies are placed beside engine.\n"
+							"  3. The engine version does not match the Godot Kit. Make sure you are using correct GodotSDK."
+						);
 						DisposeCompiler();
 						return false;
 					}
@@ -1875,7 +1880,12 @@ namespace jenova
 					// Reloading
 					if (!JenovaInterpreter::ReloadModule(buildResult))
 					{
-						jenova::Error("Jenova Interpreter", "Unable to Reload Compiled Jenova Module, Check for Missing Dependencies.");
+						jenova::Error("Jenova Interpreter", "Unable to Reload Compiled Jenova Module, Check for Missing Dependencies.\n\n"
+							"This error may be caused by one of the following:\n"
+							"  1. A Godot type is defined in global scope which is not allowed by Godot design.\n"
+							"  2. A required linked library is missing, Make sure all dependencies are placed beside engine.\n"
+							"  3. The engine version does not match the Godot Kit. Make sure you are using correct GodotSDK."
+						);
 						DisposeCompiler();
 						return false;
 					}
@@ -2139,7 +2149,12 @@ namespace jenova
 					{
 						if (!JenovaInterpreter::LoadModule(buildResult))
 						{
-							jenova::Error("Jenova Interpreter", "Unable to Load Bootstrapped Jenova Module, Check for Missing Dependencies.");
+							jenova::Error("Jenova Interpreter", "Unable to Load Bootstrapped Jenova Module, Check for Missing Dependencies.\n\n"
+								"This error may be caused by one of the following:\n"
+								"  1. A Godot type is defined in global scope which is not allowed by Godot design.\n"
+								"  2. A required linked library is missing, Make sure all dependencies are placed beside engine.\n"
+								"  3. The engine version does not match the Godot Kit. Make sure you are using correct GodotSDK."
+							);
 							return false;
 						}
 					}
@@ -2151,7 +2166,12 @@ namespace jenova
 						// Reloading
 						if (!JenovaInterpreter::ReloadModule(buildResult))
 						{
-							jenova::Error("Jenova Interpreter", "Unable to Reload Bootstrapped Jenova Module, Check for Missing Dependencies.");
+							jenova::Error("Jenova Interpreter", "Unable to Reload Bootstrapped Jenova Module, Check for Missing Dependencies.\n\n"
+								"This error may be caused by one of the following:\n"
+								"  1. A Godot type is defined in global scope which is not allowed by Godot design.\n"
+								"  2. A required linked library is missing, Make sure all dependencies are placed beside engine.\n"
+								"  3. The engine version does not match the Godot Kit. Make sure you are using correct GodotSDK."
+							);
 							return false;
 						}
 
@@ -7377,6 +7397,11 @@ namespace jenova
 			prevChar = c;
 		}
 		return result;
+	}
+	std::string NormalizePathForEngine(const std::string& input)
+	{
+		std::string result = NormalizePath(input);
+		return jenova::ReplaceAllMatchesWithStringAndReturn(result, "res:/", "res://");
 	}
 	bool CompareFilePaths(const std::string& sourcePath, const std::string& destinationPath)
 	{

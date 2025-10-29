@@ -20,11 +20,11 @@
 #define APP_COMPANYNAME					"MemarDesign™ LLC."
 #define APP_DESCRIPTION					"Real-Time C++ Scripting System for Godot Game Engine, Developed By Hamid.Memar."
 #define APP_COPYRIGHT					"Copyright MemarDesign™ LLC. (©) 2024-2025, All Rights Reserved."
-#define APP_VERSION						"0.3.8.6"
+#define APP_VERSION						"0.3.8.7"
 #define APP_VERSION_MIDDLEFIX			" "
 #define APP_VERSION_POSTFIX				"Beta"
 #define APP_VERSION_SINGLECHAR			"b"
-#define APP_VERSION_DATA				0, 3, 8, 6
+#define APP_VERSION_DATA				0, 3, 8, 7
 #define APP_VERSION_BUILD				"0"
 #define APP_VERSION_NAME				"Halo"
 
@@ -963,6 +963,7 @@ namespace jenova
 	ScriptEntityContainer CreateScriptEntityContainer(const String& rootPath);
 	std::string GenerateFilterUniqueIdentifier(std::string& filterName, bool addBrackets = false);
 	std::string NormalizePath(const std::string& input);
+	std::string NormalizePathForEngine(const std::string& input);
 	bool CompareFilePaths(const std::string& sourcePath, const std::string& destinationPath);
 	bool RemoveFileEncodingInStdString(std::string& fileContent);
 	bool ApplyFileEncodingFromReferenceFile(const std::string& sourceFile, const std::string& destinationFile);
