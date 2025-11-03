@@ -20,11 +20,11 @@
 #define APP_COMPANYNAME					"MemarDesign™ LLC."
 #define APP_DESCRIPTION					"Real-Time C++ Scripting System for Godot Engine, Developed By Hamid.Memar."
 #define APP_COPYRIGHT					"Copyright MemarDesign™ LLC. (©) 2024-2025, All Rights Reserved."
-#define APP_VERSION						"0.3.8.9"
+#define APP_VERSION						"0.3.9.0"
 #define APP_VERSION_MIDDLEFIX			" "
 #define APP_VERSION_POSTFIX				"Beta"
 #define APP_VERSION_SINGLECHAR			"b"
-#define APP_VERSION_DATA				0, 3, 8, 9
+#define APP_VERSION_DATA				0, 3, 9, 0
 #define APP_VERSION_BUILD				"0"
 #define APP_VERSION_NAME				"Halo"
 
@@ -279,7 +279,8 @@
 #include <Parsers/json.hpp>
 #include <Base64/base64.hpp>
 
-// Namespaces Import
+// Global Namespaces
+using namespace std;
 using namespace godot;
 
 // Logging Macros
@@ -852,6 +853,36 @@ namespace jenova
 		extern int												TerminalDefaultFontSize;
 	}
 
+	// Jenova Settings
+	namespace JenovaSettings
+	{
+		constexpr char* RemoveSourcesFromBuildEditorConfigPath         = "jenova/remove_source_codes_from_build";
+		constexpr char* CompilerModelConfigPath                        = "jenova/compiler_model";
+		constexpr char* MultiThreadedCompilationConfigPath             = "jenova/multi_threaded_compilation";
+		constexpr char* GenerateDebugInformationConfigPath             = "jenova/generate_debug_information";
+		constexpr char* InterpreterBackendConfigPath                   = "jenova/interpreter_backend";
+		constexpr char* ProfilingModeConfigPath                        = "jenova/profiling_mode";
+		constexpr char* BuildAndRunModeConfigPath                      = "jenova/build_and_run_mode";
+		constexpr char* PreprocessorDefinitionsConfigPath              = "jenova/preprocessor_definitions";
+		constexpr char* AdditionalIncludeDirectoriesConfigPath         = "jenova/additional_include_directories";
+		constexpr char* AdditionalLibraryDirectoriesConfigPath         = "jenova/additional_library_directories";
+		constexpr char* AdditionalDependenciesConfigPath               = "jenova/additional_dependencies";
+		constexpr char* CustomCompilerCommandsConfigPath               = "jenova/custom_compiler_commands";
+		constexpr char* CustomLinkerCommandsConfigPath                 = "jenova/custom_linker_commands";
+		constexpr char* ExternalChangesTriggerModeConfigPath           = "jenova/external_changes_trigger_mode";
+		constexpr char* UseHotReloadAtRuntimeConfigPath                = "jenova/use_hot_reload_at_runtime";
+		constexpr char* EditorVerboseOutputConfigPath                  = "jenova/editor_verbose_output";
+		constexpr char* UseMonospaceFontForTerminalConfigPath          = "jenova/use_monospace_font_for_terminal";
+		constexpr char* TerminalDefaultFontSizeConfigPath              = "jenova/terminal_default_font_size";
+		constexpr char* CompilerPackageConfigPath                      = "jenova/compiler_package";
+		constexpr char* GodotKitPackageConfigPath                      = "jenova/godot_kit_package";
+		constexpr char* ManagedSafeExecutionConfigPath                 = "jenova/managed_safe_execution";
+		constexpr char* UseBuiltinSDKConfigPath                        = "jenova/use_builtin_jenova_sdk";
+		constexpr char* RefreshTreeAfterBuildConfigPath                = "jenova/refresh_scene_tree_after_build";
+		constexpr char* PackageRepositoryPathConfigPath                = "jenova/package_repository_path";
+		constexpr char* BuildToolButtonEditorConfigPath                = "jenova/build_tool_button_placement";
+	}
+
 	// Error Codes
 	namespace ErrorCode
 	{
@@ -948,7 +979,8 @@ namespace jenova
 	MemoryBuffer DecompressBuffer(void* bufferPtr, size_t bufferSize);
 	float CalculateCompressionRatio(size_t baseSize, size_t compressedSize);
 	Ref<Texture2D> GetEditorIcon(const String& iconName);
-	Variant GetEditorSetting(const String& settingKey);
+	bool GetEditorSetting(const String& settingPath, Variant& value);
+	Variant GetEditorSetting(const String& settingPath);
 	bool DumpThemeColors(const Ref<Theme> theme);
 	ArgumentsArray ProcessDeployerArguments(const std::string& cmdLine);
 	bool WriteStringToFile(const String& filePath, const String& str);

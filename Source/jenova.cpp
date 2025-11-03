@@ -34,9 +34,6 @@
 #include <Parsers/argparse.hpp>
 #include <Zlib/zlib.h>
 
-// Namespaces
-using namespace std;
-
 // Windows Routine
 #ifdef TARGET_PLATFORM_WINDOWS
 
@@ -88,6 +85,9 @@ using namespace std;
 // Jenova Core Implementations
 namespace jenova
 {
+	// Import Namespaces
+	using namespace JenovaSettings;
+
 	// Plugin Implementation
 	namespace plugin
 	{
@@ -107,31 +107,6 @@ namespace jenova
 		private:
 			 String JenovaEditorPluginName								= "J.E.N.O.V.A";
 			 String JenovaEditorSettingsCategory						= "JenovaSettings";
-			 String RemoveSourcesFromBuildEditorConfigPath				= "jenova/remove_source_codes_from_build";
-			 String CompilerModelConfigPath								= "jenova/compiler_model";
-			 String MultiThreadedCompilationConfigPath					= "jenova/multi_threaded_compilation";
-			 String GenerateDebugInformationConfigPath					= "jenova/generate_debug_information";
-			 String InterpreterBackendConfigPath						= "jenova/interpreter_backend";
-			 String ProfilingModeConfigPath								= "jenova/profiling_mode";
-			 String BuildAndRunModeConfigPath							= "jenova/build_and_run_mode";
-			 String PreprocessorDefinitionsConfigPath					= "jenova/preprocessor_definitions";
-			 String AdditionalIncludeDirectoriesConfigPath				= "jenova/additional_include_directories";
-			 String AdditionalLibraryDirectoriesConfigPath				= "jenova/additional_library_directories";
-			 String AdditionalDependenciesConfigPath					= "jenova/additional_dependencies";
-			 String CustomCompilerCommandsConfigPath					= "jenova/custom_compiler_commands";
-			 String CustomLinkerCommandsConfigPath						= "jenova/custom_linker_commands";
-			 String ExternalChangesTriggerModeConfigPath				= "jenova/external_changes_trigger_mode";
-			 String UseHotReloadAtRuntimeConfigPath						= "jenova/use_hot_reload_at_runtime";
-			 String EditorVerboseOutputConfigPath						= "jenova/editor_verbose_output";
-			 String UseMonospaceFontForTerminalConfigPath				= "jenova/use_monospace_font_for_terminal";
-			 String TerminalDefaultFontSizeConfigPath					= "jenova/terminal_default_font_size";
-			 String CompilerPackageConfigPath							= "jenova/compiler_package";
-			 String GodotKitPackageConfigPath							= "jenova/godot_kit_package";
-			 String ManagedSafeExecutionConfigPath						= "jenova/managed_safe_execution";
-			 String UseBuiltinSDKConfigPath								= "jenova/use_builtin_jenova_sdk";
-			 String RefreshTreeAfterBuildConfigPath						= "jenova/refresh_scene_tree_after_build";
-			 String PackageRepositoryPathConfigPath						= "jenova/package_repository_path";
-			 String BuildToolButtonEditorConfigPath						= "jenova/build_tool_button_placement";
 
 		private:
 			// Default Settings
@@ -658,27 +633,6 @@ namespace jenova
 				}
 
 				// Failed
-				return false;
-			}
-			bool GetEditorSetting(const String& setting_name, Variant& value) 
-			{
-				EditorInterface* editor_interface = EditorInterface::get_singleton();
-				if (editor_interface) 
-				{
-					Ref<EditorSettings> editor_settings = editor_interface->get_editor_settings();
-					if (!editor_settings.is_null()) 
-					{
-						// Check if the setting exists
-						if (editor_settings->has_setting(setting_name)) 
-						{
-							// Get the setting value
-							value = editor_settings->get_setting(setting_name);
-
-							// All Good
-							return true;
-						}
-					}
-				}
 				return false;
 			}
 			bool UpdateStorageConfigurations()
@@ -2619,35 +2573,6 @@ namespace jenova
 				// All Good
 				return true;
 			}
-			String GetEditorSettingStringPath(const std::string& setting_key)
-			{
-				if (setting_key == std::string("remove_source_codes_from_build")) return RemoveSourcesFromBuildEditorConfigPath;
-				if (setting_key == std::string("compiler_model")) return CompilerModelConfigPath;
-				if (setting_key == std::string("multi_threaded_compilation")) return MultiThreadedCompilationConfigPath;
-				if (setting_key == std::string("generate_debug_information")) return GenerateDebugInformationConfigPath;
-				if (setting_key == std::string("interpreter_backend")) return InterpreterBackendConfigPath;
-				if (setting_key == std::string("profiling_mode")) return ProfilingModeConfigPath;
-				if (setting_key == std::string("build_and_run_mode")) return BuildAndRunModeConfigPath;
-				if (setting_key == std::string("preprocessor_definitions")) return PreprocessorDefinitionsConfigPath;
-				if (setting_key == std::string("additional_include_directories")) return AdditionalIncludeDirectoriesConfigPath;
-				if (setting_key == std::string("additional_library_directories")) return AdditionalLibraryDirectoriesConfigPath;
-				if (setting_key == std::string("additional_dependencies")) return AdditionalDependenciesConfigPath;
-				if (setting_key == std::string("custom_compiler_commands")) return CustomCompilerCommandsConfigPath;
-				if (setting_key == std::string("custom_linker_commands")) return CustomLinkerCommandsConfigPath;
-				if (setting_key == std::string("external_changes_trigger_mode")) return ExternalChangesTriggerModeConfigPath;
-				if (setting_key == std::string("use_hot_reload_at_runtime")) return UseHotReloadAtRuntimeConfigPath;
-				if (setting_key == std::string("editor_verbose_output")) return EditorVerboseOutputConfigPath;
-				if (setting_key == std::string("use_monospace_font_for_terminal")) return UseMonospaceFontForTerminalConfigPath;
-				if (setting_key == std::string("terminal_default_font_size")) return TerminalDefaultFontSizeConfigPath;
-				if (setting_key == std::string("compiler_package")) return CompilerPackageConfigPath;
-				if (setting_key == std::string("godot_kit_package")) return GodotKitPackageConfigPath;
-				if (setting_key == std::string("managed_safe_execution")) return ManagedSafeExecutionConfigPath;
-				if (setting_key == std::string("use_builtin_jenova_sdk")) return UseBuiltinSDKConfigPath;
-				if (setting_key == std::string("refresh_scene_tree_after_build")) return RefreshTreeAfterBuildConfigPath;
-				if (setting_key == std::string("package_repository_path")) return PackageRepositoryPathConfigPath;
-				if (setting_key == std::string("build_toolbutton_placement")) return BuildToolButtonEditorConfigPath;
-				return String("jenova/unknown");
-			}
 
 			// Visual Studio Integration
 			void OpenVisualStudioSelectorWindow()
@@ -3803,12 +3728,12 @@ namespace jenova
 							if (!compilerSelector->is_disabled())
 							{
 								String selectedCompiler = compilerSelector->get_item_text(compilerSelector->get_selected_id()).replace(" ", "");
-								EditorInterface::get_singleton()->get_editor_settings()->set_setting(pluginInstance->GetEditorSettingStringPath("compiler_package"), selectedCompiler);
+								EditorInterface::get_singleton()->get_editor_settings()->set_setting(JenovaSettings::CompilerPackageConfigPath, selectedCompiler);
 							}
 							if (!godotKitSelector->is_disabled())
 							{
 								String selectedGodotKit = godotKitSelector->get_item_text(godotKitSelector->get_selected_id()).replace(" ", "");
-								EditorInterface::get_singleton()->get_editor_settings()->set_setting(pluginInstance->GetEditorSettingStringPath("godot_kit_package"), selectedGodotKit);
+								EditorInterface::get_singleton()->get_editor_settings()->set_setting(JenovaSettings::GodotKitPackageConfigPath, selectedGodotKit);
 							}
 							jenova::OutputColored("#2ebc78", "Project Build Configuration Updated Successfully!");
 						}
@@ -4274,7 +4199,7 @@ namespace jenova
 
 				// Check for Source Remove from Build Option
 				Variant RemoveSourcesFromBuild;
-				if (!jenovaEditorPlugin->GetEditorSetting(jenovaEditorPlugin->GetEditorSettingStringPath("remove_source_codes_from_build"), RemoveSourcesFromBuild)) RemoveSourcesFromBuild = true;
+				if (!jenova::GetEditorSetting(JenovaSettings::RemoveSourcesFromBuildEditorConfigPath, RemoveSourcesFromBuild)) RemoveSourcesFromBuild = true;
 				ExcludeSourcesFromBuild = RemoveSourcesFromBuild;
 
 				// Generate & Add Configuration File
@@ -4798,7 +4723,7 @@ namespace jenova
 				// Rise Editor Boot Callback
 				if (QUERY_ENGINE_MODE(Editor)) OnEditorBoot();
 
-				// Register Editor Sub Plugins (Seems like this is not required in gdmodule)
+				// Register Editor Sub Plugins
 				GDREGISTER_INTERNAL_CLASS(JenovaExportPlugin);
 				GDREGISTER_INTERNAL_CLASS(JenovaDebuggerPlugin);
 
@@ -4810,13 +4735,13 @@ namespace jenova
 				JenovaPackageManager::init();
 				JenovaTemplateManager::init();
 
-				// Load Module At Initialization [Editor]
+				// Load Module At Initialization
 				if (QUERY_ENGINE_MODE(Editor))
 				{
 					if (jenova::GlobalSettings::DefaultModuleLoadStage == ModuleLoadStage::LoadModuleAtInitialization) JenovaInterpreter::BootInterpreter();
 				}
 
-				// Load Tool Packages [Editor]
+				// Load Tool Packages
 				if (QUERY_ENGINE_MODE(Editor) && jenova::GlobalSettings::LoadAndUnloadToolPackages)
 				{
 					if (!jenova::LoadToolPackages()) jenova::Warning("Jenova Tool System", "One or More Jenova Tool Module Failed to Initialize.");
@@ -4898,7 +4823,7 @@ namespace jenova
 				JenovaPackageManager::deinit();
 				JenovaTemplateManager::deinit();
 
-				// Unload Tool Packages [Editor]
+				// Unload Tool Packages
 				if (QUERY_ENGINE_MODE(Editor) && jenova::GlobalSettings::LoadAndUnloadToolPackages)
 				{
 					if (!jenova::UnloadToolPackages()) jenova::Warning("Jenova Tool System", "One or More Jenova Tool Module Failed to Uninitialize.");
@@ -7128,12 +7053,49 @@ namespace jenova
 	{
 		return EditorInterface::get_singleton()->get_editor_theme()->get_icon(iconName, "EditorIcons");
 	}
-	Variant GetEditorSetting(const String& settingKey)
+	bool GetEditorSetting(const String& settingPath, Variant& value)
 	{
-		if (!jenova::plugin::JenovaEditorPlugin::get_singleton()) return false;
+		EditorInterface* editorInterface = EditorInterface::get_singleton();
+		if (editorInterface)
+		{
+			Ref<EditorSettings> editorSettings = editorInterface->get_editor_settings();
+			if (!editorSettings.is_null())
+			{
+				if (editorSettings->has_setting(settingPath))
+				{
+					value = editorSettings->get_setting(settingPath);
+					return true;
+				}
+			}
+			else
+			{
+				EditorPaths* editorPaths = editorInterface->get_editor_paths();
+				if (editorPaths)
+				{
+					String editorDataDirectory = editorPaths->get_data_dir();
+					Dictionary versionInfo = Engine::get_singleton()->get_version_info();
+					String shortVersion = String::num_int64(versionInfo["major"]) + "." + String::num_int64(versionInfo["minor"]);
+					String settingsFile = "editor_settings-" + shortVersion + ".tres";
+					String settingsPath = editorDataDirectory.path_join(settingsFile);
+					editorSettings = ResourceLoader::get_singleton()->load(settingsPath);
+					if (!editorSettings.is_null())
+					{
+						if (editorSettings->has_setting(settingPath))
+						{
+							value = editorSettings->get_setting(settingPath);
+							editorSettings.unref();
+							return true;
+						}
+					}
+				}
+			}
+		}
+		return false;
+	}
+	Variant GetEditorSetting(const String& settingPath)
+	{
 		Variant settingValue;
-		String settingName = jenova::plugin::JenovaEditorPlugin::get_singleton()->GetEditorSettingStringPath(AS_STD_STRING(settingKey));
-		if (!jenova::plugin::JenovaEditorPlugin::get_singleton()->GetEditorSetting(settingName, settingValue)) return Variant::NIL;
+		if (!GetEditorSetting(settingPath, settingValue)) return Variant::NIL;
 		return settingValue;
 	}
 	bool DumpThemeColors(const Ref<Theme> theme)

@@ -33,7 +33,7 @@
 // Utilities
 static String GetPackageRepositoryPath(bool globalize = false)
 {
-	String path = String(jenova::GetEditorSetting("package_repository_path")).replace("\\", "/");
+	String path = String(jenova::GetEditorSetting(jenova::JenovaSettings::PackageRepositoryPathConfigPath)).replace("\\", "/");
 	if (path.contains("res://")) path = globalize ? ProjectSettings::get_singleton()->globalize_path(path) : path;
 	if (!path.ends_with("/")) path += "/";
 	return path;
@@ -53,10 +53,7 @@ static String GetPackageDatabasePath()
 	{
 		return jenova::GetJenovaProjectDirectory() + "Jenova/" + jenova::GlobalSettings::JenovaInstalledPackagesFile;
 	}
-	else
-	{
-		return GetPackageRepositoryPath(true) + jenova::GlobalSettings::JenovaInstalledPackagesFile;
-	}
+	return GetPackageRepositoryPath(true) + jenova::GlobalSettings::JenovaInstalledPackagesFile;
 }
 
 // Configuration
@@ -695,8 +692,7 @@ bool JenovaPackageManager::ObtainInstalledPackages()
 	// Clear Current List
 	installedPackages.clear();
 
-	// Create Installed Package File Path
-	String projectPath = jenova::GetJenovaProjectDirectory();
+	// Get Installed Package File Path
 	String installedPackageFile = GetPackageDatabasePath();
 
 	// Validate Package Database File
@@ -749,8 +745,7 @@ bool JenovaPackageManager::ObtainInstalledPackages()
 }
 bool JenovaPackageManager::CacheInstalledPackages()
 {
-	// Create Installed Package File Path
-	String projectPath = jenova::GetJenovaProjectDirectory();
+	// Get Installed Package File Path
 	String installedPackageFile = GetPackageDatabasePath();
 
 	// Serialize Package Database
@@ -781,7 +776,11 @@ bool JenovaPackageManager::CacheInstalledPackages()
 		}
 
 		// Write Package Database On Disk
-		if (!jenova::WriteStdStringToFile(AS_STD_STRING(installedPackageFile), packageDatabase.dump(2))) return false;
+		if (!jenova::WriteStdStringToFile(AS_STD_STRING(installedPackageFile), packageDatabase.dump(2)))
+		{
+			jenova::Error("Jenova Package Manager", "Failed to Cache Package Database.");
+			return false;
+		}
 
 		// All Good
 		return true;
