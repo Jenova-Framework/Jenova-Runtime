@@ -1335,6 +1335,17 @@ namespace jenova
 			// Build Events
 			void OnBuildSuccess()
 			{
+				// Cache Runtime Configuration
+				if (jenova::GlobalSettings::CacheRuntimeConfiguration)
+				{
+					jenova::SerializedData runtimeConfigData = jenova::GenerateRuntimeModuleConfiguration();
+					String runtimeConfigCacheFile = jenova::GetJenovaCacheDirectory().path_join(jenova::GlobalSettings::DefaultRuntimeConfigFile);
+					if (!jenova::WriteStringToFile(runtimeConfigCacheFile, String(runtimeConfigData.c_str())))
+					{
+						jenova::Error("Jenova Builder", "Failed to Cache Runtime Configuration Data. Unexpected behavior may occur.");
+					}
+				}
+
 				// Start Game
 				if (jenova::GlobalStorage::CurrentBuildAndRunMode == jenova::BuildAndRunMode::RunOnBuildSuccess)
 				{
@@ -9549,16 +9560,36 @@ namespace jenova
 	}
 	jenova::SerializedData ObtainRuntimeModuleConfiguration()
 	{
-		// If It's Editor or Debug Generate On Demand
-		if (QUERY_ENGINE_MODE(Editor) || QUERY_ENGINE_MODE(Debug)) return jenova::GenerateRuntimeModuleConfiguration();
+		// If it's Editor Generate on Demand
+		if (QUERY_ENGINE_MODE(Editor)) return jenova::GenerateRuntimeModuleConfiguration();
 
-		// If It's Game Runtime Obtain from Package
+		// If it's Debug Mode Generate from Cache
+		if (QUERY_ENGINE_MODE(Debug))
+		{
+			// Create Runtime Configuration File Path
+			std::string runtimeConfigCachePath = AS_STD_STRING(jenova::GetJenovaCacheDirectory().path_join(jenova::GlobalSettings::DefaultRuntimeConfigFile));
+
+			// Validate Config Cache Path
+			if (!std::filesystem::exists(runtimeConfigCachePath))
+			{
+				jenova::Error("Jenova Runtime", "Runtime Configuration Cache is Missing. Ensure the Project is Properly Compiled and the Cache is Present.");
+				return "{}";
+			}
+
+			// Create Runtime Configuration Data
+			jenova::SerializedData runtimeConfig = jenova::ReadStdStringFromFile(runtimeConfigCachePath);
+
+			// Validate & Return
+			return runtimeConfig.empty() ? "{}" : runtimeConfig;
+		}
+
+		// If it's Game Runtime Obtain from Package
 		if (QUERY_ENGINE_MODE(Runtime))
 		{
 			// Create Runtime Configuration File Path
 			String runtimeConfigPath = String(jenova::GlobalSettings::DefaultJenovaBootPath) + String(jenova::GlobalSettings::DefaultModuleConfigFile);
 
-			// Read Runtime Configuration to A Buffer
+			// Read Runtime Configuration to a Buffer
 			Ref<FileAccess> runtimeConfigReader = FileAccess::open(runtimeConfigPath, FileAccess::READ);
 			if (!runtimeConfigReader.is_valid()) return "{}";
 			PackedByteArray runtimeConfigBytes = runtimeConfigReader->get_buffer(runtimeConfigReader->get_length());

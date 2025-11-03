@@ -377,6 +377,7 @@ namespace jenova::sdk
 	}
 	godot::String JenovaSDK::GetPackageRepositoryPath(bool globalize)
 	{
+		if (!IsEditor()) return godot::String();
 		godot::String path = godot::String(jenova::GetEditorSetting(jenova::JenovaSettings::PackageRepositoryPathConfigPath)).replace("\\", "/");
 		if (path.contains("res://")) path = globalize ? ProjectSettings::get_singleton()->globalize_path(path) : path;
 		if (!path.ends_with("/")) path += "/";

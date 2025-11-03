@@ -783,6 +783,7 @@ namespace jenova
 		constexpr bool UseLegacyJenovaCacheDirectory			= false;
 		constexpr bool UseNewFileSystemFeatures					= true;
 		constexpr bool ForceJenovaSDKHeader						= true;
+		constexpr bool CacheRuntimeConfiguration				= true;
 
 		constexpr size_t PrintOutputBufferSize					= 8192;
 		constexpr size_t BuildOutputBufferSize					= PrintOutputBufferSize;
@@ -809,6 +810,7 @@ namespace jenova
 		constexpr char* ScriptFunctionExportIdentifier			= "JENOVA_EXPORT";
 		constexpr char* DefaultModuleDatabaseFile				= "JenovaRuntime.jdb";
 		constexpr char* DefaultModuleConfigFile					= "JenovaRuntime.cfg";
+		constexpr char* DefaultRuntimeConfigFile				= "JenovaRuntime.json";
 		constexpr char* DefaultJenovaBootPath					= "res://J.E.N.O.V.A/";
 		constexpr char* JenovaModuleBootEventName				= "JenovaBoot";
 		constexpr char* JenovaModuleShutdownEventName			= "JenovaShutdown";
