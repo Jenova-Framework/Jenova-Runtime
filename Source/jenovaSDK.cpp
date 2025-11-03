@@ -375,6 +375,13 @@ namespace jenova::sdk
 	{
 		return JenovaTinyProfiler::GetCheckpointTimeAndDispose(AS_STD_STRING(checkPointName));
 	}
+	godot::String JenovaSDK::GetPackageRepositoryPath(bool globalize)
+	{
+		godot::String path = godot::String(jenova::GetEditorSetting(jenova::JenovaSettings::PackageRepositoryPathConfigPath)).replace("\\", "/");
+		if (path.contains("res://")) path = globalize ? ProjectSettings::get_singleton()->globalize_path(path) : path;
+		if (!path.ends_with("/")) path += "/";
+		return path;
+	}
 	bool JenovaSDK::RegisterRuntimeCallback(RuntimeCallback callbackPtr)
 	{
 		return jenova::RegisterRuntimeEventCallback((jenova::FunctionPointer)callbackPtr);
@@ -712,6 +719,7 @@ namespace jenova
 		if (string(sdkFunctionName) == "GetCheckpointTime") return FunctionPtr(&GetCheckpointTime);
 		if (string(sdkFunctionName) == "DeleteCheckpoint") return FunctionPtr(&DeleteCheckpoint);
 		if (string(sdkFunctionName) == "GetCheckpointTimeAndDispose") return FunctionPtr(&GetCheckpointTimeAndDispose);
+		if (string(sdkFunctionName) == "GetPackageRepositoryPath") return FunctionPtr(&GetPackageRepositoryPath);
 		if (string(sdkFunctionName) == "RegisterRuntimeCallback") return FunctionPtr(&RegisterRuntimeCallback);
 		if (string(sdkFunctionName) == "UnregisterRuntimeCallback") return FunctionPtr(&UnregisterRuntimeCallback);
 

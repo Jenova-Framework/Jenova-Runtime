@@ -208,6 +208,7 @@ namespace jenova::sdk
 		JENOVA_INTERNAL(double GetCheckpointTime(const godot::String& checkPointName));
 		JENOVA_INTERNAL(void DeleteCheckpoint(const godot::String& checkPointName));
 		JENOVA_INTERNAL(double GetCheckpointTimeAndDispose(const godot::String& checkPointName));
+		JENOVA_INTERNAL(godot::String GetPackageRepositoryPath(bool globalize = false));
 		JENOVA_INTERNAL(bool RegisterRuntimeCallback(RuntimeCallback callbackPtr));
 		JENOVA_INTERNAL(bool UnregisterRuntimeCallback(RuntimeCallback callbackPtr));
 
@@ -433,6 +434,11 @@ namespace jenova::sdk
 	{
 		if (!JenovaSDK::ValidateInterface(bridge)) return 0.0;
 		return bridge->GetCheckpointTimeAndDispose(checkPointName);
+	}
+	JENOVA_WRAPPER godot::String GetPackageRepositoryPath(bool globalize = false)
+	{
+		if (!JenovaSDK::ValidateInterface(bridge)) return godot::String();
+		return bridge->GetPackageRepositoryPath(globalize);
 	}
 	JENOVA_WRAPPER bool RegisterRuntimeCallback(RuntimeCallback callbackPtr)
 	{
