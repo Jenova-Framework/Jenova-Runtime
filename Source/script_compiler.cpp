@@ -543,7 +543,7 @@ namespace jenova
 
                     // Set Compiler Result
                     result.compileResult = !compilationFailed;
-                    result.hasError = !compilationFailed;
+                    result.hasError = compilationFailed;
 
                     // Yield Engine
                     OS::get_singleton()->delay_msec(1);
@@ -1493,7 +1493,7 @@ namespace jenova
 
             // Set Compiler Result
             result.compileResult = !compilationFailed;
-            result.hasError = !compilationFailed;
+            result.hasError = compilationFailed;
 
             // Yield Engine
             OS::get_singleton()->delay_msec(1);

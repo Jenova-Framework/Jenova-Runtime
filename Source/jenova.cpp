@@ -616,7 +616,7 @@ namespace jenova
 
 						// Package Repository Path Property
 						PropertyInfo PackageRepositoryPathProperty(Variant::STRING, PackageRepositoryPathConfigPath,
-							PropertyHint::PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, JenovaEditorSettingsCategory);
+							PropertyHint::PROPERTY_HINT_NONE, "", PROPERTY_HINT_DIR, JenovaEditorSettingsCategory);
 						editor_settings->add_property_info(PackageRepositoryPathProperty);
 						editor_settings->set_initial_value(PackageRepositoryPathConfigPath, jenova::GlobalSettings::JenovaPackageRepositoryPath, false);
 
@@ -7084,10 +7084,13 @@ namespace jenova
 				if (editorPaths)
 				{
 					String editorDataDirectory = editorPaths->get_data_dir();
+					if (!Engine::get_singleton()) return false;
 					Dictionary versionInfo = Engine::get_singleton()->get_version_info();
 					String shortVersion = String::num_int64(versionInfo["major"]) + "." + String::num_int64(versionInfo["minor"]);
 					String settingsFile = "editor_settings-" + shortVersion + ".tres";
 					String settingsPath = editorDataDirectory.path_join(settingsFile);
+					if (!ResourceLoader::get_singleton()) return false;
+					if (!std::filesystem::exists(AS_STD_STRING(settingsPath))) return false;
 					editorSettings = ResourceLoader::get_singleton()->load(settingsPath);
 					if (!editorSettings.is_null())
 					{

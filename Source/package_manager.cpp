@@ -34,6 +34,7 @@
 static String GetPackageRepositoryPath(bool globalize = false)
 {
 	String path = String(jenova::GetEditorSetting(jenova::JenovaSettings::PackageRepositoryPathConfigPath)).replace("\\", "/");
+	if (path == "0") path = jenova::GlobalSettings::JenovaPackageRepositoryPath;
 	if (path.contains("res://")) path = globalize ? ProjectSettings::get_singleton()->globalize_path(path) : path;
 	if (!path.ends_with("/")) path += "/";
 	return path;
