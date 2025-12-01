@@ -41,6 +41,7 @@
 	HINSTANCE jenovaRuntimeInstance = nullptr;
 
 	// Windows Entrypoint
+	#ifndef JENOVA_STATIC_BUILD
 	extern "C" BOOL WINAPI DllMain(HINSTANCE hinstDLL, ULONG fdwReason, LPVOID lpvReserved)
 	{
 		// Handle Events
@@ -57,6 +58,7 @@
 		// All Good
 		return TRUE;
 	}
+	#endif
 
 #endif
 
