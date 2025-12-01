@@ -50,11 +50,23 @@ static String SolvePackageDestination(const std::string& packageDestination)
 }
 static String GetPackageDatabasePath()
 {
+	// Get Package Database Path
+	String pkgDatabasePath;
 	if (GetPackageRepositoryPath(false).contains(jenova::GlobalSettings::JenovaPackageRepositoryPath))
 	{
-		return jenova::GetJenovaProjectDirectory() + "Jenova/" + jenova::GlobalSettings::JenovaInstalledPackagesFile;
+		pkgDatabasePath = jenova::GetJenovaProjectDirectory() + "Jenova/" + jenova::GlobalSettings::JenovaInstalledPackagesFile;
 	}
-	return GetPackageRepositoryPath(true) + jenova::GlobalSettings::JenovaInstalledPackagesFile;
+	else
+	{
+		pkgDatabasePath = GetPackageRepositoryPath(true) + jenova::GlobalSettings::JenovaInstalledPackagesFile;
+	}
+
+	// Ensure Package Database Path Exists
+	filesystem::path dir = filesystem::path(AS_STD_STRING(pkgDatabasePath)).parent_path();
+	if (!filesystem::exists(dir)) filesystem::create_directories(dir);
+
+	// All Good
+	return pkgDatabasePath;
 }
 
 // Configuration
