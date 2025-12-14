@@ -191,7 +191,8 @@ bool JenovaInterpreter::ReloadModule(const jenova::BuildResult& buildResult)
 bool JenovaInterpreter::UnloadModule(const jenova::ModuleUnloadStage& unloadStage)
 {
     // Adjust Agressive Mode [Disable For All For Now]
-    JenovaLoader::SetAgressiveMode(!(QUERY_ENGINE_MODE(Editor) || QUERY_ENGINE_MODE(Debug) || QUERY_ENGINE_MODE(Runtime)));
+    bool aggressiveMode = unloadStage == jenova::ModuleUnloadStage::UnloadModuleToShutdown ? true : !(QUERY_ENGINE_MODE(Editor) || QUERY_ENGINE_MODE(Debug) || QUERY_ENGINE_MODE(Runtime));
+    JenovaLoader::SetAgressiveMode(aggressiveMode);
 
     // Flush Property Storage
     if (!JenovaInterpreter::FlushPropertyStorage())
@@ -214,9 +215,6 @@ bool JenovaInterpreter::UnloadModule(const jenova::ModuleUnloadStage& unloadStag
 
     // If Debug Mode is Activated Unload Module Loaded From Disk
     if (executeInDebugMode) return jenova::ReleaseTemporaryModuleCache();
-
-    // If Unload Stage is at Shutdown Leave Unloading to the OS
-    if (unloadStage == jenova::ModuleUnloadStage::UnloadModuleToShutdown) return true;
 
     // Unload Module
 	if (!moduleHandle) return false;

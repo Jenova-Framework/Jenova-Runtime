@@ -1026,6 +1026,7 @@ namespace jenova
 	jenova::InstalledTools GetInstalledTools();
 	String GetInstalledCompilerPathFromPackages(const String& compilerIdentity, const jenova::CompilerModel& compilerModel);
 	String GetInstalledGodotKitPathFromPackages(const String& godotKitIdentity);
+	std::string SolveGodotKitPathForExporters(const String& godotKitPath);
 	std::string ResolveVariantValueAsString(const Variant* variantValue, const std::string& variantType, jenova::PointerList& ptrList);
 	std::string ResolveVariantTypeAsString(const Variant* variantValue);
 	std::string ResolveReturnTypeForJIT(const std::string& returnType);

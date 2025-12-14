@@ -1136,7 +1136,7 @@ def build_windows(compilerBinary, linkerBinary, buildMode, buildSystem):
     CacheDB = f"{cacheDir}/Build.db"
 
     # Create Output File
-    outputName = "Jenova.Runtime.Win64.lib" if static_build else "Jenova.Runtime.Win64.dll"
+    outputName = "Jenova.Core.Win64.lib" if static_build else "Jenova.Runtime.Win64.dll"
 
     # Ensure Required Directories Exist
     rgb_print("#367fff", "[ ^ ] Validating Paths...")
