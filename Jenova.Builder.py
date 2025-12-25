@@ -61,8 +61,8 @@ sources = [
 ]
 
 # Global Options
-builder_version     = "2.8"
-deps_version        = "4.5"
+builder_version     = "2.9"
+deps_version        = "4.6"
 double_precision    = False
 static_build        = False
 skip_deps           = False
@@ -521,8 +521,8 @@ def build_dependencies_linux(buildMode, cacheDir):
         shutil.copyfile(binary_path, "./Libs/libgodotcpp-static-x86_64.a")
         if os.path.exists(sdkPath): shutil.rmtree(sdkPath)
         os.makedirs(sdkPath, exist_ok=True)
-        shutil.copyfile("./Dependencies/libgodot/gdextension/gdextension_interface.h", sdkPath + "/gdextension_interface.h")
         shutil.copytree("./Dependencies/libgodot/include", sdkPath, dirs_exist_ok=True)
+        shutil.copyfile(buildPath + "/gen/include/gdextension_interface.h", sdkPath + "/gdextension_interface.h")
         shutil.copytree(buildPath + "/gen/include", sdkPath, dirs_exist_ok=True)
         rgb_print("#38f227", "[ √ ] Jenova Runtime Dependency 'GodotSDK' Compiled Successfully.")
 def build_linux(compilerBinary, linkerBinary, buildMode, buildSystem):
@@ -930,8 +930,8 @@ def build_dependencies_windows(buildMode, cacheDir):
             shutil.copyfile(binary_path, "./Libs/libgodotcpp-static-x86_64.lib")
             if os.path.exists(sdkPath): shutil.rmtree(sdkPath)
             os.makedirs(sdkPath, exist_ok=True)
-            shutil.copyfile("./Dependencies/libgodot/gdextension/gdextension_interface.h", sdkPath + "/gdextension_interface.h")
             shutil.copytree("./Dependencies/libgodot/include", sdkPath, dirs_exist_ok=True)
+            shutil.copyfile(buildPath + "/gen/include/gdextension_interface.h", sdkPath + "/gdextension_interface.h")
             shutil.copytree(buildPath + "/gen/include", sdkPath, dirs_exist_ok=True)
             rgb_print("#38f227", "[ √ ] Jenova Runtime Dependency 'GodotSDK' Compiled Successfully.")
 
@@ -1115,8 +1115,8 @@ def build_dependencies_windows(buildMode, cacheDir):
             shutil.copyfile(binary_path, "./Libs/libgodotcpp-static-x86_64.a")
             if os.path.exists(sdkPath): shutil.rmtree(sdkPath)
             os.makedirs(sdkPath, exist_ok=True)
-            shutil.copyfile("./Dependencies/libgodot/gdextension/gdextension_interface.h", sdkPath + "/gdextension_interface.h")
             shutil.copytree("./Dependencies/libgodot/include", sdkPath, dirs_exist_ok=True)
+            shutil.copyfile(buildPath + "/gen/include/gdextension_interface.h", sdkPath + "/gdextension_interface.h")
             shutil.copytree(buildPath + "/gen/include", sdkPath, dirs_exist_ok=True)
             rgb_print("#38f227", "[ √ ] Jenova Runtime Dependency 'GodotSDK' Compiled Successfully.")
 def build_windows(compilerBinary, linkerBinary, buildMode, buildSystem):

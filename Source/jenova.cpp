@@ -569,7 +569,7 @@ namespace jenova
 						
 						// Editor Verbose Output Property
 						PropertyInfo EditorVerboseOutputProperty(Variant::INT, EditorVerboseOutputConfigPath, 
-							PropertyHint::PROPERTY_HINT_ENUM, "Standard Editor Output,Jenova Built-In Terminal,Disabled",
+							PropertyHint::PROPERTY_HINT_ENUM, "Standard Editor Output,Dedicated Log System,Disabled",
 							PROPERTY_USAGE_DEFAULT, JenovaEditorSettingsCategory);
 						editor_settings->add_property_info(EditorVerboseOutputProperty);
 						editor_settings->set_initial_value(EditorVerboseOutputConfigPath, int32_t(EditorVerboseDefaultOutput), false);
@@ -2354,16 +2354,9 @@ namespace jenova
 					if (!isTerminalVisible)
 					{
 						// Add Terminal to Bottom Panel
-						Button* terminalButton = this->add_control_to_bottom_panel(jenovaTerminal, " Terminal");
+						Button* terminalButton = this->add_control_to_bottom_panel(jenovaTerminal, "Jenova Logs");
 						if (terminalButton)
 						{
-							// Set Terminal Tooltip
-							terminalButton->set_tooltip_text("Jenova Built-In Terminal System");
-
-							// Set Terminal Icon
-							auto jenovaIcon = jenova::CreateImageTextureFromByteArrayEx(BUFFER_PTR_SIZE_PARAM(JENOVA_RESOURCE(PNG_JENOVA_ICON_64)), Vector2i(15, 15));
-							terminalButton->set_button_icon(jenovaIcon);
-
 							// Update Flags
 							isTerminalVisible = true;
 						}
@@ -6245,7 +6238,7 @@ namespace jenova
 	void RegisterDocumentationFromByteArray(const char* xmlDataPtr, size_t xmlDataSize)
 	{
 		std::string documentationData(xmlDataPtr, xmlDataSize);
-		internal::gdextension_interface_editor_help_load_xml_from_utf8_chars_and_len(documentationData.data(), documentationData.size());
+		::godot::gdextension_interface::editor_help_load_xml_from_utf8_chars_and_len(documentationData.data(), documentationData.size());
 	}
 	void CopyStringToClipboard(const String& str)
 	{

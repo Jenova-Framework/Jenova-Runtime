@@ -29,7 +29,7 @@ namespace godot
 	public:
 		static GDExtensionScriptInstancePtr create_native_instance(ScriptInstanceExtension* p_instance)
 		{
-			p_instance->instance = internal::gdextension_interface_script_instance_create3(&script_instance_info, p_instance);
+			p_instance->instance = ::godot::gdextension_interface::script_instance_create3(&script_instance_info, p_instance);
 			return p_instance->instance;
 		}
 		static GDExtensionScriptInstanceInfo3* get_script_insatnce_info()

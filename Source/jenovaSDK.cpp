@@ -632,7 +632,7 @@ namespace jenova::sdk
 	{
 		godot::StringName classNameStr(className);
 		if (!godot::ClassDB::class_exists(classNameStr)) return;
-		godot::internal::gdextension_interface_classdb_unregister_extension_class(godot::internal::library, classNameStr._native_ptr());
+		::godot::gdextension_interface::classdb_unregister_extension_class(godot::gdextension_interface::library, classNameStr._native_ptr());
 	}
 
 	// C Scripting Utilities (Clektron)
