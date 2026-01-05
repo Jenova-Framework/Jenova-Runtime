@@ -1,3 +1,5 @@
+<img width="1200" height="208" alt="Jenova-Framework-Banner" src="https://github.com/user-attachments/assets/79c4bd1d-dfe3-48dc-925d-e8bbddcf28ca" />
+
 # Jenova Runtime (Core)
 
 This repository contains source code of **Jenova Runtime** for Godot Engine and It's a part of **[Projekt J.E.N.O.V.A](https://github.com/Jenova-Framework/J.E.N.O.V.A)**
@@ -139,8 +141,7 @@ While the public source code of Jenova is ~90% identical to the proprietary vers
 Jenova Proprietary version includes only Microsoft Visual C++ (MSVC) and Microsoft LLVM Clang (Clang-cl) compilers and is compatible only with Windows. Open-Source version, however, is fully ported to Linux and includes support for MSVC, Clang-cl, MinGW GCC and LLVM on Windows as well as GCC and LLVM Clang on Linux.
 
 > [!IMPORTANT]  
-> The Jenova Runtime Proprietary version is no longer available for public access. The last version released was 0.3.6.0 Alpha.
-> Open-Source version will continue to receive all future updates from the proprietary version, Except those related to security.
+> Runtime proprietary version is no longer available for public access. Open-Source version will continue to receive all future updates from the proprietary version, except those related to security features.
 
 ![RepoBeats](https://repobeats.axiom.co/api/embed/292d48b5da1eb7a8a7db9362fe92577877ec5b51.svg "Repobeats Analytics Image")
 

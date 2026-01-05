@@ -618,7 +618,7 @@ namespace jenova
 
 						// Package Repository Path Property
 						PropertyInfo PackageRepositoryPathProperty(Variant::STRING, PackageRepositoryPathConfigPath,
-							PropertyHint::PROPERTY_HINT_NONE, "", PROPERTY_HINT_DIR, JenovaEditorSettingsCategory);
+							PropertyHint::PROPERTY_HINT_DIR, "", PROPERTY_USAGE_DEFAULT, JenovaEditorSettingsCategory);
 						editor_settings->add_property_info(PackageRepositoryPathProperty);
 						editor_settings->set_initial_value(PackageRepositoryPathConfigPath, jenova::GlobalSettings::JenovaPackageRepositoryPath, false);
 
@@ -3915,7 +3915,7 @@ namespace jenova
 				jenova_about_ui->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 				jenova_about_window->add_child(jenova_about_ui);
 
-				// Add Background ColorRect
+				// Add Background Panel
 				ColorRect* background = memnew(ColorRect);
 				background->set_name("Background");
 				background->set_anchors_preset(Control::PRESET_FULL_RECT);
@@ -3924,7 +3924,7 @@ namespace jenova
 				background->set_color(editor_theme->get_color("dark_color_3", "Editor"));
 				jenova_about_ui->add_child(background);
 
-				// Add AboutImage TextureRect (using a placeholder for now)
+				// Add About Banner Image
 				TextureRect* about_image = memnew(TextureRect);
 				about_image->set_name("AboutImage");
 				about_image->set_anchors_preset(Control::PRESET_LEFT_WIDE);
@@ -3934,7 +3934,7 @@ namespace jenova
 				about_image->set_offset(Side::SIDE_BOTTOM, SCALED(-30.0));
 				about_image->set_v_grow_direction(Control::GROW_DIRECTION_BOTH);
 				about_image->set_expand_mode(TextureRect::ExpandMode::EXPAND_FIT_HEIGHT); 
-				about_image->set_texture(jenova::CreateImageTextureFromByteArray(BUFFER_PTR_SIZE_PARAM(JENOVA_RESOURCE(PNG_ABOUT_IMAGE))));
+				about_image->set_texture(jenova::CreateImageTextureFromByteArray(BUFFER_PTR_SIZE_PARAM(JENOVA_RESOURCE(JPEG_ABOUT_IMAGE)), ImageCreationFormat::JPG));
 				jenova_about_ui->add_child(about_image);
 
 				// Add Title Label
