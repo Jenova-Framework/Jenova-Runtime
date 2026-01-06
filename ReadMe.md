@@ -4,7 +4,7 @@
 
 This repository contains source code of **Jenova Runtime** for Godot Engine and It's a part of **[Projekt J.E.N.O.V.A](https://github.com/Jenova-Framework/J.E.N.O.V.A)**
 
-![image](https://github.com/user-attachments/assets/013eed25-7047-407d-aef8-b964203e73b0)
+![Jenova-Screenshot](https://github.com/user-attachments/assets/9db1d96a-cd2c-4733-9465-1dc434ec1543)
 
 <div align="center">
   <span>
