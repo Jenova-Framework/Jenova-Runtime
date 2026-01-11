@@ -168,7 +168,7 @@ Object* CPPScriptLanguage::_create_script() const
 }
 bool CPPScriptLanguage::_supports_builtin_mode() const
 {
-	return true; // Experimental
+	return jenova::GlobalSettings::BuiltinScriptsEnabled; // Deprecated
 }
 bool CPPScriptLanguage::_supports_documentation() const
 {

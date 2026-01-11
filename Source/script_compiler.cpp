@@ -134,58 +134,7 @@ namespace jenova
         }
         String PreprocessScript(Ref<CPPScript> cppScript, const Dictionary& preprocessorSettings)
         {
-            // Get Original Source Code
-            String scriptSourceCode = cppScript->get_source_code();
-
-            // Reset Line Number
-            scriptSourceCode = scriptSourceCode.insert(0, "#line 1\n");
-
-            // Process And Extract Properties
-            jenova::SerializedData propertiesMetadata = jenova::ProcessAndExtractPropertiesFromScript(scriptSourceCode, cppScript->GetScriptIdentity());
-            if (!propertiesMetadata.empty() && propertiesMetadata != "null") jenova::WriteStdStringToFile(AS_STD_STRING(String(preprocessorSettings["PropertyMetadata"])), propertiesMetadata);
-
-            // Preprocessor Definitions [Header]
-            String preprocessorDefinitions = "// Jenova Preprocessor Definitions\n";
-
-            // Preprocessor Definitions [Version]
-            preprocessorDefinitions += String(jenova::Format("#define JENOVA_VERSION \"%d.%d.%d.%d\"\n",
-                jenova::GlobalSettings::JenovaBuildVersion[0], jenova::GlobalSettings::JenovaBuildVersion[1],
-                jenova::GlobalSettings::JenovaBuildVersion[2], jenova::GlobalSettings::JenovaBuildVersion[3]).c_str());
-
-            // Preprocessor Definitions [Compiler]
-            if (this->GetCompilerModel() == CompilerModel::MicrosoftCompiler)
-            {
-                preprocessorDefinitions += "#define JENOVA_COMPILER \"Microsoft Visual C++ Compiler\"\n";
-                preprocessorDefinitions += "#define MSVC_COMPILER\n";
-            }
-            if (this->GetCompilerModel() == CompilerModel::ClangLLVMCompiler)
-            {
-                preprocessorDefinitions += "#define JENOVA_COMPILER \"Microsoft Visual C++ Compiler LLVM\"\n";
-                preprocessorDefinitions += "#define MSVC_LLVM_COMPILER\n";
-            }
-
-            // Preprocessor Definitions [User]
-            String userPreprocessorDefinitions = preprocessorSettings["PreprocessorDefinitions"];
-            PackedStringArray userPreprocessorDefinitionsList = userPreprocessorDefinitions.split(";");
-            for (const auto& definition : userPreprocessorDefinitionsList) if (!definition.is_empty()) preprocessorDefinitions += "#define " + definition + "\n";
-
-            // Add Final Preprocessor Definitions
-            scriptSourceCode = scriptSourceCode.insert(0, preprocessorDefinitions + "\n");
-
-            // Replecements
-            scriptSourceCode = scriptSourceCode.replace(jenova::GlobalSettings::ScriptToolIdentifier, "#define TOOL_SCRIPT");
-            scriptSourceCode = scriptSourceCode.replace(jenova::GlobalSettings::ScriptBlockBeginIdentifier, "namespace JNV_" + cppScript->GetScriptIdentity() + " {");
-            scriptSourceCode = scriptSourceCode.replace(jenova::GlobalSettings::ScriptBlockEndIdentifier, "}; using namespace JNV_" + cppScript->GetScriptIdentity() + ";");
-            scriptSourceCode = scriptSourceCode.replace(" OnReady", " _ready");
-            scriptSourceCode = scriptSourceCode.replace(" OnAwake", " _enter_tree");
-            scriptSourceCode = scriptSourceCode.replace(" OnDestroy", " _exit_tree");
-            scriptSourceCode = scriptSourceCode.replace(" OnProcess", " _process");
-            scriptSourceCode = scriptSourceCode.replace(" OnPhysicsProcess", " _physics_process");
-            scriptSourceCode = scriptSourceCode.replace(" OnInput", " _input");
-            scriptSourceCode = scriptSourceCode.replace(" OnUserInterfaceInput", " _gui_input");
-
-            // Return Preprocessed Source
-            return scriptSourceCode;
+            return jenova::PreprocessScript(cppScript, preprocessorSettings, this->GetCompilerModel());
         }
         CompileResult CompileScript(const String sourceCode)
         {
@@ -1102,58 +1051,7 @@ namespace jenova
         }
         String PreprocessScript(Ref<CPPScript> cppScript, const Dictionary& preprocessorSettings)
         {
-            // Get Original Source Code
-            String scriptSourceCode = cppScript->get_source_code();
-
-            // Reset Line Number
-            scriptSourceCode = scriptSourceCode.insert(0, "#line 1\n");
-
-            // Process And Extract Properties
-            jenova::SerializedData propertiesMetadata = jenova::ProcessAndExtractPropertiesFromScript(scriptSourceCode, cppScript->GetScriptIdentity());
-            if (!propertiesMetadata.empty() && propertiesMetadata != "null") jenova::WriteStdStringToFile(AS_STD_STRING(String(preprocessorSettings["PropertyMetadata"])), propertiesMetadata);
-
-            // Preprocessor Definitions [Header]
-            String preprocessorDefinitions = "// Jenova Preprocessor Definitions\n";
-
-            // Preprocessor Definitions [Version]
-            preprocessorDefinitions += String(jenova::Format("#define JENOVA_VERSION \"%d.%d.%d.%d\"\n",
-                jenova::GlobalSettings::JenovaBuildVersion[0], jenova::GlobalSettings::JenovaBuildVersion[1],
-                jenova::GlobalSettings::JenovaBuildVersion[2], jenova::GlobalSettings::JenovaBuildVersion[3]).c_str());
-
-            // Preprocessor Definitions [Compiler]
-            if (this->GetCompilerModel() == CompilerModel::MinGWCompiler)
-            {
-                preprocessorDefinitions += "#define JENOVA_COMPILER \"MinGW GCC Compiler\"\n";
-                preprocessorDefinitions += "#define MINGW_CLANG_COMPILER\n";
-            }
-            if (this->GetCompilerModel() == CompilerModel::MinGWClangCompiler)
-            {
-                preprocessorDefinitions += "#define JENOVA_COMPILER \"MinGW Clang Compiler\"\n";
-                preprocessorDefinitions += "#define MINGW_GCC_COMPILER\n";
-            }
-
-            // Preprocessor Definitions [User]
-            String userPreprocessorDefinitions = preprocessorSettings["PreprocessorDefinitions"];
-            PackedStringArray userPreprocessorDefinitionsList = userPreprocessorDefinitions.split(";");
-            for (const auto& definition : userPreprocessorDefinitionsList) if (!definition.is_empty()) preprocessorDefinitions += "#define " + definition + "\n";
-
-            // Add Final Preprocessor Definitions
-            scriptSourceCode = scriptSourceCode.insert(0, preprocessorDefinitions + "\n");
-
-            // Replecements
-            scriptSourceCode = scriptSourceCode.replace(jenova::GlobalSettings::ScriptToolIdentifier, "#define TOOL_SCRIPT");
-            scriptSourceCode = scriptSourceCode.replace(jenova::GlobalSettings::ScriptBlockBeginIdentifier, "namespace JNV_" + cppScript->GetScriptIdentity() + " {");
-            scriptSourceCode = scriptSourceCode.replace(jenova::GlobalSettings::ScriptBlockEndIdentifier, "}; using namespace JNV_" + cppScript->GetScriptIdentity() + ";");
-            scriptSourceCode = scriptSourceCode.replace(" OnReady", " _ready");
-            scriptSourceCode = scriptSourceCode.replace(" OnAwake", " _enter_tree");
-            scriptSourceCode = scriptSourceCode.replace(" OnDestroy", " _exit_tree");
-            scriptSourceCode = scriptSourceCode.replace(" OnProcess", " _process");
-            scriptSourceCode = scriptSourceCode.replace(" OnPhysicsProcess", " _physics_process");
-            scriptSourceCode = scriptSourceCode.replace(" OnInput", " _input");
-            scriptSourceCode = scriptSourceCode.replace(" OnUserInterfaceInput", " _gui_input");
-
-            // Return Preprocessed Source
-            return scriptSourceCode;
+            return jenova::PreprocessScript(cppScript, preprocessorSettings, this->GetCompilerModel());
         }
         CompileResult CompileScript(const String sourceCode)
         {
@@ -1907,50 +1805,7 @@ namespace jenova
         }
         String PreprocessScript(Ref<CPPScript> cppScript, const Dictionary& preprocessorSettings)
         {
-            // Get Original Source Code
-            String scriptSourceCode = cppScript->get_source_code();
-
-            // Reset Line Number
-            scriptSourceCode = scriptSourceCode.insert(0, "#line 1\n");
-
-            // Process And Extract Properties
-            jenova::SerializedData propertiesMetadata = jenova::ProcessAndExtractPropertiesFromScript(scriptSourceCode, cppScript->GetScriptIdentity());
-            if (!propertiesMetadata.empty() && propertiesMetadata != "null") jenova::WriteStdStringToFile(AS_STD_STRING(String(preprocessorSettings["PropertyMetadata"])), propertiesMetadata);
-
-            // Preprocessor Definitions [Header]
-            String preprocessorDefinitions = "// Jenova Preprocessor Definitions\n";
-
-            // Preprocessor Definitions [Version]
-            preprocessorDefinitions += String(jenova::Format("#define JENOVA_VERSION \"%d.%d.%d.%d\"\n",
-                jenova::GlobalSettings::JenovaBuildVersion[0], jenova::GlobalSettings::JenovaBuildVersion[1],
-                jenova::GlobalSettings::JenovaBuildVersion[2], jenova::GlobalSettings::JenovaBuildVersion[3]).c_str());
-
-            // Preprocessor Definitions [Compiler]
-            preprocessorDefinitions += "#define JENOVA_COMPILER \"GNU Compiler Collection\"\n";
-            preprocessorDefinitions += "#define GCC_COMPILER\n";
-
-            // Preprocessor Definitions [User]
-            String userPreprocessorDefinitions = preprocessorSettings["PreprocessorDefinitions"];
-            PackedStringArray userPreprocessorDefinitionsList = userPreprocessorDefinitions.split(";");
-            for (const auto& definition : userPreprocessorDefinitionsList) if (!definition.is_empty()) preprocessorDefinitions += "#define " + definition + "\n";
-
-            // Add Final Preprocessor Definitions
-            scriptSourceCode = scriptSourceCode.insert(0, preprocessorDefinitions + "\n");
-
-            // Replecements
-            scriptSourceCode = scriptSourceCode.replace(jenova::GlobalSettings::ScriptToolIdentifier, "#define TOOL_SCRIPT");
-            scriptSourceCode = scriptSourceCode.replace(jenova::GlobalSettings::ScriptBlockBeginIdentifier, "namespace JNV_" + cppScript->GetScriptIdentity() + " {");
-            scriptSourceCode = scriptSourceCode.replace(jenova::GlobalSettings::ScriptBlockEndIdentifier, "}; using namespace JNV_" + cppScript->GetScriptIdentity() + ";");
-            scriptSourceCode = scriptSourceCode.replace(" OnReady", " _ready");
-            scriptSourceCode = scriptSourceCode.replace(" OnAwake", " _enter_tree");
-            scriptSourceCode = scriptSourceCode.replace(" OnDestroy", " _exit_tree");
-            scriptSourceCode = scriptSourceCode.replace(" OnProcess", " _process");
-            scriptSourceCode = scriptSourceCode.replace(" OnPhysicsProcess", " _physics_process");
-            scriptSourceCode = scriptSourceCode.replace(" OnInput", " _input");
-            scriptSourceCode = scriptSourceCode.replace(" OnUserInterfaceInput", " _gui_input");
-
-            // Return Preprocessed Source
-            return scriptSourceCode;
+            return jenova::PreprocessScript(cppScript, preprocessorSettings, this->GetCompilerModel());
         }
         CompileResult CompileScript(const String sourceCode)
         {
@@ -2664,50 +2519,7 @@ namespace jenova
         }
         String PreprocessScript(Ref<CPPScript> cppScript, const Dictionary& preprocessorSettings) override
         {
-           // Get Original Source Code
-            String scriptSourceCode = cppScript->get_source_code();
-
-            // Reset Line Number
-            scriptSourceCode = scriptSourceCode.insert(0, "#line 1\n");
-
-            // Process And Extract Properties
-            jenova::SerializedData propertiesMetadata = jenova::ProcessAndExtractPropertiesFromScript(scriptSourceCode, cppScript->GetScriptIdentity());
-            if (!propertiesMetadata.empty() && propertiesMetadata != "null") jenova::WriteStdStringToFile(AS_STD_STRING(String(preprocessorSettings["PropertyMetadata"])), propertiesMetadata);
-
-            // Preprocessor Definitions [Header]
-            String preprocessorDefinitions = "// Jenova Preprocessor Definitions\n";
-
-            // Preprocessor Definitions [Version]
-            preprocessorDefinitions += String(jenova::Format("#define JENOVA_VERSION \"%d.%d.%d.%d\"\n",
-                jenova::GlobalSettings::JenovaBuildVersion[0], jenova::GlobalSettings::JenovaBuildVersion[1],
-                jenova::GlobalSettings::JenovaBuildVersion[2], jenova::GlobalSettings::JenovaBuildVersion[3]).c_str());
-
-            // Preprocessor Definitions [Compiler]
-            preprocessorDefinitions += "#define JENOVA_COMPILER \"LLVM Clang Compiler\"\n";
-            preprocessorDefinitions += "#define CLANG_COMPILER\n";
-
-            // Preprocessor Definitions [User]
-            String userPreprocessorDefinitions = preprocessorSettings["PreprocessorDefinitions"];
-            PackedStringArray userPreprocessorDefinitionsList = userPreprocessorDefinitions.split(";");
-            for (const auto& definition : userPreprocessorDefinitionsList) if (!definition.is_empty()) preprocessorDefinitions += "#define " + definition + "\n";
-
-            // Add Final Preprocessor Definitions
-            scriptSourceCode = scriptSourceCode.insert(0, preprocessorDefinitions + "\n");
-
-            // Replecements
-            scriptSourceCode = scriptSourceCode.replace(jenova::GlobalSettings::ScriptToolIdentifier, "#define TOOL_SCRIPT");
-            scriptSourceCode = scriptSourceCode.replace(jenova::GlobalSettings::ScriptBlockBeginIdentifier, "namespace JNV_" + cppScript->GetScriptIdentity() + " {");
-            scriptSourceCode = scriptSourceCode.replace(jenova::GlobalSettings::ScriptBlockEndIdentifier, "}; using namespace JNV_" + cppScript->GetScriptIdentity() + ";");
-            scriptSourceCode = scriptSourceCode.replace(" OnReady", " _ready");
-            scriptSourceCode = scriptSourceCode.replace(" OnAwake", " _enter_tree");
-            scriptSourceCode = scriptSourceCode.replace(" OnDestroy", " _exit_tree");
-            scriptSourceCode = scriptSourceCode.replace(" OnProcess", " _process");
-            scriptSourceCode = scriptSourceCode.replace(" OnPhysicsProcess", " _physics_process");
-            scriptSourceCode = scriptSourceCode.replace(" OnInput", " _input");
-            scriptSourceCode = scriptSourceCode.replace(" OnUserInterfaceInput", " _gui_input");
-
-            // Return Preprocessed Source
-            return scriptSourceCode;
+            return jenova::PreprocessScript(cppScript, preprocessorSettings, this->GetCompilerModel());
         }
         CompilerModel GetCompilerModel() const override
         {

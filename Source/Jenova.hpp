@@ -20,13 +20,13 @@
 #define APP_COMPANYNAME					"MemarDesign™ LLC."
 #define APP_DESCRIPTION					"Real-Time C++ Scripting System for Godot Engine, Developed By Hamid.Memar."
 #define APP_COPYRIGHT					"Copyright MemarDesign™ LLC. (©) 2024-2026, All Rights Reserved."
-#define APP_VERSION						"0.3.9.0"
+#define APP_VERSION						"0.3.9.1"
 #define APP_VERSION_MIDDLEFIX			" "
 #define APP_VERSION_POSTFIX				"Beta"
 #define APP_VERSION_SINGLECHAR			"b"
-#define APP_VERSION_DATA				0, 3, 9, 0
+#define APP_VERSION_DATA				0, 3, 9, 1
 #define APP_VERSION_BUILD				"0"
-#define APP_VERSION_NAME				"Halo"
+#define APP_VERSION_NAME				"Riot"
 
 #ifndef NO_JENOVA_RUNTIME_SDK
 
@@ -763,6 +763,7 @@ namespace jenova
 		constexpr bool VerboseEnabled							= false;
 		constexpr bool ScriptingEnabled							= true;
 		constexpr bool BuildInternalSources						= true;
+		constexpr bool BuiltinScriptsEnabled					= false;	// Feature is Deprecated
 		constexpr bool UpdateSelectionAfterBuild				= true;
 		constexpr bool SafeExitOnPluginUnload					= true;
 		constexpr bool HandlePreLaunchErrors					= true;
@@ -780,7 +781,7 @@ namespace jenova
 		constexpr bool UpdatePropertiesAfterCall				= true;
 		constexpr bool DisableBuildAndRunWhileDebug				= true;
 		constexpr bool PauseResumeTreeOnReload					= false;
-		constexpr bool UseLegacyJenovaCacheDirectory			= false;
+		constexpr bool UseLegacyJenovaCacheDirectory			= false;	// Feature is Deprecated
 		constexpr bool UseNewFileSystemFeatures					= true;
 		constexpr bool ForceJenovaSDKHeader						= true;
 		constexpr bool CacheRuntimeConfiguration				= true;
@@ -953,6 +954,7 @@ namespace jenova
 	std::string GetStdStringFromClipboard();
 	ArgumentsArray CreateArgumentsArrayFromString(const std::string& str, char delimiter);
 	std::string GetExecutablePath();
+	std::string GetExecutableDirectory();
 	void ResetCurrentDirectoryToRoot();
 	void DoApplicationEvents();
 	bool QueueProjectBuild(bool deferred = true, bool restart = false);
@@ -1032,6 +1034,7 @@ namespace jenova
 	std::string ResolveReturnTypeForJIT(const std::string& returnType);
 	Variant* MakeVariantFromReturnType(Variant* variantPtr, const char* returnType);
 	uint32_t GetPropertyEnumFlagFromString(const std::string enumFlagStr);
+	String PreprocessScript(Ref<Resource> scriptResource, const Dictionary& preprocessorSettings, CompilerModel compilerModel);
 	jenova::SerializedData ProcessAndExtractPropertiesFromScript(OutParam std::string& scriptSource, const std::string& scriptUID);
 	jenova::SerializedData ProcessAndExtractPropertiesFromScript(OutParam String& scriptSource, const String& scriptUID);
 	Variant::Type GetVariantTypeFromStdString(const std::string& typeName);

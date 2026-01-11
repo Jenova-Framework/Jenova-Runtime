@@ -78,7 +78,7 @@ bool JenovaProfiler::Prepare(jenova::json_t& data)
 			auto& methods = scriptData["methods"];
 			for (auto& [functionName, methodData] : methods.items())
 			{
-				StringName monitorID = String(scriptPath.c_str()).replace("res://", "") + "/" + String(functionName.c_str()) + "_(µs)";
+				StringName monitorID = String(scriptPath.c_str()).replace("res://", "").replace("/", "\\") + "/" + String(functionName.c_str()) + "_(µs)";
 				if (perf->has_custom_monitor(monitorID)) perf->remove_custom_monitor(monitorID);
 				Callable monitorCallable = callable_mp_static(&JenovaProfiler::MonitorReport).bind(String(scriptPath.c_str()), String(functionName.c_str()));
 				perf->add_custom_monitor(monitorID, monitorCallable);
