@@ -68,7 +68,7 @@
     </Link>
     <PostBuildEvent>
       <Command>mkdir "$(BuildPath)JenovaSDK"
-xcopy "$(ProjectDir)\Source\JenovaSDK.h" "$(BuildPath)JenovaSDK" /Y
+xcopy "$(ProjectDir)Source\JenovaSDK.h" "$(BuildPath)JenovaSDK" /Y
 xcopy ".\Jenova.Runtime.gdextension" "$(BuildPath)" /Y
 xcopy "$(TargetDir)$(TargetName).lib" "$(BuildPath)JenovaSDK" /Y
 if exist "$(BuildPath)JenovaSDK\Jenova.SDK.x64.lib" del "$(BuildPath)JenovaSDK\Jenova.SDK.x64.lib"

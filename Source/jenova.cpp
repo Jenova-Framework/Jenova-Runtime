@@ -9890,6 +9890,28 @@ namespace jenova
 		}
 		else
 		{
+			// Check Ignore File Content
+			String currentIgnoreFileContentHash = jenova::ReadStringFromFile(String(gitIgnoreFile.c_str())).md5_text();
+			String jenovaIgnoreFileContentHash = String(jenova::resources::JenovaGitIngoreTemplate).md5_text();
+			if (currentIgnoreFileContentHash == jenovaIgnoreFileContentHash) return true;
+
+			// Request Overwrite (Windows Only)
+			#ifdef TARGET_PLATFORM_WINDOWS
+			int result = MessageBoxW(HWND(jenova::GetMainWindowNativeHandle()),
+				L"A different GitHub Ignore file already exists.\nWould you like to overwrite existing one?",
+				L"Source Control", MB_YESNO | MB_ICONWARNING
+			);
+			if (result == IDYES)
+			{
+				std::string gitIgnoreTemplate = std::string(BUFFER_PTR_SIZE_PARAM(jenova::resources::JenovaGitIngoreTemplate));
+				if (!jenova::WriteStdStringToFile(gitIgnoreFile, gitIgnoreTemplate)) return false;
+				jenova::Output("GitHub Ignore file has been successfully updated.");
+				return true;
+			}
+			else if (result == IDNO) return true;
+			#endif
+
+			// Warn User About Existing Ignore File
 			jenova::Warning("Source Control", "GitHub Ignore file already exists. Delete it first if you want to regenerate.");
 		}
 		return true;
