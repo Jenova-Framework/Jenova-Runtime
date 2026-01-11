@@ -998,6 +998,7 @@ namespace jenova
 	ArgumentsArray SplitStdStringToArguments(const std::string& str, char delimiter = ';');
 	ScriptEntityContainer CreateScriptEntityContainer(const String& rootPath);
 	std::string GenerateFilterUniqueIdentifier(std::string& filterName, bool addBrackets = false);
+	std::string NormalizeBackslashes(const std::string& input);
 	std::string NormalizePath(const std::string& input);
 	std::string NormalizePathForEngine(const std::string& input);
 	bool CompareFilePaths(const std::string& sourcePath, const std::string& destinationPath);

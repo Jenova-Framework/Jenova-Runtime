@@ -2823,7 +2823,7 @@ namespace jenova
 					jenova::Error("Visual Studio Exporter", "No GodotSDK Detected On Build System, Install At Least One From Package Manager!");
 					return false;
 				}
-				std::string solvedGodotKitPath = jenova::SolveGodotKitPathForExporters(selectedGodotKitPath);
+				std::string solvedGodotKitPath = jenova::NormalizePath(jenova::SolveGodotKitPathForExporters(selectedGodotKitPath));
 
 				// Adjust Compiler Settings
 				if (!extraIncludeDirectories.empty() && extraIncludeDirectories.back() != ';') extraIncludeDirectories.push_back(';');
@@ -3119,6 +3119,7 @@ namespace jenova
 
 				// Generate VSCode Files Path
 				std::string cppPropertiesFile = vsCodeDirectory + "/" + "c_cpp_properties.json";
+				std::string launchPropertiesFile = vsCodeDirectory + "/" + "launch.json";
 				std::string vsCodeSettingsFile = vsCodeDirectory + "/" + "settings.json";
 
 				// Create Compiler [For Obtaining Settings Only]
@@ -3151,7 +3152,7 @@ namespace jenova
 					jenova::Error("Visual Studio Exporter", "No GodotSDK Detected On Build System, Install At Least One From Package Manager!");
 					return false;
 				}
-				std::string solvedGodotKitPath = jenova::SolveGodotKitPathForExporters(selectedGodotKitPath);
+				std::string solvedGodotKitPath = jenova::NormalizePath(jenova::SolveGodotKitPathForExporters(selectedGodotKitPath));
 
 				// Adjust Compiler Settings
 				if (!extraIncludeDirectories.empty() && extraIncludeDirectories.back() != ';') extraIncludeDirectories.push_back(';');
@@ -3175,23 +3176,23 @@ namespace jenova
 
 				// Helper Functions
 				auto CreateJsonArrayFromString = [&](std::string input) -> jenova::json_t
-					{
-						if (!input.empty() && input.back() == ';') input.pop_back();
-						std::stringstream ss(input);
-						std::string item;
-						std::vector<std::string> elements;
-						while (std::getline(ss, item, ';')) elements.push_back(item);
-						jenova::json_t jsonArray = elements;
-						return jsonArray;
-					};
+				{
+					if (!input.empty() && input.back() == ';') input.pop_back();
+					std::stringstream ss(input);
+					std::string item;
+					std::vector<std::string> elements;
+					while (std::getline(ss, item, ';')) elements.push_back(item);
+					jenova::json_t jsonArray = elements;
+					return jsonArray;
+				};
 				auto CreateJsonObjectFromDelimitedString = [&](const std::string& input, const char delimiter) -> jenova::json_t
-					{
-						std::stringstream ss(input);
-						std::string item;
-						jenova::json_t jsonObject;
-						while (std::getline(ss, item, delimiter)) jsonObject[item] = true;
-						return jsonObject;
-					};
+				{
+					std::stringstream ss(input);
+					std::string item;
+					jenova::json_t jsonObject;
+					while (std::getline(ss, item, delimiter)) jsonObject[item] = true;
+					return jsonObject;
+				};
 
 				// Generate Visual Studio Code Project
 				try
@@ -3199,9 +3200,10 @@ namespace jenova
 					// Create C++ Properties
 					jenova::json_t cppProperties, configuration;
 					jenova::json_t configurations = jenova::json_t::array();
+
 					configuration["name"] = "Jenova-Framework";
 					configuration["cStandard"] = "c17";
-					configuration["cppStandard"] = "c++20";
+					configuration["cppStandard"] = "c++20"; // Get from Compiler
 					configuration["compilerPath"] = std::filesystem::absolute(compilerBinary).string();
 					configuration["includePath"] = CreateJsonArrayFromString("./;./Jenova/JenovaSDK;" + solvedGodotKitPath + ";" + extraIncludeDirectories);
 					configuration["forcedInclude"] = CreateJsonArrayFromString(forcedHeaders);
@@ -3215,14 +3217,44 @@ namespace jenova
 					cppProperties["version"] = 4;
 
 					// Serialize C++ Properties
-					jenova::SerializedData cppPropertiesSerialized = cppProperties.dump(4);
-					jenova::ReplaceAllMatchesWithString(cppPropertiesSerialized, "\\\\", "/");
-					jenova::ReplaceAllMatchesWithString(cppPropertiesSerialized, "\\", "/");
+					jenova::SerializedData cppPropertiesSerialized = jenova::NormalizeBackslashes(cppProperties.dump(4));
 
 					// Write C++ Properties to File
 					if (!jenova::WriteStdStringToFile(cppPropertiesFile, cppPropertiesSerialized))
 					{
 						jenova::Error("Jenova Visual Studio Code Exporter", "Unable to Create C++ Properties File!");
+						return false;
+					}
+
+					// Create Launch Settings
+					jenova::json_t launchProperties, dbgConfiguration;
+					jenova::json_t dbgConfigurations = json_t::array();
+
+					dbgConfiguration["name"] = "Jenova Module Debug";
+					dbgConfiguration["type"] = "cppvsdbg";
+					dbgConfiguration["request"] = "launch";
+					dbgConfiguration["program"] = jenova::GetExecutablePath();
+					dbgConfiguration["args"] = json_t::array();
+					dbgConfiguration["args"].push_back("--path");
+					dbgConfiguration["args"].push_back(AS_STD_STRING(jenova::GetJenovaProjectDirectory()));
+					dbgConfiguration["args"].push_back("--Enable-Debug-Mode");
+					dbgConfiguration["stopAtEntry"] = false;
+					dbgConfiguration["cwd"] = jenova::GetExecutableDirectory();
+					dbgConfiguration["environment"] = json_t::array();
+					dbgConfiguration["console"] = "externalTerminal";
+
+					// Finalize Launch Properties
+					dbgConfigurations.push_back(dbgConfiguration);
+					launchProperties["configurations"] = dbgConfigurations;
+					launchProperties["version"] = "0.2.0";
+
+					// Serialize Launch Properties
+					jenova::SerializedData launchPropertiesSerialized = jenova::NormalizeBackslashes(launchProperties.dump(4));
+
+					// Write Launch Properties to File
+					if (!jenova::WriteStdStringToFile(launchPropertiesFile, launchPropertiesSerialized))
+					{
+						jenova::Error("Jenova Visual Studio Code Exporter", "Unable to Create Launch/Debug Properties File!");
 						return false;
 					}
 
@@ -3321,7 +3353,7 @@ namespace jenova
 					jenova::Error("CLion Exporter", "No GodotSDK Detected On Build System, Install At Least One From Package Manager!");
 					return false;
 				}
-				std::string solvedGodotKitPath = jenova::SolveGodotKitPathForExporters(selectedGodotKitPath);
+				std::string solvedGodotKitPath = jenova::NormalizePath(jenova::SolveGodotKitPathForExporters(selectedGodotKitPath));
 
 				// Adjust Compiler Settings
 				if (!extraIncludeDirectories.empty() && extraIncludeDirectories.back() != ';') extraIncludeDirectories.push_back(';');
@@ -3508,7 +3540,7 @@ namespace jenova
 					jenova::Error("Neovim Exporter", "No GodotSDK Detected On Build System, Install At Least One From Package Manager!");
 					return false;
 				}
-				std::string solvedGodotKitPath = jenova::SolveGodotKitPathForExporters(selectedGodotKitPath);
+				std::string solvedGodotKitPath = jenova::NormalizePath(jenova::SolveGodotKitPathForExporters(selectedGodotKitPath));
 
 				// Extra Includes
 				std::string extraIncludeDirectories = AS_STD_STRING(String(jenovaCompiler->GetCompilerOption("cpp_extra_include_directories")));
@@ -5026,8 +5058,7 @@ namespace jenova
 								RemoveFileEncodingInStdString(scriptSourceCode);
 
 								// Line Directive
-								std::string referenceSourceFile = inputFile;
-								jenova::ReplaceAllMatchesWithString(referenceSourceFile, "\\", "\\\\");
+								std::string referenceSourceFile = jenova::NormalizeBackslashes(inputFile);
 								scriptSourceCode = scriptSourceCode.insert(0, jenova::Format("#line 1 \"%s\"\n", referenceSourceFile.c_str()));
 
 								// Process And Extract Properties
@@ -7369,14 +7400,21 @@ namespace jenova
 		if (addBrackets) formattedHash = "{" + formattedHash + "}";
 		return formattedHash;
 	}
+	std::string NormalizeBackslashes(const std::string& input)
+	{
+		std::string result = input;
+		jenova::ReplaceAllMatchesWithString(result, "\\\\", "/");
+		jenova::ReplaceAllMatchesWithString(result, "\\", "/");
+		jenova::ReplaceAllMatchesWithString(result, "//", "/");
+		return result;
+	}
 	std::string NormalizePath(const std::string& input)
 	{
 		std::string result;
 		char prevChar = '\0';
 		for (char c : input)
 		{
-			if (c == '/' && prevChar == '/')
-				continue;
+			if (c == '/' && prevChar == '/') continue;
 			result += (c == '\\') ? '/' : c;
 			prevChar = c;
 		}
