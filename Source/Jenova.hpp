@@ -908,6 +908,7 @@ namespace jenova
 	void* RelocateMemory(void* dest, const void* src, std::size_t count);
 	bool FreeMemory(void* memoryPtr);
 	const char* CloneString(const char* str);
+	const wchar_t* CloneWideString(const wchar_t* wstr);
 	int GetEnvironmentEntity(const char* entityName, char* bufferPtr, size_t bufferSize);
 	bool SetEnvironmentEntity(const char* entityName, const char* entityValue);
 	bool AddEnvironmentPath(const char* path, const char* pathCollection);

@@ -5453,6 +5453,15 @@ namespace jenova
 			return strdup(str);
 		#endif
 	}
+	const wchar_t* CloneWideString(const wchar_t* wstr)
+	{
+		// Bad Approach, Needs Improvement
+		#if defined(_WIN32) || defined(_WIN64)
+			return _wcsdup(wstr);
+		#else
+			return wcsdup(wstr);
+		#endif
+	}
 	int GetEnvironmentEntity(const char* entityName, char* bufferPtr, size_t bufferSize)
 	{
 		// Windows Implementation
@@ -9603,7 +9612,9 @@ namespace jenova
 			// Run Module In Debug Mode
 			if (argument == "--Enable-Debug-Mode")
 			{
-				JenovaInterpreter::SetDebugModeExecutionState(true);
+				#ifndef JENOVA_PROTECTED_MODE
+					JenovaInterpreter::SetDebugModeExecutionState(true);
+				#endif
 			}
 		}
 

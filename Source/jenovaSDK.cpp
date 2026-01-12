@@ -67,6 +67,8 @@ namespace jenova
 	extern void Error(const char* stageName, const char* fmt, ...);
 	extern void Warning(const char* stageName, const char* fmt, ...);
 	extern int ShowMessageBox(const char* msg, const char* title, int flags);
+	extern const char* CloneString(const char* str);
+	extern const wchar_t* CloneWideString(const wchar_t* wstr);
 };
 
 // Internal Structs
@@ -261,27 +263,15 @@ namespace jenova::sdk
 	{
 		std::string str((char*)godotStr.utf8().ptr(), godotStr.utf8().size());
 		if (!str.empty() && str.back() == '\0') str.pop_back();
-
-		// Bad Approach, Needs Improvement
-		#if defined(_WIN32) || defined(_WIN64)
-			return _strdup(str.c_str());
-		#else
-			return strdup(str.c_str());
-		#endif
+		return jenova::CloneString(str.c_str());
 	}
 	WideStringPtr JenovaSDK::GetWCStr(const godot::String& godotStr)
 	{
 		godot::PackedByteArray wchar_buffer = godotStr.to_wchar_buffer();
 		size_t length = wchar_buffer.size() / sizeof(wchar_t);
-		std::wstring str((wchar_t*)wchar_buffer.ptr(), length);
-		if (!str.empty() && str.back() == L'\0') str.pop_back();
-
-		// Bad Approach, Needs Improvement
-		#if defined(_WIN32) || defined(_WIN64)
-				return _wcsdup(str.c_str());
-		#else
-				return wcsdup(str.c_str());
-		#endif
+		std::wstring wstr((wchar_t*)wchar_buffer.ptr(), length);
+		if (!wstr.empty() && wstr.back() == L'\0') wstr.pop_back();
+		return jenova::CloneWideString(wstr.c_str());
 	}
 	ObjectPtr JenovaSDK::GetObjectPointer(NativePtr obj)
 	{

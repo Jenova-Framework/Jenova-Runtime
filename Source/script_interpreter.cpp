@@ -888,7 +888,11 @@ jenova::FunctionPointer JenovaInterpreter::SolveVirtualFunction(jenova::ModuleHa
 }
 void JenovaInterpreter::SetDebugModeExecutionState(bool debugModeState)
 {
-    executeInDebugMode = debugModeState;
+    #ifndef JENOVA_PROTECTED_MODE
+        executeInDebugMode = debugModeState;
+    #else
+        executeInDebugMode = false;
+    #endif
 }
 jenova::ModuleHandle JenovaInterpreter::LoadShellModule(const uint8_t* moduleDataPtr, const size_t moduleSize)
 {

@@ -61,7 +61,7 @@ sources = [
 ]
 
 # Global Options
-builder_version     = "2.9"
+builder_version     = "3.0"
 deps_version        = "4.6"
 double_precision    = False
 static_build        = False
@@ -69,7 +69,6 @@ skip_deps           = False
 skip_cache          = False
 skip_packaging      = False
 deploy_mode         = False
-lithium_edition     = False
 
 # Global Functions
 def rgb_print(hex_color, output, inplace = False):
@@ -1463,9 +1462,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=f"Jenova Runtime Build System {builder_version} Developed by Hamid.Memar")
     parser.add_argument('--compiler', type=str, help='Specify Compiler to Use.')
     parser.add_argument('--deploy-mode', action='store_true', help='Run As GitHub Action Deploy Mode')
-    parser.add_argument('--deps-version', default="4.5", help='Specify Dependencies Version (default: 4.5)')
-    parser.add_argument('--double-precision', action='store_true', help='Build Jenova Runtime using Double Precision')  
-    parser.add_argument('--static-build', action='store_true', help='Build Jenova Runtime as Static Library') 
+    parser.add_argument('--deps-version', default="4.6", help='Specify Dependencies Version (default: 4.6)')
+    parser.add_argument('--double-precision', action='store_true', help='Build Jenova Runtime using Double Precision')
+    parser.add_argument('--static-build', action='store_true', help='Build Jenova Runtime as Static Library')
     parser.add_argument('--skip-banner', action='store_true', help='Skip Printing Banner')
     parser.add_argument('--skip-deps', action='store_true', help='Skip Building Dependencies')
     parser.add_argument('--skip-cache', action='store_true', help='Skip Source Caching')
@@ -1473,7 +1472,8 @@ if __name__ == "__main__":
     parser.add_argument('--clean-up', action='store_true', help='Clean Up Build Files')
     parser.add_argument('--deep-clean-up', action='store_true', help='Clean Up Everything')
     parser.add_argument('--generate-gdsdk', action='store_true', help='Generate GodotSDK Package')
-    parser.add_argument('--lithium-edition', action='store_true', help='Build Jenova Runtime foR Lithium IDE')
+    parser.add_argument('--protected-mode', action='store_true', help='Build Jenova Runtime in Protected Mode')
+    parser.add_argument('--lithium-edition', action='store_true', help='Build Jenova Runtime for Lithium IDE')
 
     # Parser Arguments
     args = parser.parse_args()
@@ -1516,9 +1516,12 @@ if __name__ == "__main__":
         rgb_print("#367fff", "[ ^ ] Cleaning Up Everything...")
         clean_up_build(True)
 
+    # Handle Protected Mode
+    if args.protected_mode:
+        flags.append("JENOVA_PROTECTED_MODE")
+
     # Handle Lithium Edition
     if args.lithium_edition:
-        lithium_edition = True
         flags.append("LITHIUM_EDITION")
 
     # Set Compiler And Start Build

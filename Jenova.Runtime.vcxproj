@@ -44,7 +44,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;JENOVA_RUNTIME;JENOVA_SDK_BUILD;JENOVA_STATIC_BUILD_DISABLED;LITHIUM_EDITION_DISABLED;TYPED_METHOD_BIND;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;JENOVA_RUNTIME;JENOVA_SDK_BUILD;JENOVA_STATIC_BUILD_DISABLED;JENOVA_PROTECTED_MODE_DISABLED;LITHIUM_EDITION_DISABLED;TYPED_METHOD_BIND;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
