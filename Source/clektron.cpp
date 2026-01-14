@@ -42,6 +42,7 @@ struct BindingData
 
 // Stroage Units
 std::vector<BindingData> bindedSymbols;
+std::vector<void*> activeHighlighters;
 std::map<const char*, std::shared_ptr<std::fstream>> fileInstances;
 
 // Clektron Script Interface
@@ -755,23 +756,24 @@ protected:
     static void _bind_methods() {}
 
 public:
+    // Define Clektron Highlighter Colors
+    Color keyword_color             = Color::html("#86e051");
+    Color type_color                = Color::html("#66e051");
+    Color boolean_color             = Color::html("#4cb8e6");
+    Color enum_color                = Color::html("#8484f5");
+    Color enum_value_color          = Color::html("#9dbef5");
+    Color preprocessor_color        = Color::html("#fa5293");
+    Color string_color              = Color::html("#f53854");
+    Color char_color                = Color::html("#f5386e");
+    Color comment_color             = Color::html("#96969696");
+    Color function_color            = Color::html("#45ff92");
+    Color number_color              = Color::html("#e0b83f");
+    Color symbol_color              = Color::html("#f75c40");
+    Color memeber_variable_color    = Color::html("#4f49c9");
+
+public:
     ClektronHighlighter()
     {
-        // Define Clektron Highlighter Colors
-        Color keyword_color             = Color::html("#86e051");
-        Color type_color                = Color::html("#66e051");
-        Color boolean_color             = Color::html("#4cb8e6");
-        Color enum_color                = Color::html("#8484f5");
-        Color enum_value_color          = Color::html("#9dbef5");
-        Color preprocessor_color        = Color::html("#fa5293");
-        Color string_color              = Color::html("#f53854");
-        Color char_color                = Color::html("#f5386e");
-        Color comment_color             = Color::html("#96969696");
-        Color function_color            = Color::html("#45ff92");
-        Color number_color              = Color::html("#e0b83f");
-        Color symbol_color              = Color::html("#f75c40");
-        Color memeber_variable_color    = Color::html("#4f49c9");
-
         // Add Clektron Keywords
         const String keywords[] =
         {
@@ -818,6 +820,14 @@ public:
         set_number_color(number_color);
         set_symbol_color(symbol_color);
         set_member_variable_color(memeber_variable_color);
+
+        // Register Instance
+        activeHighlighters.push_back(this);
+    }
+    ~ClektronHighlighter()
+    {
+        // Unregister Instance
+        activeHighlighters.erase(std::remove(activeHighlighters.begin(), activeHighlighters.end(), this), activeHighlighters.end());
     }
 };
 
@@ -1141,6 +1151,19 @@ bool Clektron::BindSymbol(void* symbolPtr, const std::string& symbolName, const 
 
     // Add Binding Data
     bindedSymbols.push_back(bindingData);
+
+    // Add Symbol to Highlighter Instances
+    for (auto* highlighterPtr : activeHighlighters)
+    {
+        auto highlighter = reinterpret_cast<ClektronHighlighter*>(highlighterPtr);
+        if (highlighter)
+        {
+            if (!highlighter->has_keyword_color(String(symbolName.c_str())))
+            {
+                highlighter->add_keyword_color(String(symbolName.c_str()), highlighter->function_color);
+            }
+        }
+    }
 
     // All Good
     return true;

@@ -570,7 +570,7 @@ namespace jenova::sdk
 			if (!JenovaSDK::ValidateInterface(bridge)) return false;
 			return bridge->ExecuteScript(ctronScriptFile, noEntrypoint);
 		}
-		JENOVA_WRAPPER bool BindSymbol(FunctionPtr symbolPtr, StringPtr symbolName, StringPtr returnType, int paramCount, ...)
+		JENOVA_WRAPPER bool BindSymbol(FunctionPtr symbolPtr, StringPtr symbolName, StringPtr returnType = "void", int paramCount = 0, ...)
 		{
 			if (!JenovaSDK::ValidateInterface(bridge)) return false;
 			va_list args;
@@ -589,7 +589,7 @@ namespace jenova::sdk
 			if (!JenovaSDK::ValidateInterface(bridge)) return false;
 			return bridge->ExecuteScript(ctronScriptFile, noEntrypoint);
 		}
-		JENOVA_WRAPPER bool BindSymbol(FunctionPtr symbolPtr, const godot::String& symbolName, const godot::String& returnType, int paramCount, ...)
+		JENOVA_WRAPPER bool BindSymbol(FunctionPtr symbolPtr, const godot::String& symbolName, const godot::String& returnType, int paramCount = 0, ...)
 		{
 			if (!JenovaSDK::ValidateInterface(bridge)) return false;
 			va_list args;
