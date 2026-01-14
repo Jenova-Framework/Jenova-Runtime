@@ -117,7 +117,7 @@ bool JenovaAssetMonitor::AddDirectory(const String& directoryPath)
 			return filepath;
 		};
 
-		// Somehow Paths On Linux Have a Hash At End Sometimes, Need to Be cleaned
+		// Somehow Paths On Linux Have a Hash At End Sometimes, Need to Be Cleaned
 		std::string solvedPath = path;
 		solvedPath = CleanPath(solvedPath);
 

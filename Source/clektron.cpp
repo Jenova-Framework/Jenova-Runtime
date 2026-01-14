@@ -42,7 +42,6 @@ struct BindingData
 
 // Stroage Units
 std::vector<BindingData> bindedSymbols;
-std::vector<void*> activeHighlighters;
 std::map<const char*, std::shared_ptr<std::fstream>> fileInstances;
 
 // Clektron Script Interface
@@ -820,14 +819,22 @@ public:
         set_number_color(number_color);
         set_symbol_color(symbol_color);
         set_member_variable_color(memeber_variable_color);
-
-        // Register Instance
-        activeHighlighters.push_back(this);
     }
-    ~ClektronHighlighter()
+
+public:
+    void _update_cache() override
     {
-        // Unregister Instance
-        activeHighlighters.erase(std::remove(activeHighlighters.begin(), activeHighlighters.end(), this), activeHighlighters.end());
+        // Update Symbols Cache
+        for (const auto& bindedSymbol : bindedSymbols) UpdateFunctionSymbol(String(bindedSymbol.symbolName.c_str()));
+
+        // Call Base Cache Update
+        CodeHighlighter::_update_cache();
+    }
+
+private:
+    void UpdateFunctionSymbol(const String& symbolName)
+    {
+        if (!this->has_keyword_color(symbolName)) this->add_keyword_color(symbolName, function_color);
     }
 };
 
@@ -894,7 +901,14 @@ bool Clektron::ExecuteScript(const std::string& ctronScriptContent, bool noEntry
     {
         std::string errorMessage(msg);
         jenova::ReplaceAllMatchesWithString(errorMessage, "<string>:", "At Line ");
-        jenova::Error("Clektron Script Engine", ClektronSystem::InternalFormat("Clektron Compiler Encountered Error :\n%s", errorMessage.c_str()));
+        if (errorMessage.find("warning") != string::npos)
+        {
+            UtilityFunctions::push_warning(ClektronSystem::InternalFormat("Clektron Compiler Warning :\n%s", errorMessage.c_str()));
+        }
+        else
+        {
+            UtilityFunctions::push_error(ClektronSystem::InternalFormat("Clektron Compiler Encountered Error :\n%s", errorMessage.c_str()));
+        }
     };
     tcc_set_error_func(tcc, this, tcc_error_handler);
 
@@ -967,7 +981,7 @@ bool Clektron::ExecuteScript(const std::string& ctronScriptContent, bool noEntry
     // Generate Final Script Code
     std::string ctronFinalScript = 
     R"(
-    /* Jenova Clektron Engine Developed By Hamid.Memar */
+    /* Jenova Clektron (Electron-C) Engine Developed By Hamid.Memar */
 
     // Macros
     #define bool                int
@@ -1151,19 +1165,6 @@ bool Clektron::BindSymbol(void* symbolPtr, const std::string& symbolName, const 
 
     // Add Binding Data
     bindedSymbols.push_back(bindingData);
-
-    // Add Symbol to Highlighter Instances
-    for (auto* highlighterPtr : activeHighlighters)
-    {
-        auto highlighter = reinterpret_cast<ClektronHighlighter*>(highlighterPtr);
-        if (highlighter)
-        {
-            if (!highlighter->has_keyword_color(String(symbolName.c_str())))
-            {
-                highlighter->add_keyword_color(String(symbolName.c_str()), highlighter->function_color);
-            }
-        }
-    }
 
     // All Good
     return true;
