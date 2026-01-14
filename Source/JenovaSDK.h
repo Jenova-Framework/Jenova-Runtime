@@ -126,6 +126,7 @@ namespace jenova::sdk
 	};
 	enum class RuntimeEvent
 	{
+		/* Must Match to Jenova Runtime */
 		Initialized,
 		Started,
 		Stopped,
@@ -186,7 +187,7 @@ namespace jenova::sdk
 		JENOVA_INTERNAL(StringPtr GetNodeUniqueID(godot::Node* node));
 		JENOVA_INTERNAL(godot::SceneTree* GetTree());
 		JENOVA_INTERNAL(double GetTime());
-		JENOVA_INTERNAL(void Alert(StringPtr fmt, va_list args));
+		JENOVA_INTERNAL(void Alert(StringPtr format, va_list args));
 		JENOVA_INTERNAL(godot::String Format(StringPtr format, va_list args));
 		JENOVA_INTERNAL(godot::String Format(WideStringPtr format, va_list args));
 		JENOVA_INTERNAL(void Output(StringPtr format, va_list args));
@@ -243,11 +244,13 @@ namespace jenova::sdk
 		// C Scripting Utilities (Clektron)
 		JENOVA_INTERNAL(bool ExecuteScript(StringPtr ctronScript, bool noEntrypoint = false));
 		JENOVA_INTERNAL(bool ExecuteScriptFromFile(StringPtr ctronScriptFile, bool noEntrypoint = false));
+		JENOVA_INTERNAL(bool BindSymbol(FunctionPtr symbolPtr, StringPtr symbolName, StringPtr returnType, int paramCount, va_list args));
 		JENOVA_INTERNAL(bool ExecuteScript(const godot::String& ctronScript, bool noEntrypoint = false));
 		JENOVA_INTERNAL(bool ExecuteScriptFromFile(const godot::String& ctronScriptFile, bool noEntrypoint = false));
+		JENOVA_INTERNAL(bool BindSymbol(FunctionPtr symbolPtr, const godot::String& symbolName, const godot::String& returnType, int paramCount, va_list args));
 
 		// Interface Validator
-		static bool ValidateInterface(void* bridgePtr)
+		static bool ValidateInterface(NativePtr bridgePtr)
 		{
 			if (!bridgePtr) return false;
 			return true;
@@ -302,12 +305,12 @@ namespace jenova::sdk
 		if (!JenovaSDK::ValidateInterface(bridge)) return 0.0;
 		return bridge->GetTime();
 	}
-	JENOVA_WRAPPER void Alert(StringPtr fmt, ...)
+	JENOVA_WRAPPER void Alert(StringPtr format, ...)
 	{
 		if (!JenovaSDK::ValidateInterface(bridge)) return;
 		va_list args;
-		va_start(args, fmt);
-		bridge->Alert(fmt, args);
+		va_start(args, format);
+		bridge->Alert(format, args);
 		va_end(args);
 	}
 	JENOVA_WRAPPER godot::String Format(StringPtr format, ...)
@@ -567,6 +570,15 @@ namespace jenova::sdk
 			if (!JenovaSDK::ValidateInterface(bridge)) return false;
 			return bridge->ExecuteScript(ctronScriptFile, noEntrypoint);
 		}
+		JENOVA_WRAPPER bool BindSymbol(FunctionPtr symbolPtr, StringPtr symbolName, StringPtr returnType, int paramCount, ...)
+		{
+			if (!JenovaSDK::ValidateInterface(bridge)) return false;
+			va_list args;
+			va_start(args, paramCount);
+			bool result = bridge->BindSymbol(symbolPtr, symbolName, returnType, paramCount, args);
+			va_end(args);
+			return result;
+		}
 		JENOVA_WRAPPER bool ExecuteScript(const godot::String& ctronScript, bool noEntrypoint = false)
 		{
 			if (!JenovaSDK::ValidateInterface(bridge)) return false;
@@ -576,6 +588,15 @@ namespace jenova::sdk
 		{
 			if (!JenovaSDK::ValidateInterface(bridge)) return false;
 			return bridge->ExecuteScript(ctronScriptFile, noEntrypoint);
+		}
+		JENOVA_WRAPPER bool BindSymbol(FunctionPtr symbolPtr, const godot::String& symbolName, const godot::String& returnType, int paramCount, ...)
+		{
+			if (!JenovaSDK::ValidateInterface(bridge)) return false;
+			va_list args;
+			va_start(args, paramCount);
+			bool result = bridge->BindSymbol(symbolPtr, symbolName, returnType, paramCount, args);
+			va_end(args);
+			return result;
 		}
 	}
 

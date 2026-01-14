@@ -63,12 +63,12 @@ using namespace std;
 // Import External Functions
 namespace jenova
 {
-	extern void Alert(const char* fmt, ...);
-	extern void Error(const char* stageName, const char* fmt, ...);
-	extern void Warning(const char* stageName, const char* fmt, ...);
-	extern int ShowMessageBox(const char* msg, const char* title, int flags);
-	extern const char* CloneString(const char* str);
-	extern const wchar_t* CloneWideString(const wchar_t* wstr);
+	extern void Alert(const char*, ...);
+	extern void Error(const char*, const char*, ...);
+	extern void Warning(const char*, const char*, ...);
+	extern int ShowMessageBox(const char*, const char*, int);
+	extern const char* CloneString(const char*);
+	extern const wchar_t* CloneWideString(const wchar_t*);
 };
 
 // Internal Structs
@@ -310,10 +310,10 @@ namespace jenova::sdk
 namespace jenova::sdk
 {
 	// Helpers Utilities
-	void JenovaSDK::Alert(StringPtr fmt, va_list args)
+	void JenovaSDK::Alert(StringPtr format, va_list args)
 	{
 		char buffer[1024];
-		vsnprintf(buffer, sizeof(buffer), fmt, args);
+		vsnprintf(buffer, sizeof(buffer), format, args);
 		ShowMessageBox(buffer, "[JENOVA-SDK]", 0);
 	}
 	jenova::sdk::EngineMode JenovaSDK::GetEngineMode()
@@ -346,7 +346,7 @@ namespace jenova::sdk
 	}
 	bool JenovaSDK::ReloadJenovaRuntime(RuntimeReloadMode reloadMode)
 	{
-		jenova::sdk::Output("ReloadJenovaRuntime -> Not Implemented Yet");
+		jenova::sdk::Output("ReloadJenovaRuntime is Not Implemented Yet");
 		return false;
 	}
 	void JenovaSDK::CreateCheckpoint(const godot::String& checkPointName)
@@ -634,6 +634,12 @@ namespace jenova::sdk
 	{
 		return Clektron::get_singleton()->ExecuteScriptFromFile(std::string(ctronScriptFile), noEntrypoint);
 	}
+	bool JenovaSDK::BindSymbol(FunctionPtr symbolPtr, StringPtr symbolName, StringPtr returnType, int paramCount, va_list args)
+	{
+		std::vector<std::string> parameters;	
+		for (int i = 0; i < paramCount; i++) parameters.push_back(va_arg(args, const char*));
+		return Clektron::get_singleton()->BindSymbol(symbolPtr, std::string(symbolName), std::string(returnType), parameters);
+	}
 	bool JenovaSDK::ExecuteScript(const godot::String& ctronScript, bool noEntrypoint)
 	{
 		return Clektron::get_singleton()->ExecuteScript(ctronScript, noEntrypoint);
@@ -641,6 +647,10 @@ namespace jenova::sdk
 	bool JenovaSDK::ExecuteScriptFromFile(const godot::String& ctronScriptFile, bool noEntrypoint)
 	{
 		return Clektron::get_singleton()->ExecuteScriptFromFile(ctronScriptFile, noEntrypoint);
+	}
+	bool JenovaSDK::BindSymbol(FunctionPtr symbolPtr, const godot::String& symbolName, const godot::String& returnType, int paramCount, va_list args)
+	{
+		return this->BindSymbol(symbolPtr, symbolName.utf8().ptr(), returnType.utf8().ptr(), paramCount, args);
 	}
 }
 
@@ -659,7 +669,7 @@ namespace jenova
 	}
 	void* GetJenovaSDKFunctionSolver()
 	{
-		return reinterpret_cast<void*>(&jenova::sdk::GetSDKFunction);
+		return reinterpret_cast<sdk::NativePtr>(&jenova::sdk::GetSDKFunction);
 	}
 	bool ReleaseJenovaSDKInterface(JenovaSDKInterface sdkInterface)
 	{
@@ -745,6 +755,7 @@ namespace jenova
 		// Solve C Scripting Utilities (Clektron) Functions
 		if (string(sdkFunctionName) == "ExecuteScript") return FunctionPtr((bool(*)(StringPtr, bool))(&clektron::ExecuteScript));
 		if (string(sdkFunctionName) == "ExecuteScriptFromFile") return FunctionPtr((bool(*)(StringPtr, bool))(&clektron::ExecuteScriptFromFile));
+		if (string(sdkFunctionName) == "BindSymbol") return FunctionPtr((bool(*)(FunctionPtr, StringPtr, StringPtr, int, ...))(&clektron::BindSymbol));
 
 		// Invalid Function
 		return nullptr;

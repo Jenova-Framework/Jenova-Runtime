@@ -31,7 +31,17 @@
 #define UnreferenceParameter(P) (void)(P)
 #define AddSymbol(symbol) tcc_add_symbol(tcc, #symbol, reinterpret_cast<const void*>(&ClektronSystem::API_##symbol))
 
+// Type Definitions
+struct BindingData
+{
+    void* symbolPointer = nullptr;
+    std::string symbolName;
+    std::string returnType;
+    std::vector<std::string> parameters;
+};
+
 // Stroage Units
+std::vector<BindingData> bindedSymbols;
 std::map<const char*, std::shared_ptr<std::fstream>> fileInstances;
 
 // Clektron Script Interface
@@ -736,7 +746,7 @@ extern "C" namespace ClektronSystem
     }
 }
 
-// Jenova Clektron Syntax Highlighter
+// Clektron Syntax Highlighter
 class ClektronHighlighter : public CodeHighlighter
 {
     GDCLASS(ClektronHighlighter, CodeHighlighter);
@@ -849,15 +859,9 @@ Clektron* Clektron::get_singleton()
     return singleton;
 }
 
-// Jenova Clektron Script Engine Implementation
-Clektron::Clektron()
-{
-
-}
-Clektron::~Clektron()
-{
-
-}
+// Clektron Script Engine Implementation
+Clektron::Clektron() {}
+Clektron::~Clektron() {}
 bool Clektron::ExecuteScript(const std::string& ctronScriptContent, bool noEntrypoint)
 {
     // Validate Script Content
@@ -944,6 +948,12 @@ bool Clektron::ExecuteScript(const std::string& ctronScriptContent, bool noEntry
     AddSymbol(CombineStrings);
     AddSymbol(CompareStrings);
 
+    // Register Custom Bindings
+    for (const auto& binding : bindedSymbols)
+    {
+        tcc_add_symbol(tcc, binding.symbolName.c_str(), binding.symbolPointer);
+    }
+
     // Generate Final Script Code
     std::string ctronFinalScript = 
     R"(
@@ -1020,9 +1030,30 @@ bool Clektron::ExecuteScript(const std::string& ctronScriptContent, bool noEntry
     String CombineStrings(String strA, String strB);
     bool CompareStrings(String strA, String strB);
 
+    // Symbol Bindings
+    @@BINDINGS@@
+
     // Reset Line Number
     #line 1
     )";
+
+    // Generate Bindings
+    std::string bindingsCode = "";
+    for (const auto& binding : bindedSymbols)
+    {
+        std::string functionSignature = jenova::Format("%s %s(", binding.returnType.c_str(), binding.symbolName.c_str());
+        if (binding.parameters.size() != 0)
+        {
+            for (size_t i = 0; i < binding.parameters.size(); i++)
+            {
+                functionSignature += binding.parameters[i];
+                if (i != binding.parameters.size() - 1) functionSignature += ", ";
+            }
+        }
+        functionSignature += ");\n";
+        bindingsCode += functionSignature;
+    }
+    jenova::ReplaceAllMatchesWithString(ctronFinalScript, "@@BINDINGS@@", bindingsCode);
 
     // Add Entrypoint Start Automatically
     if (noEntrypoint)
@@ -1089,4 +1120,40 @@ bool Clektron::ExecuteScriptFromFile(const std::string& ctronScriptFilePath, boo
 bool Clektron::ExecuteScriptFromFile(const godot::String& ctronScriptFilePath, bool noEntrypoint)
 {
     return this->ExecuteScriptFromFile(AS_STD_STRING(ctronScriptFilePath), noEntrypoint);
+}
+bool Clektron::BindSymbol(void* symbolPtr, const std::string& symbolName, const std::string& returnType, std::vector<std::string>& parameters)
+{
+    // Create Binding Data
+    BindingData bindingData;
+    bindingData.symbolPointer = symbolPtr;
+    bindingData.symbolName = symbolName;
+    bindingData.returnType = returnType;
+    bindingData.parameters = parameters;
+
+    // Validate Pointer
+    if (!bindingData.symbolPointer) return false;
+
+    // Check If It Already Exists
+    for (const auto& bindedSymbol : bindedSymbols)
+    {
+        if (bindedSymbol.symbolName == bindingData.symbolName) return false;
+    }
+
+    // Add Binding Data
+    bindedSymbols.push_back(bindingData);
+
+    // All Good
+    return true;
+}
+bool Clektron::BindSymbol(void* symbolPtr, const std::string& symbolName, const std::string& returnType, int parameterCount, ...)
+{
+    // Collect Parameters
+    va_list args;
+    va_start(args, parameterCount);
+    std::vector<std::string> parameters;
+    for (int i = 0; i < parameterCount; i++) parameters.push_back(va_arg(args, const char*));
+    va_end(args);
+
+    // Redirect
+    return this->BindSymbol(symbolPtr, symbolName, returnType, parameters);
 }

@@ -922,7 +922,6 @@ namespace jenova
 	#pragma region JenovaUtilities
 	void Alert(const char* fmt, ...);
 	std::string Format(const char* fmt, ...);
-	std::string FormatSafe(const char* fmt, ...);
 	void Output(const char* fmt, ...);
 	void Output(const wchar_t* fmt, ...);
 	void OutputColored(const char* colorHash, const char* fmt, ...);

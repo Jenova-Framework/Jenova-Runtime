@@ -38,4 +38,6 @@ public:
 	bool ExecuteScript(const godot::String& ctronScriptContent, bool noEntrypoint = false);
 	bool ExecuteScriptFromFile(const std::string& ctronScriptFilePath, bool noEntrypoint = false);
 	bool ExecuteScriptFromFile(const godot::String& ctronScriptFilePath, bool noEntrypoint = false);
+	bool BindSymbol(void* symbolPtr, const std::string& symbolName, const std::string& returnType, std::vector<std::string>& parameters);
+	bool BindSymbol(void* symbolPtr, const std::string& symbolName, const std::string& returnType, int parameterCount, ...);
 };

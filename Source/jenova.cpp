@@ -4011,18 +4011,16 @@ namespace jenova
 				// Add Description Label
 				Label* description = memnew(Label);
 				description->set_name("Description");
-				description->set_offset(Side::SIDE_LEFT, SCALED(322.0));
-				description->set_offset(Side::SIDE_TOP, SCALED(120.0));
-				description->set_offset(Side::SIDE_RIGHT, SCALED(740.0));
+				description->set_offset(Side::SIDE_LEFT, SCALED(320.0));
+				description->set_offset(Side::SIDE_TOP, SCALED(110.0));
+				description->set_offset(Side::SIDE_RIGHT, SCALED(742.0));
 				description->set_offset(Side::SIDE_BOTTOM, SCALED(450.0));
 				description->add_theme_color_override("font_color", Color(1, 1, 1, 0.53));
 				description->set_text(
-					"Projekt J.E.N.O.V.A is a series of components for the Godot 4 Game Engine "
-					"that brings fully-featured C++ scripting directly into the Godot Editor. "
-					"It allows the use of modern C++20 standards within the Godot Engine, similar to GDScript.\n\n"
-					"With Projekt J.E.N.O.V.A, You can create anything!\nFrom Desktop Software to AAA Quality Games. \n"
-					"It's a full toolset with all the features C++ compilers provide.\n\n"
-					"For More Information Visit Official Website.\n"
+					"Project J.E.N.O.V.A was launched in 2024 with a bold vision, to transform Godot Engine into a high-end engine by harnessing cutting-edge technologies.\n"
+					"At its core lies the Jenova Runtime, a fully-featured C++ scripting backend that elevates C/C++ language to a first-class citizen within the engine.\n"
+					"Since its inception, it has consistently pushed the boundaries, introducing innovative features that streamline development across various fields.\n"
+					"From crafting desktop applications to creating high performance AAA-quality video games, the project has made significant strides in making game development more accessible and efficient.\n"
 				);
 				description->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 				description->add_theme_font_size_override("font_size", SCALED(16));
@@ -4396,7 +4394,6 @@ namespace jenova
 			// Types
 			enum class RuntimeEvent
 			{
-				/* Must Match to JenovaSDK One */
 				Initialized,
 				Started,
 				Stopped,
@@ -5652,29 +5649,6 @@ namespace jenova
 		va_end(args);
 		return std::string(buffer);
 	}
-	std::string FormatSafe(const char* fmt, ...)
-	{
-		va_list args;
-		va_start(args, fmt);
-
-		// Calculate the size of the formatted string
-		va_list args_copy;
-		va_copy(args_copy, args);
-		int size = std::vsnprintf(nullptr, 0, fmt, args_copy);
-		va_end(args_copy);
-
-		if (size < 0) {
-			va_end(args);
-			throw std::runtime_error("Error During Formatting.");
-		}
-
-		// Create a string with the required size
-		std::vector<char> buffer(size + 1);
-		std::vsnprintf(buffer.data(), buffer.size(), fmt, args);
-		va_end(args);
-
-		return std::string(buffer.data(), size);
-	}
 	void Output(const char* fmt, ...)
 	{
 		char buffer[jenova::GlobalSettings::PrintOutputBufferSize];
@@ -5816,13 +5790,13 @@ namespace jenova
 		// Suppress if Disabled
 		if (jenova::GlobalStorage::CurrentEditorVerboseOutput == jenova::EditorVerboseOutput::Disabled) return;
 
-		// Generate A Unique Color based on id (Knuth's multiplicative hash, Mod 360 for HUE)
+		// Generate A Unique Color Per ID (Based on Knuth Shuffle)
 		unsigned int hash = id * 2654435761 % 360;
 
 		// Convert HUE to RGB
 		float hue = static_cast<float>(hash);
-		float saturation = 0.8f; // Saturation of 80%
-		float value = 0.9f; // Brightness of 90%
+		float saturation = 0.8f; // Saturation : 80%
+		float value = 0.9f; // Brightness : 90%
 		int hi = static_cast<int>(hue / 60) % 6;
 		float f = hue / 60 - hi;
 		float p = value * (1 - saturation);
@@ -5839,13 +5813,12 @@ namespace jenova
 			case 5: r = value; g = p; b = q; break;
 		}
 
-		// Convert RGB to hex
+		// Convert RGB to Hex
 		std::stringstream colorHash;
 		colorHash << "#" << std::hex 
 			<< std::setw(2) << std::setfill('0') << static_cast<int>(r * 255)
 			<< std::setw(2) << std::setfill('0') << static_cast<int>(g * 255)
 			<< std::setw(2) << std::setfill('0') << static_cast<int>(b * 255);
-
 
 		// Handle Verbose In Different Modes
 		if (QUERY_ENGINE_MODE(Editor))
