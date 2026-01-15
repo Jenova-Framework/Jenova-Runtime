@@ -394,19 +394,11 @@ bool Console::ExecuteCommand(String consoleCommand)
 	consoleOutput->add_text(consoleCommand);
 
 	// Add to History
-	if (consoleHistory.is_empty())
-	{
-		consoleHistory.push_back(consoleCommand);
-		currentHistoryIndex = consoleHistory.size();
-	}
-	else
-	{
-		if (consoleHistory[consoleHistory.size() - 1] != consoleCommand)
-		{
-			consoleHistory.push_back(consoleCommand);
-			currentHistoryIndex = consoleHistory.size();
-		}
-	}
+	if (consoleHistory.is_empty()) consoleHistory.push_back(consoleCommand);
+	else if (consoleHistory[consoleHistory.size() - 1] != consoleCommand) consoleHistory.push_back(consoleCommand);
+
+	// Update Current History Index
+	currentHistoryIndex = consoleHistory.size();
 
 	// Prepare Command
 	if (!consoleCommand.ends_with(")") && !consoleCommand.contains("();")) consoleCommand += "();";

@@ -605,6 +605,10 @@ namespace jenova::sdk
 	{
 		return (T*)(caller->self);
 	}
+	template <typename T> T* GetSelf(godot::Variant self)
+	{
+		return godot::Object::cast_to<T>(self);
+	}
 	template <typename T> T* GetNode(const godot::String& nodePath)
 	{ 
 		return static_cast<T*>(GetNodeByPath(nodePath));
