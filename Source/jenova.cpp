@@ -17,10 +17,8 @@
 
 // Resources
 #include "IconDatabase.h"
-#include "BuiltinFonts.h"
+#include "FontDatabase.h"
 #include "Documentation.h"
-#include "JenovaIcon64.h"
-#include "TypesIcons.h"
 #include "AboutImage.h"
 
 // Internal/Built-In Sources
@@ -769,9 +767,10 @@ namespace jenova
 					}
 				}
 
-				// Register C++ Script Icon
+				// Register Scripting Backend Icons
 				if (jenova::GlobalSettings::ScriptingEnabled)
 				{
+					// Register C++ Script Icon
 					if (!editor_theme->has_icon(jenova::GlobalSettings::JenovaScriptType, "EditorIcons"))
 					{
 						Ref<ImageTexture> iconImage =
@@ -788,11 +787,8 @@ namespace jenova
 							return false;
 						}
 					}
-				}
 
-				// Register C++ Header Icon
-				if (jenova::GlobalSettings::ScriptingEnabled)
-				{
+					// Register C++ Header Icon
 					if (!editor_theme->has_icon(jenova::GlobalSettings::JenovaHeaderType, "EditorIcons"))
 					{
 						Ref<ImageTexture> iconImage =  
@@ -811,6 +807,46 @@ namespace jenova
 					}
 				}
 
+				// Register Clektron Console Icons
+				if (jenova::GlobalSettings::ConsoleEnabled)
+				{
+					// Register Console Icon
+					if (!editor_theme->has_icon("Console", "EditorIcons"))
+					{
+						Ref<ImageTexture> iconImage =
+							jenova::CreateImageTextureFromByteArrayEx(BUFFER_PTR_SIZE_PARAM(jenova::resources::SVG_CONSOLE_ICON),
+							Vector2i(SCALED(18), SCALED(18)), jenova::ImageCreationFormat::SVG);
+
+						if (iconImage != nullptr)
+						{
+							editor_theme->set_icon("Console", "EditorIcons", iconImage);
+						}
+						else
+						{
+							jenova::Error("Jenova Plugin", "Cannot Load Console Icon.");
+							return false;
+						}
+					}
+
+					// Register Console Scheme Icon
+					if (!editor_theme->has_icon("ConsoleScheme", "EditorIcons"))
+					{
+						Ref<ImageTexture> iconImage =
+							jenova::CreateImageTextureFromByteArrayEx(BUFFER_PTR_SIZE_PARAM(jenova::resources::SVG_CONSOLE_SCHEME_ICON),
+							Vector2i(SCALED(18), SCALED(18)), jenova::ImageCreationFormat::SVG);
+
+						if (iconImage != nullptr)
+						{
+							editor_theme->set_icon("ConsoleScheme", "EditorIcons", iconImage);
+						}
+						else
+						{
+							jenova::Error("Jenova Plugin", "Cannot Load Console Icon.");
+							return false;
+						}
+					}
+				}
+
 				// All Good
 				return true;
 			}
@@ -818,6 +854,7 @@ namespace jenova
 			{
 				// Register Nodes Documentation
 				jenova::RegisterDocumentationFromByteArray(BUFFER_PTR_SIZE_PARAM(jenova::documentation::JenovaRuntimeXML));
+				jenova::RegisterDocumentationFromByteArray(BUFFER_PTR_SIZE_PARAM(jenova::documentation::ConsoleXML));
 
 				// Register Scripts Documentation
 				jenova::UpdateScriptsDocumentation();

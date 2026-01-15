@@ -765,6 +765,7 @@ namespace jenova
 
 		constexpr bool VerboseEnabled							= false;
 		constexpr bool ScriptingEnabled							= true;
+		constexpr bool ConsoleEnabled							= true;
 		constexpr bool BuildInternalSources						= true;
 		constexpr bool BuiltinScriptsEnabled					= false;	// Feature is Deprecated
 		constexpr bool UpdateSelectionAfterBuild				= true;

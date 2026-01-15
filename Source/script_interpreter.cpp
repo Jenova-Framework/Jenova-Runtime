@@ -894,6 +894,10 @@ void JenovaInterpreter::SetDebugModeExecutionState(bool debugModeState)
         executeInDebugMode = false;
     #endif
 }
+bool JenovaInterpreter::GetDebugModeExecutionState()
+{
+    return executeInDebugMode;
+}
 jenova::ModuleHandle JenovaInterpreter::LoadShellModule(const uint8_t* moduleDataPtr, const size_t moduleSize)
 {
     return JenovaLoader::LoadModule((void*)moduleDataPtr, moduleSize);

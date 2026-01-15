@@ -54,6 +54,7 @@ public:
     static void SetInterpreterBackend(jenova::InterpreterBackend newBackend);
     static jenova::FunctionPointer SolveVirtualFunction(jenova::ModuleHandle moduleHandle, const char* functionName);
     static void SetDebugModeExecutionState(bool debugModeState);
+    static bool GetDebugModeExecutionState();
     static jenova::ModuleHandle LoadShellModule(const uint8_t* moduleDataPtr, const size_t moduleSize);
 
 public:

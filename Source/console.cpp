@@ -16,73 +16,56 @@
 #include "Jenova.hpp"
 
 // Resources
-#include "BuiltinFonts.h"
+#include "IconDatabase.h"
+#include "FontDatabase.h"
 
 // Internal/Built-In Sources
 #include "InternalSources.h"
 
 // Macros
-#define JENOCON_VERSION         0.44f
+#define JENOCON_VERSION         0.46f
 #define JENOCON_TOGGLE_ACTION   "ConsoleToggle"
-
-// Key Data
-const char ToggleKeyData[407] = {
-0x4B, 0x45, 0x59, 0x5F, 0x54, 0x41, 0x42, 0x3A, 0x34, 0x31, 0x39, 0x34,
-0x33, 0x30, 0x36, 0x2C, 0x4B, 0x45, 0x59, 0x5F, 0x42, 0x41, 0x43, 0x4B,
-0x54, 0x41, 0x42, 0x3A, 0x34, 0x31, 0x39, 0x34, 0x33, 0x30, 0x37, 0x2C,
-0x4B, 0x45, 0x59, 0x5F, 0x48, 0x4F, 0x4D, 0x45, 0x3A, 0x34, 0x31, 0x39,
-0x34, 0x33, 0x31, 0x37, 0x2C, 0x4B, 0x45, 0x59, 0x5F, 0x45, 0x4E, 0x44,
-0x3A, 0x34, 0x31, 0x39, 0x34, 0x33, 0x31, 0x38, 0x2C, 0x4B, 0x45, 0x59,
-0x5F, 0x50, 0x41, 0x47, 0x45, 0x55, 0x50, 0x3A, 0x34, 0x31, 0x39, 0x34,
-0x33, 0x32, 0x33, 0x2C, 0x4B, 0x45, 0x59, 0x5F, 0x50, 0x41, 0x47, 0x45,
-0x44, 0x4F, 0x57, 0x4E, 0x3A, 0x34, 0x31, 0x39, 0x34, 0x33, 0x32, 0x34,
-0x2C, 0x4B, 0x45, 0x59, 0x5F, 0x42, 0x52, 0x41, 0x43, 0x4B, 0x45, 0x54,
-0x4C, 0x45, 0x46, 0x54, 0x3A, 0x39, 0x31, 0x2C, 0x4B, 0x45, 0x59, 0x5F,
-0x42, 0x41, 0x43, 0x4B, 0x53, 0x4C, 0x41, 0x53, 0x48, 0x3A, 0x39, 0x32,
-0x2C, 0x4B, 0x45, 0x59, 0x5F, 0x42, 0x52, 0x41, 0x43, 0x4B, 0x45, 0x54,
-0x52, 0x49, 0x47, 0x48, 0x54, 0x3A, 0x39, 0x33, 0x2C, 0x4B, 0x45, 0x59,
-0x5F, 0x53, 0x4C, 0x41, 0x53, 0x48, 0x3A, 0x34, 0x37, 0x2C, 0x4B, 0x45,
-0x59, 0x5F, 0x50, 0x4C, 0x55, 0x53, 0x3A, 0x34, 0x33, 0x2C, 0x4B, 0x45,
-0x59, 0x5F, 0x55, 0x4E, 0x44, 0x45, 0x52, 0x53, 0x43, 0x4F, 0x52, 0x45,
-0x3A, 0x39, 0x35, 0x2C, 0x4B, 0x45, 0x59, 0x5F, 0x51, 0x55, 0x4F, 0x54,
-0x45, 0x4C, 0x45, 0x46, 0x54, 0x3A, 0x39, 0x36, 0x2C, 0x4B, 0x45, 0x59,
-0x5F, 0x46, 0x31, 0x3A, 0x34, 0x31, 0x39, 0x34, 0x33, 0x33, 0x32, 0x2C,
-0x4B, 0x45, 0x59, 0x5F, 0x46, 0x32, 0x3A, 0x34, 0x31, 0x39, 0x34, 0x33,
-0x33, 0x33, 0x2C, 0x4B, 0x45, 0x59, 0x5F, 0x46, 0x33, 0x3A, 0x34, 0x31,
-0x39, 0x34, 0x33, 0x33, 0x34, 0x2C, 0x4B, 0x45, 0x59, 0x5F, 0x46, 0x34,
-0x3A, 0x34, 0x31, 0x39, 0x34, 0x33, 0x33, 0x35, 0x2C, 0x4B, 0x45, 0x59,
-0x5F, 0x46, 0x35, 0x3A, 0x34, 0x31, 0x39, 0x34, 0x33, 0x33, 0x36, 0x2C,
-0x4B, 0x45, 0x59, 0x5F, 0x46, 0x36, 0x3A, 0x34, 0x31, 0x39, 0x34, 0x33,
-0x33, 0x37, 0x2C, 0x4B, 0x45, 0x59, 0x5F, 0x46, 0x37, 0x3A, 0x34, 0x31,
-0x39, 0x34, 0x33, 0x33, 0x38, 0x2C, 0x4B, 0x45, 0x59, 0x5F, 0x46, 0x38,
-0x3A, 0x34, 0x31, 0x39, 0x34, 0x33, 0x33, 0x39, 0x2C, 0x4B, 0x45, 0x59,
-0x5F, 0x46, 0x39, 0x3A, 0x34, 0x31, 0x39, 0x34, 0x33, 0x34, 0x30, 0x2C,
-0x4B, 0x45, 0x59, 0x5F, 0x46, 0x31, 0x30, 0x3A, 0x34, 0x31, 0x39, 0x34,
-0x33, 0x34, 0x31, 0x2C, 0x4B, 0x45, 0x59, 0x5F, 0x46, 0x31, 0x31, 0x3A,
-0x34, 0x31, 0x39, 0x34, 0x33, 0x34, 0x32, 0x2C, 0x4B, 0x45, 0x59, 0x5F,
-0x46, 0x31, 0x32, 0x3A, 0x34, 0x31, 0x39, 0x34, 0x33, 0x34, 0x33
-};
+#define VALIDATE_EXECUTOR		if (!executorConsole) return
 
 // Internal Console Script Interface
 namespace ConsoleInterface
 {
+	// Executor Context
+	static Console* executorConsole = nullptr;
+
 	// Internal API
 	static void ClearOutput()
 	{
-		// GetConsoleOutput()->clear();
+		VALIDATE_EXECUTOR;
+		executorConsole->GetConsoleOutput()->clear();
 	}
 	static void ClearHistory()
 	{
-		// consoleHistory.clear();
-		// GetConsoleOutput()->append_text("\n> [color=#8699f7]Update[/color] : Console history cleared.");
+		if (!executorConsole) return;
+		executorConsole->GetConsoleHistory().clear();
+		executorConsole->GetConsoleOutput()->append_text("\n> [color=#8699f7]Update[/color] : Console history cleared.");
 	}
-	static void QuitProcess()
+	static void PrintOutput(const char* format, ...)
 	{
-		jenova::GetSceneTree()->quit();
+		VALIDATE_EXECUTOR;
+		char buffer[2048] = { 0 };
+		va_list args;
+		va_start(args, format);
+		vsnprintf(buffer, sizeof(buffer), format, args);
+		va_end(args);
+		executorConsole->GetConsoleOutput()->append_text("\n> [color=#aaffee]Print[/color] : " + String(buffer));
 	}
 	static void PrintTime()
 	{
-		// GetConsoleOutput()->append_text(Format("\n> [color=#8699f7]Time[/color] : %lf", GetTime()));
+		VALIDATE_EXECUTOR;
+		int64_t time_msec = godot::Time::get_singleton()->get_ticks_msec();
+		String engineTime = String::num(static_cast<double>(time_msec) / 1000.0);
+		executorConsole->GetConsoleOutput()->append_text("\n> [color=#8699f7]Time[/color] : " + engineTime);
+	}
+	static void QuitProcess()
+	{
+		VALIDATE_EXECUTOR;
+		jenova::GetSceneTree()->quit();
 	}
 
 	// Binding Generator
@@ -91,6 +74,7 @@ namespace ConsoleInterface
 		// Add Custom Keyword Colors
 		highlighter->add_keyword_color("clear", Color("#9080e4"));
 		highlighter->add_keyword_color("ch", Color("#9080e4"));
+		highlighter->add_keyword_color("print", Color("#aaffee"));
 		highlighter->add_keyword_color("quit", Color("#ff3958"));
 		highlighter->add_keyword_color("exit", Color("#ff3958"));
 
@@ -98,9 +82,10 @@ namespace ConsoleInterface
 		Clektron::get_singleton()->BindSymbol(ConsoleInterface::ClearOutput, "clear");
 		Clektron::get_singleton()->BindSymbol(ConsoleInterface::ClearHistory, "clear_history");
 		Clektron::get_singleton()->BindSymbol(ConsoleInterface::ClearHistory, "ch");
+		Clektron::get_singleton()->BindSymbol(ConsoleInterface::PrintOutput, "print", "void", 2, "String", "...");
+		Clektron::get_singleton()->BindSymbol(ConsoleInterface::PrintTime, "time");
 		Clektron::get_singleton()->BindSymbol(ConsoleInterface::QuitProcess, "quit");
 		Clektron::get_singleton()->BindSymbol(ConsoleInterface::QuitProcess, "exit");
-		Clektron::get_singleton()->BindSymbol(ConsoleInterface::PrintTime, "time");
 	}
 }
 
@@ -121,21 +106,60 @@ public:
 protected:
     static void _bind_methods()
     {
+		// Key Mapping Data
+		static const char ToggleKeyMapData[407] = {
+		0x4B, 0x45, 0x59, 0x5F, 0x54, 0x41, 0x42, 0x3A, 0x34, 0x31, 0x39, 0x34,
+		0x33, 0x30, 0x36, 0x2C, 0x4B, 0x45, 0x59, 0x5F, 0x42, 0x41, 0x43, 0x4B,
+		0x54, 0x41, 0x42, 0x3A, 0x34, 0x31, 0x39, 0x34, 0x33, 0x30, 0x37, 0x2C,
+		0x4B, 0x45, 0x59, 0x5F, 0x48, 0x4F, 0x4D, 0x45, 0x3A, 0x34, 0x31, 0x39,
+		0x34, 0x33, 0x31, 0x37, 0x2C, 0x4B, 0x45, 0x59, 0x5F, 0x45, 0x4E, 0x44,
+		0x3A, 0x34, 0x31, 0x39, 0x34, 0x33, 0x31, 0x38, 0x2C, 0x4B, 0x45, 0x59,
+		0x5F, 0x50, 0x41, 0x47, 0x45, 0x55, 0x50, 0x3A, 0x34, 0x31, 0x39, 0x34,
+		0x33, 0x32, 0x33, 0x2C, 0x4B, 0x45, 0x59, 0x5F, 0x50, 0x41, 0x47, 0x45,
+		0x44, 0x4F, 0x57, 0x4E, 0x3A, 0x34, 0x31, 0x39, 0x34, 0x33, 0x32, 0x34,
+		0x2C, 0x4B, 0x45, 0x59, 0x5F, 0x42, 0x52, 0x41, 0x43, 0x4B, 0x45, 0x54,
+		0x4C, 0x45, 0x46, 0x54, 0x3A, 0x39, 0x31, 0x2C, 0x4B, 0x45, 0x59, 0x5F,
+		0x42, 0x41, 0x43, 0x4B, 0x53, 0x4C, 0x41, 0x53, 0x48, 0x3A, 0x39, 0x32,
+		0x2C, 0x4B, 0x45, 0x59, 0x5F, 0x42, 0x52, 0x41, 0x43, 0x4B, 0x45, 0x54,
+		0x52, 0x49, 0x47, 0x48, 0x54, 0x3A, 0x39, 0x33, 0x2C, 0x4B, 0x45, 0x59,
+		0x5F, 0x53, 0x4C, 0x41, 0x53, 0x48, 0x3A, 0x34, 0x37, 0x2C, 0x4B, 0x45,
+		0x59, 0x5F, 0x50, 0x4C, 0x55, 0x53, 0x3A, 0x34, 0x33, 0x2C, 0x4B, 0x45,
+		0x59, 0x5F, 0x55, 0x4E, 0x44, 0x45, 0x52, 0x53, 0x43, 0x4F, 0x52, 0x45,
+		0x3A, 0x39, 0x35, 0x2C, 0x4B, 0x45, 0x59, 0x5F, 0x51, 0x55, 0x4F, 0x54,
+		0x45, 0x4C, 0x45, 0x46, 0x54, 0x3A, 0x39, 0x36, 0x2C, 0x4B, 0x45, 0x59,
+		0x5F, 0x46, 0x31, 0x3A, 0x34, 0x31, 0x39, 0x34, 0x33, 0x33, 0x32, 0x2C,
+		0x4B, 0x45, 0x59, 0x5F, 0x46, 0x32, 0x3A, 0x34, 0x31, 0x39, 0x34, 0x33,
+		0x33, 0x33, 0x2C, 0x4B, 0x45, 0x59, 0x5F, 0x46, 0x33, 0x3A, 0x34, 0x31,
+		0x39, 0x34, 0x33, 0x33, 0x34, 0x2C, 0x4B, 0x45, 0x59, 0x5F, 0x46, 0x34,
+		0x3A, 0x34, 0x31, 0x39, 0x34, 0x33, 0x33, 0x35, 0x2C, 0x4B, 0x45, 0x59,
+		0x5F, 0x46, 0x35, 0x3A, 0x34, 0x31, 0x39, 0x34, 0x33, 0x33, 0x36, 0x2C,
+		0x4B, 0x45, 0x59, 0x5F, 0x46, 0x36, 0x3A, 0x34, 0x31, 0x39, 0x34, 0x33,
+		0x33, 0x37, 0x2C, 0x4B, 0x45, 0x59, 0x5F, 0x46, 0x37, 0x3A, 0x34, 0x31,
+		0x39, 0x34, 0x33, 0x33, 0x38, 0x2C, 0x4B, 0x45, 0x59, 0x5F, 0x46, 0x38,
+		0x3A, 0x34, 0x31, 0x39, 0x34, 0x33, 0x33, 0x39, 0x2C, 0x4B, 0x45, 0x59,
+		0x5F, 0x46, 0x39, 0x3A, 0x34, 0x31, 0x39, 0x34, 0x33, 0x34, 0x30, 0x2C,
+		0x4B, 0x45, 0x59, 0x5F, 0x46, 0x31, 0x30, 0x3A, 0x34, 0x31, 0x39, 0x34,
+		0x33, 0x34, 0x31, 0x2C, 0x4B, 0x45, 0x59, 0x5F, 0x46, 0x31, 0x31, 0x3A,
+		0x34, 0x31, 0x39, 0x34, 0x33, 0x34, 0x32, 0x2C, 0x4B, 0x45, 0x59, 0x5F,
+		0x46, 0x31, 0x32, 0x3A, 0x34, 0x31, 0x39, 0x34, 0x33, 0x34, 0x33
+		};
+
+		// Bind Properties
         ClassDB::bind_method(D_METHOD("set_toggle_key", "key"), &ConsoleScheme::set_toggle_key);
         ClassDB::bind_method(D_METHOD("get_toggle_key"), &ConsoleScheme::get_toggle_key);
-        ADD_PROPERTY(PropertyInfo(Variant::INT, "toggle_key", PROPERTY_HINT_ENUM, ToggleKeyData), "set_toggle_key", "get_toggle_key");
+        ADD_PROPERTY(PropertyInfo(Variant::INT, "toggle_key", PROPERTY_HINT_ENUM, ToggleKeyMapData), "set_toggle_key", "get_toggle_key");
 
         ClassDB::bind_method(D_METHOD("set_hide_console_by_default", "enabled"), &ConsoleScheme::set_hide_console_by_default);
         ClassDB::bind_method(D_METHOD("get_hide_console_by_default"), &ConsoleScheme::get_hide_console_by_default);
         ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_console_by_default"), "set_hide_console_by_default", "get_hide_console_by_default");
 
-        ClassDB::bind_method(D_METHOD("set_caret_blink_speed", "speed"), &ConsoleScheme::set_caret_blink_speed);
-        ClassDB::bind_method(D_METHOD("get_caret_blink_speed"), &ConsoleScheme::get_caret_blink_speed);
-        ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "caret_blink_speed", PROPERTY_HINT_RANGE, "0.05,1"), "set_caret_blink_speed", "get_caret_blink_speed");
+        ClassDB::bind_method(D_METHOD("set_caret_blink_interval", "speed"), &ConsoleScheme::set_caret_blink_interval);
+        ClassDB::bind_method(D_METHOD("get_caret_blink_interval"), &ConsoleScheme::get_caret_blink_interval);
+        ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "caret_blink_interval", PROPERTY_HINT_RANGE, "0.05,1"), "set_caret_blink_interval", "get_caret_blink_interval");
 
-        ClassDB::bind_method(D_METHOD("set_animation_speed", "speed"), &ConsoleScheme::set_animation_speed);
-        ClassDB::bind_method(D_METHOD("get_animation_speed"), &ConsoleScheme::get_animation_speed);
-        ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "animation_speed", PROPERTY_HINT_RANGE, "0.05,2"), "set_animation_speed", "get_animation_speed");
+        ClassDB::bind_method(D_METHOD("set_animation_speed_ms", "speed"), &ConsoleScheme::set_animation_speed_ms);
+        ClassDB::bind_method(D_METHOD("get_animation_speed_ms"), &ConsoleScheme::get_animation_speed_ms);
+        ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "animation_speed_ms", PROPERTY_HINT_RANGE, "0.05,2"), "set_animation_speed_ms", "get_animation_speed_ms");
 
         ClassDB::bind_method(D_METHOD("set_dark_shade_power", "power"), &ConsoleScheme::set_dark_shade_power);
         ClassDB::bind_method(D_METHOD("get_dark_shade_power"), &ConsoleScheme::get_dark_shade_power);
@@ -156,10 +180,10 @@ public:
     int get_toggle_key() const { return visibilityToggleKey; }
     void set_hide_console_by_default(bool enabled) { hideConsoleByDefault = enabled; }
     bool get_hide_console_by_default() const { return hideConsoleByDefault; }
-    void set_caret_blink_speed(float speed) { caretBlinkSpeed = speed; }
-    float get_caret_blink_speed() const { return caretBlinkSpeed; }
-    void set_animation_speed(float speed) { animationSpeed = speed; }
-    float get_animation_speed() const { return animationSpeed; }
+    void set_caret_blink_interval(float speed) { caretBlinkSpeed = speed; }
+    float get_caret_blink_interval() const { return caretBlinkSpeed; }
+    void set_animation_speed_ms(float speed) { animationSpeed = speed; }
+    float get_animation_speed_ms() const { return animationSpeed; }
     void set_dark_shade_power(float power) { darkShadePower = power; }
     float get_dark_shade_power() const { return darkShadePower; }
 	void set_output_font_size(int size) { outputFontSize = size; }
@@ -182,20 +206,18 @@ void Console::init()
 // Bindings
 void Console::_bind_methods()
 {
-    // Bind Functions
-    ClassDB::bind_method(D_METHOD("InitializeConsole"), &Console::InitializeConsole);
+	// Bind Console API Functions
+	ClassDB::bind_method(D_METHOD("execute", "command"), &Console::Execute);
+	ClassDB::bind_method(D_METHOD("log", "message"), static_cast<void (Console::*)(const String&)>(&Console::AddLog));
+	ClassDB::bind_method(D_METHOD("logc", "message", "color"), static_cast<void (Console::*)(const String&, Color)>(&Console::AddLog));
+	ClassDB::bind_method(D_METHOD("error", "message"), &Console::ThrowError);
+	ClassDB::bind_method(D_METHOD("flush"), &Console::Flush);
+	ClassDB::bind_method(D_METHOD("get_data"), &Console::GetData);
 
     // Bind Console Scheme Resource
-    ClassDB::bind_method(D_METHOD("SetConsoleScheme", "scheme"), &Console::SetConsoleScheme);
+    ClassDB::bind_method(D_METHOD("SetConsoleScheme", "consoleScheme"), &Console::SetConsoleScheme);
     ClassDB::bind_method(D_METHOD("GetConsoleScheme"), &Console::GetConsoleScheme);
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "consoleScheme", PROPERTY_HINT_RESOURCE_TYPE, "ConsoleScheme"), "SetConsoleScheme", "GetConsoleScheme");
-}
-
-// Clektron Console Constructor
-Console::Console()
-{
-	// Configure Console Control
-	this->set_anchors_preset(Control::PRESET_TOP_WIDE);
 }
 
 // Clektron Console Routines
@@ -229,7 +251,7 @@ void Console::_ready()
     if (QUERY_ENGINE_MODE(Editor)) return;
     
     // Initialize Console
-    this->call_deferred("InitializeConsole");
+	this->InitializeConsole();
 }
 void Console::_process(double _delta)
 {
@@ -289,18 +311,18 @@ void Console::InitializeConsole()
 
 	// Create Resources :: Console Panel Shader
 	using namespace jenova::resources;
-	String panelShaderCode = String(JenovaConsolePanelShader).replace("123.456", String::num(GetConfiguration<float>("dark_shade_power"), 2));
+	String panelShaderCode = String(JenovaConsolePanelShader).replace("123.456", String::num(1.0 - GetConfiguration<float>("dark_shade_power"), 2));
 	Ref<ShaderMaterial> panelShaderMaterial = jenova::CreateShaderMaterialFromString(panelShaderCode);
 
-	// Create Console Panel
-	Panel* consolePanel = memnew(Panel);
+	// Create User Interface :: Console Panel
+	consolePanel = memnew(Panel);
 	consolePanel->set_name("ConsolePanel");
 	consolePanel->set_material(panelShaderMaterial);
 	consolePanel->set_anchors_preset(Control::PRESET_TOP_WIDE);
 	consolePanel->set_custom_minimum_size(Vector2(0, 210));
 	this->add_child(consolePanel);
 
-	// Create Console Output
+	// Create User Interface :: Console Output
 	consoleOutput = memnew(RichTextLabel);
 	consoleOutput->set_name("ConsoleOutput");
 	consoleOutput->set_anchors_preset(Control::PRESET_FULL_RECT);
@@ -323,7 +345,7 @@ void Console::InitializeConsole()
 	consoleOutput->set_text(GetInitialText());
 	consolePanel->add_child(consoleOutput);
 
-	// Create Console Input
+	// Create User Interface :: Console Input
 	consoleInput = memnew(CodeEdit);
 	consoleInput->set_name("ConsoleInput");
 	consoleInput->set_anchors_preset(Control::PRESET_BOTTOM_WIDE);
@@ -344,7 +366,7 @@ void Console::InitializeConsole()
 	consoleInput->set_draw_spaces(true);
 	consoleInput->set_syntax_highlighter(highlighter);
 	consoleInput->set_line_wrapping_mode(TextEdit::LINE_WRAPPING_NONE);
-	consoleInput->set_caret_blink_interval(GetConfiguration<float>("caret_blink_speed"));
+	consoleInput->set_caret_blink_interval(GetConfiguration<float>("caret_blink_interval"));
 	consoleInput->set_auto_brace_completion_enabled(true);
 	consolePanel->add_child(consoleInput);
 
@@ -355,7 +377,7 @@ void Console::InitializeConsole()
 	// Apply Settings
 	if (GetConfiguration<bool>("hide_console_by_default"))
 	{
-		this->set_offset(Side::SIDE_TOP, -210);
+		consolePanel->set_offset(Side::SIDE_TOP, -210);
 		isConsoleVisible = false;
 	}
 
@@ -365,11 +387,10 @@ void Console::InitializeConsole()
 	// Update Highlighter Cache
 	highlighter->update_cache();
 }
-void Console::ExecuteCommand(String consoleCommand)
+bool Console::ExecuteCommand(String consoleCommand)
 {
 	// Add Command Log
-	RichTextLabel* consoleOutput = GetConsoleOutput();
-	consoleOutput->append_text("\n> [color=#e19166]Command[/color]: ");
+	consoleOutput->append_text("\n> [color=#e19166]Command[/color] : ");
 	consoleOutput->add_text(consoleCommand);
 
 	// Add to History
@@ -391,11 +412,18 @@ void Console::ExecuteCommand(String consoleCommand)
 	if (!consoleCommand.ends_with(")") && !consoleCommand.contains("();")) consoleCommand += "();";
 	if (!consoleCommand.ends_with(";") && !consoleCommand.contains("();")) consoleCommand += ";";
 
+	// Set Executor Instance
+	ConsoleInterface::executorConsole = this;
+
 	// Execute Command
 	if (!Clektron::get_singleton()->ExecuteScript(consoleCommand, true))
 	{
-		consoleOutput->append_text("\n> [color=#f83760]Error : Invalid Command! Check Terminal for more information.[/color]");
+		this->ThrowError("Invalid Command! Check engine output for more information.");
+		return false;
 	}
+
+	// All Good
+	return true;
 }
 void Console::ShowHideConsole(bool visible)
 {
@@ -405,16 +433,16 @@ void Console::ShowHideConsole(bool visible)
 		isConsoleBeingAnimated = true;
 		if (visible)
 		{
-			this->set_visible(true);
+			consolePanel->set_visible(true);
 			Ref<Tween> consoleAnimator = this->create_tween();
-			consoleAnimator->tween_property(this, "offset_top", 0, GetConfiguration<float>("animation_speed"));
+			consoleAnimator->tween_property(consolePanel, "offset_top", 0, GetConfiguration<float>("animation_speed_ms"));
 			consoleAnimator->connect("finished", callable_mp(this, &Console::SetConsoleState).bind(true));
 		}
 		else
 		{
-			GetConsoleInput()->release_focus();
+			consoleInput->release_focus();
 			Ref<Tween> consoleAnimator = this->create_tween();
-			consoleAnimator->tween_property(this, "offset_top", -210, GetConfiguration<float>("animation_speed"));
+			consoleAnimator->tween_property(consolePanel, "offset_top", -210, GetConfiguration<float>("animation_speed_ms"));
 			consoleAnimator->connect("finished", callable_mp(this, &Console::SetConsoleState).bind(false));
 		}
 	}
@@ -429,12 +457,12 @@ void Console::SetConsoleState(bool state)
 	// Set Focus
 	if (state)
 	{
-		GetConsoleInput()->grab_focus();
+		consoleInput->grab_focus();
 	}
 	else
 	{
-		GetConsoleInput()->release_focus();
-		this->set_visible(false);
+		consoleInput->release_focus();
+		consolePanel->set_visible(false);
 	}
 
 	// Update Flags
@@ -451,7 +479,6 @@ void Console::HandleConsoleInputEvent(const Ref<InputEvent>& inputEvent)
 		// Handle Command Accept
 		if (keyEvent->get_keycode() == Key::KEY_ENTER && keyEvent->is_released())
 		{
-			CodeEdit* consoleInput = GetConsoleInput();
 			if (!consoleInput->get_text().is_empty())
 			{
 				ExecuteCommand(consoleInput->get_text());
@@ -462,13 +489,12 @@ void Console::HandleConsoleInputEvent(const Ref<InputEvent>& inputEvent)
 		// Handle Commands History
 		if (keyEvent->get_keycode() == Key::KEY_UP && keyEvent->is_released())
 		{
-			CodeEdit* consoleInput = GetConsoleInput();
 			if (consoleHistory.size() != 0)
 			{
 				if (currentHistoryIndex > 0)
 				{
 					currentHistoryIndex--;
-					currentHistoryIndex = CLAMP(currentHistoryIndex, 0, consoleHistory.size());
+					currentHistoryIndex = ::CLAMP(currentHistoryIndex, 0, consoleHistory.size());
 					if (currentHistoryIndex == consoleHistory.size()) currentHistoryIndex = consoleHistory.size() - 1;
 				}
 				consoleInput->set_text(consoleHistory[currentHistoryIndex]);
@@ -478,13 +504,12 @@ void Console::HandleConsoleInputEvent(const Ref<InputEvent>& inputEvent)
 		}
 		if (keyEvent->get_keycode() == Key::KEY_DOWN && keyEvent->is_released())
 		{
-			CodeEdit* consoleInput = GetConsoleInput();
 			if (consoleHistory.size() != 0)
 			{
 				if (currentHistoryIndex < consoleHistory.size())
 				{
 					currentHistoryIndex++;
-					currentHistoryIndex = CLAMP(currentHistoryIndex, 0, consoleHistory.size() - 1);
+					currentHistoryIndex = ::CLAMP(currentHistoryIndex, 0, consoleHistory.size() - 1);
 				}
 				consoleInput->set_text(consoleHistory[currentHistoryIndex]);
 				int caretPosition = consoleInput->get_text().length();
@@ -495,8 +520,6 @@ void Console::HandleConsoleInputEvent(const Ref<InputEvent>& inputEvent)
 }
 void Console::HandleConsoleInputChange()
 {
-	CodeEdit* consoleInput = GetConsoleInput();
-
 	// Limit to Single Line
 	if (consoleInput->get_line_count() > 1)
 	{
@@ -514,4 +537,30 @@ void Console::HandleConsoleInputChange()
 			consoleInput->set_caret_column(caretPosition == 0 ? 0 : caretPosition - 1);
 		}
 	}
+}
+
+// Clektron Console API Implementation
+bool Console::Execute(const String& command)
+{
+	return this->ExecuteCommand(command);
+}
+void Console::AddLog(const String& logMessage)
+{
+	consoleOutput->append_text("\n> " + logMessage);
+}
+void Console::AddLog(const String& logMessage, Color logColor)
+{
+	consoleOutput->append_text("\n> [color=" + logColor.to_html() + "]Error : " + logMessage + "[/color]");
+}
+void Console::ThrowError(const String& errorMessage)
+{
+	consoleOutput->append_text("\n> [color=#f83760]Error : " + errorMessage + "[/color]");
+}
+void Console::Flush()
+{
+	consoleOutput->clear();
+}
+String Console::GetData() const
+{
+	return consoleOutput->get_text();
 }

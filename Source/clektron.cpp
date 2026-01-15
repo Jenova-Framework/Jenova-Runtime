@@ -851,7 +851,7 @@ void Clektron::init()
     ClassDB::register_class<ClektronHighlighter>();
 
     // Register Console
-    Console::init();
+    if (jenova::GlobalSettings::ConsoleEnabled) Console::init();
 
     // Initialize Singleton
     singleton = memnew(Clektron);

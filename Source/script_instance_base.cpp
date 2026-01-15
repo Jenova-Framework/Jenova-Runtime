@@ -112,8 +112,8 @@ static void gdextension_script_instance_call(GDExtensionScriptInstanceDataPtr p_
 		// Create Invoker
 		auto invoke_callp = [&]() { *ret = instance->callp(*method, args, p_argument_count, *r_error); };
 
-		// Skip Managed Safe Execution If Disabled
-		if (!jenova::GlobalStorage::UseManagedSafeExecution)
+		// Skip Managed Safe Execution If Disabled or Running in Debug Mode
+		if (!jenova::GlobalStorage::UseManagedSafeExecution || JenovaInterpreter::GetDebugModeExecutionState())
 		{
 			invoke_callp();
 			return;
@@ -123,7 +123,7 @@ static void gdextension_script_instance_call(GDExtensionScriptInstanceDataPtr p_
 		__try { invoke_callp(); }
 		__except (jenova::JenovaExecutionCrashHandler(GetExceptionInformation()))
 		{
-			// Suppres Godot Call Error
+			// Suppres Engine Call Error
 			if (r_error) r_error->error = GDEXTENSION_CALL_OK;
 		}
 

@@ -106,22 +106,16 @@
     <ClInclude Include="Source\AboutImage.h">
       <Filter>Resources\Storage</Filter>
     </ClInclude>
-    <ClInclude Include="Source\BuiltinFonts.h">
+    <ClInclude Include="Source\FontDatabase.h">
       <Filter>Resources\Storage</Filter>
     </ClInclude>
     <ClInclude Include="Source\CodeTemplates.h">
-      <Filter>Resources\Storage</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\TypesIcons.h">
       <Filter>Resources\Storage</Filter>
     </ClInclude>
     <ClInclude Include="Source\Documentation.h">
       <Filter>Resources\Storage</Filter>
     </ClInclude>
     <ClInclude Include="Source\IconDatabase.h">
-      <Filter>Resources\Storage</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\JenovaIcon64.h">
       <Filter>Resources\Storage</Filter>
     </ClInclude>
     <ClInclude Include="Source\VisualStudioTemplates.h">

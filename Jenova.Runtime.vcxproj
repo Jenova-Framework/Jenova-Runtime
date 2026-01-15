@@ -115,15 +115,13 @@ ren "$(BuildPath)JenovaSDK\$(TargetName).lib" "Jenova.SDK.x64.lib"
     <ClInclude Include="Source\gdextension_exporter.h" />
     <ClInclude Include="Source\InternalModules.h" />
     <ClInclude Include="Source\InternalSources.h" />
-    <ClInclude Include="Source\BuiltinFonts.h" />
+    <ClInclude Include="Source\FontDatabase.h" />
     <ClInclude Include="Source\CodeTemplates.h" />
     <ClInclude Include="Source\script_profiler.h" />
     <ClInclude Include="Source\task_system.h" />
-    <ClInclude Include="Source\TypesIcons.h" />
     <ClInclude Include="Source\Documentation.h" />
     <ClInclude Include="Source\IconDatabase.h" />
     <ClInclude Include="Source\Jenova.hpp" />
-    <ClInclude Include="Source\JenovaIcon64.h" />
     <ClInclude Include="Source\JenovaSDK.h" />
     <ClInclude Include="Source\package_manager.h" />
     <ClInclude Include="Source\script_compiler.h" />

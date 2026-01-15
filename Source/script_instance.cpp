@@ -201,6 +201,13 @@ void CPPScriptInstance::notification(int p_notification, bool p_reversed)
 }
 Variant CPPScriptInstance::callp(const StringName &p_method, const Variant **p_args, const int p_argument_count, GDExtensionCallError &r_error) 
 {
+	// Validate Scripting Backend
+	if (!jenova::GlobalSettings::ScriptingEnabled)
+	{
+		r_error.error = GDEXTENSION_CALL_ERROR_INSTANCE_IS_NULL;
+		return Variant();
+	}
+
 	// Validate Instance & Script
 	if (isDeleting || !this->script.is_valid())
 	{

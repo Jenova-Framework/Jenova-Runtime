@@ -17,9 +17,9 @@
 #include "Jenova.hpp"
 
 // Clektron Console Definition
-class Console : public Control
+class Console : public Node
 {
-	GDCLASS(Console, Control);
+	GDCLASS(Console, Node);
 
 private:
 	Ref<Resource> consoleScheme;
@@ -37,7 +37,7 @@ public:
 	static void init();
 
 public:
-	Console();
+	Console() {};
 	~Console() {};
 
 public:
@@ -49,7 +49,7 @@ public:
 
 private:
 	void InitializeConsole();
-	void ExecuteCommand(String consoleCommand);
+	bool ExecuteCommand(String consoleCommand);
 	void ShowHideConsole(bool visible);
 	String GetInitialText() const;
 
@@ -60,19 +60,30 @@ private:
 	void HandleConsoleInputChange();
 
 public:
-	// Getters
+	// Accessors
 	RichTextLabel* GetConsoleOutput() { return consoleOutput; };
 	CodeEdit* GetConsoleInput() { return consoleInput; };
+	Vector<String> GetConsoleHistory() { return consoleHistory; };
+
+public:
+	// Exposed API
+	bool Execute(const String& command);
+	void AddLog(const String& logMessage);
+	void AddLog(const String& logMessage, Color logColor);
+	void ThrowError(const String& errorMessage);
+	void Flush();
+	String GetData() const;
 
 private:
 	// Internal Data
 	Vector<String> consoleHistory;
-	int currentHistoryIndex = 0;
-	bool isConsoleVisible = true;
-	bool isConsoleBeingAnimated = false;
+	int currentHistoryIndex			= 0;
+	bool isConsoleVisible			= true;
+	bool isConsoleBeingAnimated		= false;
 
 private:
 	// Internal Nodes
-	RichTextLabel* consoleOutput = nullptr;
-	CodeEdit* consoleInput = nullptr;
+	Panel* consolePanel				= nullptr;
+	RichTextLabel* consoleOutput	= nullptr;
+	CodeEdit* consoleInput			= nullptr;
 };
