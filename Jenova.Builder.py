@@ -53,6 +53,7 @@ sources = [
     "Source/script_profiler.cpp",
     "Source/script_manager.cpp",
     "Source/clektron.cpp",
+    "Source/console.cpp",
     "Source/tiny_profiler.cpp",
     "Source/task_system.cpp",
     "Source/package_manager.cpp",

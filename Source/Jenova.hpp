@@ -12,7 +12,7 @@
 |                                                              |
 +-------------------------------------------------------------*/
 
-// Jenova SDK
+// Jenova Runtime SDK
 #pragma once
 
 // String Resources
@@ -20,11 +20,11 @@
 #define APP_COMPANYNAME					"MemarDesign™ LLC."
 #define APP_DESCRIPTION					"Real-Time C++ Scripting System for Godot Engine, Developed By Hamid.Memar."
 #define APP_COPYRIGHT					"Copyright MemarDesign™ LLC. (©) 2024-2026, All Rights Reserved."
-#define APP_VERSION						"0.3.9.1"
+#define APP_VERSION						"0.3.9.2"
 #define APP_VERSION_MIDDLEFIX			" "
 #define APP_VERSION_POSTFIX				"Beta"
 #define APP_VERSION_SINGLECHAR			"b"
-#define APP_VERSION_DATA				0, 3, 9, 1
+#define APP_VERSION_DATA				0, 3, 9, 2
 #define APP_VERSION_BUILD				"0"
 #define APP_VERSION_NAME				"Riot"
 
@@ -136,11 +136,13 @@
 #include <classes/time.hpp>
 #include <classes/timer.hpp>
 #include <classes/shader.hpp>
+#include <classes/shader_material.hpp>
 #include <classes/font.hpp>
 #include <classes/font_file.hpp>
 #include <classes/font_variation.hpp>
 #include <classes/resource_importer_dynamic_font.hpp>
 #include <classes/input.hpp>
+#include <classes/input_map.hpp>
 #include <classes/input_event.hpp>
 #include <classes/input_event_mouse.hpp>
 #include <classes/input_event_key.hpp>
@@ -183,6 +185,7 @@
 #include <classes/scroll_container.hpp>
 #include <classes/style_box.hpp>
 #include <classes/style_box_empty.hpp>
+#include <classes/style_box_flat.hpp>
 #include <classes/panel.hpp>
 #include <classes/viewport.hpp>
 #include <classes/viewport_texture.hpp>
@@ -945,6 +948,8 @@ namespace jenova
 	Ref<ImageTexture> CreateImageTextureFromByteArrayEx(const uint8_t* imageDataPtr, size_t imageDataSize, const Vector2i& imageSize = Vector2i(), ImageCreationFormat imageFormat = ImageCreationFormat::PNG);
 	Ref<ImageTexture> CreateMenuItemIconFromByteArray(const uint8_t* imageDataPtr, size_t imageDataSize, ImageCreationFormat imageFormat = ImageCreationFormat::PNG);
 	Ref<FontFile> CreateFontFileFromByteArray(const uint8_t* fontDataPtr, size_t fontDataSize);
+	Ref<Shader> CreateShaderFromString(const String& shaderCode);
+	Ref<ShaderMaterial> CreateShaderMaterialFromString(const String& shaderCode);
 	bool CollectResourcesFromFileSystem(const String& rootPath, const String& extensions, jenova::ResourceCollection& collectedResources, bool respectGDIgnore = true);
 	bool CollectScriptsFromFileSystemAndScenes(const String& rootPath, const String& extension, jenova::ResourceCollection& collectedResources, bool respectGDIgnore = true);
 	void RegisterDocumentationFromByteArray(const char* xmlDataPtr, size_t xmlDataSize);
@@ -1115,6 +1120,7 @@ namespace jenova
 
 // Jenova C Script Engine
 #include "clektron.h"
+#include "console.h"
 
 // Jenova Exporters
 #include "gdextension_exporter.h"

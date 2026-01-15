@@ -2,25 +2,25 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="jenova.imgui.vulkan.cpp" />
-    <ClCompile Include="imgui\imgui.cpp">
+    <ClCompile Include="..\..\Dependencies\libjenova\imgui\imgui_widgets.cpp">
       <Filter>ImGui</Filter>
     </ClCompile>
-    <ClCompile Include="imgui\imgui_demo.cpp">
+    <ClCompile Include="..\..\Dependencies\libjenova\imgui\imgui.cpp">
       <Filter>ImGui</Filter>
     </ClCompile>
-    <ClCompile Include="imgui\imgui_draw.cpp">
+    <ClCompile Include="..\..\Dependencies\libjenova\imgui\imgui_demo.cpp">
       <Filter>ImGui</Filter>
     </ClCompile>
-    <ClCompile Include="imgui\imgui_tables.cpp">
+    <ClCompile Include="..\..\Dependencies\libjenova\imgui\imgui_draw.cpp">
       <Filter>ImGui</Filter>
     </ClCompile>
-    <ClCompile Include="imgui\imgui_widgets.cpp">
+    <ClCompile Include="..\..\Dependencies\libjenova\imgui\backends\imgui_impl_vulkan.cpp">
       <Filter>ImGui</Filter>
     </ClCompile>
-    <ClCompile Include="imgui\backends\imgui_impl_win32.cpp">
+    <ClCompile Include="..\..\Dependencies\libjenova\imgui\backends\imgui_impl_win32.cpp">
       <Filter>ImGui</Filter>
     </ClCompile>
-    <ClCompile Include="imgui\backends\imgui_impl_vulkan.cpp">
+    <ClCompile Include="..\..\Dependencies\libjenova\imgui\imgui_tables.cpp">
       <Filter>ImGui</Filter>
     </ClCompile>
   </ItemGroup>

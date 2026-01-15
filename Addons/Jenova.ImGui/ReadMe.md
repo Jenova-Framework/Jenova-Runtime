@@ -11,7 +11,7 @@ It is particularly useful for debugging and prototyping.
 // Events
 void OnAwake(Caller* instance)
 {
-	// Create A User interface Render Event
+	// Create A User Interface Render Event
 	JenovaImGui::AddUserInterfaceRenderEvent("ImGuiContext-Demo", [&]()
 	{
 		ImGui::SetNextWindowPos(ImVec2(300, 50));

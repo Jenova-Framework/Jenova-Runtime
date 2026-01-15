@@ -109,4 +109,12 @@ static constexpr char JenovaModuleInitializerCPP[] = R"(
 
 )";
 static constexpr char JenovaGitIngoreTemplate[] = "# Godot 4+ Jenova specific ignores\n.vs/\n.vscode/\n.idea/\n.godot/\n.jenova/\nJenova/\n/vc*.pdb\ncmake-build-*/\nCMakeFiles/\nCMakeCache.txt\nMakefile\ncmake_install.cmake\ncompile_commands.json\ncompile_flags.txt\n";
+static constexpr char JenovaConsolePanelShader[] = R"(
+shader_type canvas_item; uniform sampler2D SCREEN_TEXTURE : hint_screen_texture,filter_linear_mipmap;
+const float blur_radius_x = 8.0; const float blur_radius_y = 16.0;
+void fragment(){ vec2 texel_size =vec2(4.0)/vec2(textureSize(SCREEN_TEXTURE,0)); vec4 color=vec4(0.0); int samples=0;
+for (float x=-blur_radius_x; x<=blur_radius_x;x++){for(float y=-blur_radius_y;y<=blur_radius_y;y++){
+vec2 offset=vec2(x, y)*texel_size;color+=texture(SCREEN_TEXTURE,SCREEN_UV+offset);samples++;}}
+color/=float(samples);COLOR=vec4(color.rgb*123.456,1.0);
+})";
 }

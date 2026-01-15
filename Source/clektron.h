@@ -39,5 +39,5 @@ public:
 	bool ExecuteScriptFromFile(const std::string& ctronScriptFilePath, bool noEntrypoint = false);
 	bool ExecuteScriptFromFile(const godot::String& ctronScriptFilePath, bool noEntrypoint = false);
 	bool BindSymbol(void* symbolPtr, const std::string& symbolName, const std::string& returnType, std::vector<std::string>& parameters);
-	bool BindSymbol(void* symbolPtr, const std::string& symbolName, const std::string& returnType, int parameterCount, ...);
+	bool BindSymbol(void* symbolPtr, const std::string& symbolName, const std::string& returnType = "void", int parameterCount = 0, ...);
 };

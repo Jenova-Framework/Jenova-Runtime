@@ -86,7 +86,7 @@ struct NodeBackup
 class EventCallback : public godot::RefCounted
 {
 private:
-	void* callback;
+	void* callback = nullptr;
 
 public:
 	void OnEventCall()

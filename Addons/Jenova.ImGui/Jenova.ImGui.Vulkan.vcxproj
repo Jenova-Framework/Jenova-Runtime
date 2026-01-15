@@ -45,7 +45,7 @@
       <ConformanceMode>false</ConformanceMode>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <DebugInformationFormat>None</DebugInformationFormat>
-      <AdditionalIncludeDirectories>..\..\;.\imgui;.\Libs\MinHook;.\Libs\VulkanSDK</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\;..\..\Dependencies\libjenova\imgui;..\..\Dependencies\libjenova\MinHook;..\..\Dependencies\libjenova\VulkanSDK</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4251</DisableSpecificWarnings>
       <Optimization>MaxSpeed</Optimization>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
@@ -57,32 +57,31 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>
       </GenerateDebugInformation>
-      <AdditionalDependencies>.\Libs\VulkanSDK\vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>..\..\Dependencies\libjenova\VulkanSDK\vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <DelayLoadDLLs>vulkan-1.dll</DelayLoadDLLs>
       <AdditionalOptions>/DEBUG:FULL /Ignore:4098 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <ProjectReference>
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
     </ProjectReference>
-    <Lib>
-      <AdditionalDependencies>..\..\Libs\libLlamaCpp.x64.MT.Vulkan.VS2022.lib</AdditionalDependencies>
-    </Lib>
     <PostBuildEvent>
-      <Command>xcopy "$(ProjectDir)JenovaImGui.h" "$(OutDir)" /Y
-xcopy "$(ProjectDir)Addon-Config.json" "$(OutDir)" /Y
-xcopy "$(ProjectDir)imgui\imgui-jenova.h" "$(OutDir)" /Y
-if exist "$(OutDir)imgui.h" del "$(OutDir)imgui.h"
-ren "$(OutDir)imgui-jenova.h" "imgui.h"</Command>
+      <Command>
+		  xcopy "$(ProjectDir)JenovaImGui.h" "$(OutDir)" /Y
+		  xcopy "$(ProjectDir)Addon-Config.json" "$(OutDir)" /Y
+		  xcopy "..\..\Dependencies\libjenova\imgui\imgui-jenova.h" "$(OutDir)" /Y
+		  if exist "$(OutDir)imgui.h" del "$(OutDir)imgui.h"
+		  ren "$(OutDir)imgui-jenova.h" "imgui.h"
+	  </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="imgui\backends\imgui_impl_vulkan.cpp" />
-    <ClCompile Include="imgui\backends\imgui_impl_win32.cpp" />
-    <ClCompile Include="imgui\imgui.cpp" />
-    <ClCompile Include="imgui\imgui_demo.cpp" />
-    <ClCompile Include="imgui\imgui_draw.cpp" />
-    <ClCompile Include="imgui\imgui_tables.cpp" />
-    <ClCompile Include="imgui\imgui_widgets.cpp" />
+    <ClCompile Include="..\..\Dependencies\libjenova\imgui\backends\imgui_impl_vulkan.cpp" />
+    <ClCompile Include="..\..\Dependencies\libjenova\imgui\backends\imgui_impl_win32.cpp" />
+    <ClCompile Include="..\..\Dependencies\libjenova\imgui\imgui.cpp" />
+    <ClCompile Include="..\..\Dependencies\libjenova\imgui\imgui_demo.cpp" />
+    <ClCompile Include="..\..\Dependencies\libjenova\imgui\imgui_draw.cpp" />
+    <ClCompile Include="..\..\Dependencies\libjenova\imgui\imgui_tables.cpp" />
+    <ClCompile Include="..\..\Dependencies\libjenova\imgui\imgui_widgets.cpp" />
     <ClCompile Include="jenova.imgui.vulkan.cpp" />
   </ItemGroup>
   <ItemGroup>

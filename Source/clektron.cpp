@@ -822,13 +822,13 @@ public:
     }
 
 public:
-    void _update_cache() override
+    void _clear_highlighting_cache() override
     {
         // Update Symbols Cache
         for (const auto& bindedSymbol : bindedSymbols) UpdateFunctionSymbol(String(bindedSymbol.symbolName.c_str()));
 
-        // Call Base Cache Update
-        CodeHighlighter::_update_cache();
+        // Call Base Function
+        CodeHighlighter::_clear_highlighting_cache();
     }
 
 private:
@@ -849,6 +849,9 @@ void Clektron::init()
 
     // Register Syntax Highlighter
     ClassDB::register_class<ClektronHighlighter>();
+
+    // Register Console
+    Console::init();
 
     // Initialize Singleton
     singleton = memnew(Clektron);

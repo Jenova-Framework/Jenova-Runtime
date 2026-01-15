@@ -53,6 +53,9 @@
     <ClCompile Include="Source\script_profiler.cpp">
       <Filter>Core\Engine\C++</Filter>
     </ClCompile>
+    <ClCompile Include="Source\console.cpp">
+      <Filter>Core\Engine\Clektron</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Resources">
@@ -171,6 +174,9 @@
     </ClInclude>
     <ClInclude Include="Source\script_profiler.h">
       <Filter>Core\Engine\C++</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\console.h">
+      <Filter>Core\Engine\Clektron</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

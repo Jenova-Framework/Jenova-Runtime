@@ -24,8 +24,8 @@
 
 // ImGui SDK
 #include "imgui.h"
-#include "imgui/backends/imgui_impl_win32.h"
-#include "imgui/backends/imgui_impl_opengl3.h"
+#include "backends/imgui_impl_win32.h"
+#include "backends/imgui_impl_opengl3.h"
 
 // JenovaImGui SDK
 #include "JenovaImGui.h"

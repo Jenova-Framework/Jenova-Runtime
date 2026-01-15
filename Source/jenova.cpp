@@ -267,13 +267,13 @@ namespace jenova
 			}
 
 			// Input Events
-			void _unhandled_key_input(const Ref<InputEvent>& p_event) override
+			void _unhandled_key_input(const Ref<InputEvent>& inputEvent) override
 			{
 				// Can Also Use : if (Input::get_singleton()->is_key_pressed(KEY_ALT))
-				Ref<InputEventKey> key_event = p_event;
-				if (key_event.is_valid())
+				Ref<InputEventKey> keyEvent = inputEvent;
+				if (keyEvent.is_valid())
 				{
-					if (key_event->is_pressed() && key_event->get_keycode() == KEY_ALT)
+					if (keyEvent->is_pressed() && keyEvent->get_keycode() == KEY_ALT)
 					{
 						if (buildToolButton)
 						{
@@ -281,7 +281,7 @@ namespace jenova
 							buildToolButton->set_button_icon(jenova::GetEditorIcon("Clear"));
 						}
 					}
-					else if (!key_event->is_pressed() && key_event->get_keycode() == KEY_ALT)
+					else if (!keyEvent->is_pressed() && keyEvent->get_keycode() == KEY_ALT)
 					{
 						if (buildToolButton)
 						{
@@ -6114,6 +6114,20 @@ namespace jenova
 
 		// Return Loaded Font
 		return newFont;
+	}
+	Ref<Shader> CreateShaderFromString(const String& shaderCode)
+	{
+		Ref<Shader> shader;
+		shader.instantiate();
+		shader->set_code(shaderCode);
+		return shader;
+	}
+	Ref<ShaderMaterial> CreateShaderMaterialFromString(const String& shaderCode)
+	{
+		Ref<ShaderMaterial> shaderMaterial;
+		shaderMaterial.instantiate();
+		shaderMaterial->set_shader(jenova::CreateShaderFromString(shaderCode));
+		return shaderMaterial;
 	}
 	bool CollectResourcesFromFileSystem(const String& rootPath, const String& extensions, jenova::ResourceCollection& collectedResources, bool respectGDIgnore)
 	{

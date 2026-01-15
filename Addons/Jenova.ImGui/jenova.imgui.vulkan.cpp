@@ -27,8 +27,8 @@
 
 // ImGui SDK
 #include "imgui.h"
-#include "imgui/backends/imgui_impl_win32.h"
-#include "imgui/backends/imgui_impl_vulkan.h"
+#include "backends/imgui_impl_win32.h"
+#include "backends/imgui_impl_vulkan.h"
 
 // JenovaImGui SDK
 #include "JenovaImGui.h"
