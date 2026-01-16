@@ -1115,7 +1115,6 @@ bool Clektron::ExecuteScript(const std::string& ctronScriptContent, bool noEntry
     }
 
     // Get Compiled Caller Function
-    using ClektronMainFunction = bool*(*)();
     ClektronMainFunction ctronEntrypoint = (ClektronMainFunction)tcc_get_symbol(tcc, "ClektronMain");
     if (!ctronEntrypoint)
     {
@@ -1125,7 +1124,17 @@ bool Clektron::ExecuteScript(const std::string& ctronScriptContent, bool noEntry
     }
 
     // Execute Caller
-    bool result = ctronEntrypoint();
+    bool result = false;
+    if (!jenova::GlobalStorage::UseManagedSafeExecution || JenovaInterpreter::GetDebugModeExecutionState())
+    {
+        // Unsafe Execution
+        result = ctronEntrypoint();
+    }
+    else
+    {
+        // Safe Execution
+        result = SafeExecute(ctronEntrypoint);
+    }
 
     // Verbose If Failed
     if (!result) jenova::Warning("Clektron Script Engine", "Script Entrypoint Returned False.");
@@ -1183,4 +1192,11 @@ bool Clektron::BindSymbol(void* symbolPtr, const std::string& symbolName, const 
 
     // Redirect
     return this->BindSymbol(symbolPtr, symbolName, returnType, parameters);
+}
+bool Clektron::SafeExecute(ClektronMainFunction ctronEntrypoint)
+{
+    bool executionResult = false;
+    __try { executionResult = ctronEntrypoint(); }
+    __except (jenova::JenovaExecutionCrashHandler(GetExceptionInformation())) { }
+    return executionResult;
 }

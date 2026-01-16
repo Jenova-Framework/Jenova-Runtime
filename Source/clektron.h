@@ -40,4 +40,8 @@ public:
 	bool ExecuteScriptFromFile(const godot::String& ctronScriptFilePath, bool noEntrypoint = false);
 	bool BindSymbol(void* symbolPtr, const std::string& symbolName, const std::string& returnType, std::vector<std::string>& parameters);
 	bool BindSymbol(void* symbolPtr, const std::string& symbolName, const std::string& returnType = "void", int parameterCount = 0, ...);
+
+private:
+	using ClektronMainFunction = bool* (*)();
+	static bool SafeExecute(ClektronMainFunction ctronEntrypoint);
 };

@@ -97,9 +97,10 @@ class ConsoleScheme : public Resource
 public:
     Key visibilityToggleKey		= Key::KEY_QUOTELEFT;
 	bool hideConsoleByDefault	= true;
-	float caretBlinkSpeed		= 0.2f;
-	float animationSpeed		= 0.3f;
+	float caretBlinkInterval	= 0.2f;
+	float animationDuration		= 0.3f;
 	float darkShadePower		= 0.6f;
+	int consoleHeight			= 210;
 	int outputFontSize			= 14;
 	int inputFontSize			= 16;
 
@@ -157,13 +158,17 @@ protected:
         ClassDB::bind_method(D_METHOD("get_caret_blink_interval"), &ConsoleScheme::get_caret_blink_interval);
         ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "caret_blink_interval", PROPERTY_HINT_RANGE, "0.05,1"), "set_caret_blink_interval", "get_caret_blink_interval");
 
-        ClassDB::bind_method(D_METHOD("set_animation_speed_ms", "speed"), &ConsoleScheme::set_animation_speed_ms);
-        ClassDB::bind_method(D_METHOD("get_animation_speed_ms"), &ConsoleScheme::get_animation_speed_ms);
-        ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "animation_speed_ms", PROPERTY_HINT_RANGE, "0.05,2"), "set_animation_speed_ms", "get_animation_speed_ms");
+        ClassDB::bind_method(D_METHOD("set_animation_duration_ms", "speed"), &ConsoleScheme::set_animation_duration_ms);
+        ClassDB::bind_method(D_METHOD("get_animation_duration_ms"), &ConsoleScheme::get_animation_duration_ms);
+        ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "animation_duration_ms", PROPERTY_HINT_RANGE, "0.05,2"), "set_animation_duration_ms", "get_animation_duration_ms");
 
         ClassDB::bind_method(D_METHOD("set_dark_shade_power", "power"), &ConsoleScheme::set_dark_shade_power);
         ClassDB::bind_method(D_METHOD("get_dark_shade_power"), &ConsoleScheme::get_dark_shade_power);
         ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dark_shade_power", PROPERTY_HINT_RANGE, "0.1,1.0"), "set_dark_shade_power", "get_dark_shade_power");
+
+        ClassDB::bind_method(D_METHOD("set_console_height", "size"), &ConsoleScheme::set_console_height);
+        ClassDB::bind_method(D_METHOD("get_console_height"), &ConsoleScheme::get_console_height);
+        ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "console_height", PROPERTY_HINT_RANGE, "64,1440"), "set_console_height", "get_console_height");
 
 		ClassDB::bind_method(D_METHOD("set_output_font_size", "size"), &ConsoleScheme::set_output_font_size);
 		ClassDB::bind_method(D_METHOD("get_output_font_size"), &ConsoleScheme::get_output_font_size);
@@ -180,12 +185,14 @@ public:
     int get_toggle_key() const { return visibilityToggleKey; }
     void set_hide_console_by_default(bool enabled) { hideConsoleByDefault = enabled; }
     bool get_hide_console_by_default() const { return hideConsoleByDefault; }
-    void set_caret_blink_interval(float speed) { caretBlinkSpeed = speed; }
-    float get_caret_blink_interval() const { return caretBlinkSpeed; }
-    void set_animation_speed_ms(float speed) { animationSpeed = speed; }
-    float get_animation_speed_ms() const { return animationSpeed; }
+    void set_caret_blink_interval(float speed) { caretBlinkInterval = speed; }
+    float get_caret_blink_interval() const { return caretBlinkInterval; }
+    void set_animation_duration_ms(float speed) { animationDuration = speed; }
+    float get_animation_duration_ms() const { return animationDuration; }
     void set_dark_shade_power(float power) { darkShadePower = power; }
     float get_dark_shade_power() const { return darkShadePower; }
+	void set_console_height(float power) { consoleHeight = power; }
+	float get_console_height() const { return consoleHeight; }
 	void set_output_font_size(int size) { outputFontSize = size; }
 	int get_output_font_size() const { return outputFontSize; }
 	void set_input_font_size(int size) { inputFontSize = size; }
@@ -319,7 +326,7 @@ void Console::InitializeConsole()
 	consolePanel->set_name("ConsolePanel");
 	consolePanel->set_material(panelShaderMaterial);
 	consolePanel->set_anchors_preset(Control::PRESET_TOP_WIDE);
-	consolePanel->set_custom_minimum_size(Vector2(0, 210));
+	consolePanel->set_custom_minimum_size(Vector2(0, GetConfiguration<float>("console_height")));
 	this->add_child(consolePanel);
 
 	// Create User Interface :: Console Output
@@ -377,7 +384,7 @@ void Console::InitializeConsole()
 	// Apply Settings
 	if (GetConfiguration<bool>("hide_console_by_default"))
 	{
-		consolePanel->set_offset(Side::SIDE_TOP, -210);
+		consolePanel->set_offset(Side::SIDE_TOP, -consolePanel->get_size().y);
 		isConsoleVisible = false;
 	}
 
@@ -427,14 +434,14 @@ void Console::ShowHideConsole(bool visible)
 		{
 			consolePanel->set_visible(true);
 			Ref<Tween> consoleAnimator = this->create_tween();
-			consoleAnimator->tween_property(consolePanel, "offset_top", 0, GetConfiguration<float>("animation_speed_ms"));
+			consoleAnimator->tween_property(consolePanel, "offset_top", 0, GetConfiguration<float>("animation_duration_ms"));
 			consoleAnimator->connect("finished", callable_mp(this, &Console::SetConsoleState).bind(true));
 		}
 		else
 		{
 			consoleInput->release_focus();
 			Ref<Tween> consoleAnimator = this->create_tween();
-			consoleAnimator->tween_property(consolePanel, "offset_top", -210, GetConfiguration<float>("animation_speed_ms"));
+			consoleAnimator->tween_property(consolePanel, "offset_top", -consolePanel->get_size().y, GetConfiguration<float>("animation_duration_ms"));
 			consoleAnimator->connect("finished", callable_mp(this, &Console::SetConsoleState).bind(false));
 		}
 	}
