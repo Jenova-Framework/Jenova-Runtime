@@ -168,11 +168,35 @@ namespace jenova::sdk
 	typedef void(*RuntimeCallback)(const RuntimeEvent& runtimeEvent, NativePtr dataPtr, size_t dataSize);
 	typedef void(*FileSystemCallback)(const godot::String& targetPath, const FileSystemEvent& fsEvent);
 
-	// Structures
+	// Caller Structure
 	struct Caller
 	{
 		// Script Caller
 		const godot::Object* self;
+	};
+
+	// Class Wrappers
+	struct Console
+	{
+		godot::Node* consoleNode = nullptr;
+		Console(godot::Node* _consoleNode) : consoleNode(_consoleNode) {};
+		bool Execute(const godot::String& command)
+		{
+			return bool(consoleNode->call("execute", command));
+		}
+		void Log(const godot::String& logMessage, godot::Color logColor = godot::Color(12, 34, 56))
+		{
+			if (logColor == godot::Color(12, 34, 56)) consoleNode->call("log", logMessage);
+			else consoleNode->call("logc", logMessage, logColor);
+		}
+		void Error(const godot::String& errorMessage)
+		{
+			consoleNode->call("error", errorMessage);
+		}
+		void Flush()
+		{
+			consoleNode->call("flush");
+		}
 	};
 
 	// JenovaSDK Interface

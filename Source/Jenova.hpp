@@ -635,9 +635,9 @@ namespace jenova
 	struct ScriptFileState
 	{
 		bool isValid = false;
-		FileTime creationTime;
-		FileTime accessTime;
-		FileTime writeTime;
+		FileTime creationTime = { 0 };
+		FileTime accessTime = { 0 };
+		FileTime writeTime = { 0 };
 	};
 	struct CompileResult
 	{
@@ -736,8 +736,8 @@ namespace jenova
 		std::string Library;
 		std::string Dependencies;
 		std::string Path;
-		bool Global;
-		bool AutoLoad;
+		bool Global = false;
+		bool AutoLoad = false;
 
 		// Serialized Data
 		SerializedData Data;

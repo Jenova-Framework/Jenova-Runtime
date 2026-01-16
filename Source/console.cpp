@@ -154,11 +154,11 @@ protected:
         ClassDB::bind_method(D_METHOD("get_hide_console_by_default"), &ConsoleScheme::get_hide_console_by_default);
         ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_console_by_default"), "set_hide_console_by_default", "get_hide_console_by_default");
 
-        ClassDB::bind_method(D_METHOD("set_caret_blink_interval", "speed"), &ConsoleScheme::set_caret_blink_interval);
+        ClassDB::bind_method(D_METHOD("set_caret_blink_interval", "interval"), &ConsoleScheme::set_caret_blink_interval);
         ClassDB::bind_method(D_METHOD("get_caret_blink_interval"), &ConsoleScheme::get_caret_blink_interval);
         ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "caret_blink_interval", PROPERTY_HINT_RANGE, "0.05,1"), "set_caret_blink_interval", "get_caret_blink_interval");
 
-        ClassDB::bind_method(D_METHOD("set_animation_duration_ms", "speed"), &ConsoleScheme::set_animation_duration_ms);
+        ClassDB::bind_method(D_METHOD("set_animation_duration_ms", "duration"), &ConsoleScheme::set_animation_duration_ms);
         ClassDB::bind_method(D_METHOD("get_animation_duration_ms"), &ConsoleScheme::get_animation_duration_ms);
         ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "animation_duration_ms", PROPERTY_HINT_RANGE, "0.05,2"), "set_animation_duration_ms", "get_animation_duration_ms");
 
@@ -168,7 +168,7 @@ protected:
 
         ClassDB::bind_method(D_METHOD("set_console_height", "size"), &ConsoleScheme::set_console_height);
         ClassDB::bind_method(D_METHOD("get_console_height"), &ConsoleScheme::get_console_height);
-        ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "console_height", PROPERTY_HINT_RANGE, "64,1440"), "set_console_height", "get_console_height");
+        ADD_PROPERTY(PropertyInfo(Variant::INT, "console_height", PROPERTY_HINT_RANGE, "64,1440"), "set_console_height", "get_console_height");
 
 		ClassDB::bind_method(D_METHOD("set_output_font_size", "size"), &ConsoleScheme::set_output_font_size);
 		ClassDB::bind_method(D_METHOD("get_output_font_size"), &ConsoleScheme::get_output_font_size);
@@ -185,14 +185,14 @@ public:
     int get_toggle_key() const { return visibilityToggleKey; }
     void set_hide_console_by_default(bool enabled) { hideConsoleByDefault = enabled; }
     bool get_hide_console_by_default() const { return hideConsoleByDefault; }
-    void set_caret_blink_interval(float speed) { caretBlinkInterval = speed; }
+    void set_caret_blink_interval(float interval) { caretBlinkInterval = interval; }
     float get_caret_blink_interval() const { return caretBlinkInterval; }
-    void set_animation_duration_ms(float speed) { animationDuration = speed; }
+    void set_animation_duration_ms(float duration) { animationDuration = duration; }
     float get_animation_duration_ms() const { return animationDuration; }
     void set_dark_shade_power(float power) { darkShadePower = power; }
     float get_dark_shade_power() const { return darkShadePower; }
-	void set_console_height(float power) { consoleHeight = power; }
-	float get_console_height() const { return consoleHeight; }
+	void set_console_height(int height) { consoleHeight = height; }
+	int get_console_height() const { return consoleHeight; }
 	void set_output_font_size(int size) { outputFontSize = size; }
 	int get_output_font_size() const { return outputFontSize; }
 	void set_input_font_size(int size) { inputFontSize = size; }

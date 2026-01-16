@@ -71,8 +71,8 @@ extern "C" namespace ClektronSystem
     // Structures
     struct DownloaderMetadata
     {
-        void* downloaderInstance;
-        void* downloaderCallback;
+        void* downloaderInstance = nullptr;
+        void* downloaderCallback = nullptr;
         double downloadSpeed = 0;
     };
 

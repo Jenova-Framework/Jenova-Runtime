@@ -7690,6 +7690,7 @@ namespace jenova
 		if (versionNumber == "16") return "v142";
 		if (versionNumber == "15") return "v141";
 		if (versionNumber == "14") return "v140";
+		return "v143";
 	}
 	bool CreateFontFileDataPackageFromAsset(const String& assetPath, const String& packagePath)
 	{
@@ -9778,6 +9779,9 @@ namespace jenova
 			// Validate & Return
 			return runtimeConfig.empty() ? "{}" : runtimeConfig;
 		}
+	
+		// If it's Unknown Fallback
+		return jenova::GenerateRuntimeModuleConfiguration();
 	}
 	bool ResolveAndLoadAddonModulesAtRuntime()
 	{
