@@ -637,6 +637,10 @@ namespace jenova::sdk
 	{ 
 		return static_cast<T*>(GetNodeByPath(nodePath));
 	}
+	template <typename T> T* Instantiate(const godot::String& className)
+	{ 
+		return Object::cast_to<T>(ClassDB::instantiate(className));
+	}
 	template <typename T> T* FindNode(godot::Node* parent, const godot::String& nodeName)
 	{
 		return static_cast<T*>(FindNodeByName(parent, nodeName));

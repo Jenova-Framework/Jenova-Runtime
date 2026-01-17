@@ -1000,7 +1000,7 @@ bool Clektron::ExecuteScript(const std::string& ctronScriptContent, bool noEntry
     // Generate Final Script Code
     std::string ctronFinalScript = 
     R"(
-    /* Jenova Clektron (Electron-C) Engine Developed By Hamid.Memar */
+    /* Jenova Clektron (Electron-C) Scripting Engine - Developed By Hamid.Memar */
 
     // Macros
     #define bool                int
@@ -1010,7 +1010,7 @@ bool Clektron::ExecuteScript(const std::string& ctronScriptContent, bool noEntry
     #define Buffer              unsigned char*
     #define FunctionPtr         void*
     #define String              const char*
-    #define Size                int
+    #define Size                unsigned long long int
 
     // Enums
     typedef enum { Alert_Info, Alert_Warn, Alert_Error } AlertType;

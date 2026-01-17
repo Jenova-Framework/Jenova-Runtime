@@ -324,6 +324,7 @@ void Console::InitializeConsole()
 	// Create User Interface :: Console Panel
 	consolePanel = memnew(Panel);
 	consolePanel->set_name("ConsolePanel");
+	consolePanel->set_z_index(999);
 	consolePanel->set_material(panelShaderMaterial);
 	consolePanel->set_anchors_preset(Control::PRESET_TOP_WIDE);
 	consolePanel->set_custom_minimum_size(Vector2(0, GetConfiguration<float>("console_height")));
