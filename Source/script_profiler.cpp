@@ -18,6 +18,7 @@
 // Storage
 std::unordered_map<std::string, double> stageTimings;
 std::unordered_map<std::string, std::unordered_map<std::string, double>> executionTimings;
+std::unordered_map<int, std::chrono::steady_clock::time_point> spansStorage;
 std::vector<StringName> activeMonitors;
 
 // Jenova Profiler Implementation :: Main
@@ -65,7 +66,7 @@ bool JenovaProfiler::IsEnabled()
 bool JenovaProfiler::Prepare(jenova::json_t& data)
 {
 	// Validate Profiler
-	if (JenovaProfiler::profilingMode == jenova::ProfilingMode::Disabled) return false;
+	if (!IsEnabled()) return false;
 
 	// Prepare for Monitor Mode
 	if (JenovaProfiler::profilingMode == jenova::ProfilingMode::Monitor)
@@ -111,13 +112,13 @@ void JenovaProfiler::ClearRecords()
 }
 bool JenovaProfiler::AddStageRecord(const std::string& stageName, double duration)
 {
-	if (JenovaProfiler::profilingMode == jenova::ProfilingMode::Disabled) return false;
+	if (!IsEnabled()) return false;
 	stageTimings[stageName] = duration;
 	return true;
 }
 bool JenovaProfiler::AddExecutionRecord(const std::string& scriptPath, const std::string& functionName, double duration)
 {
-	if (JenovaProfiler::profilingMode == jenova::ProfilingMode::Disabled) return false;
+	if (!IsEnabled()) return false;
 	executionTimings[scriptPath][functionName] = duration;
 	return true;
 }
@@ -138,8 +139,27 @@ double JenovaProfiler::GetExecutionRecord(const std::string& scriptPath, const s
 void JenovaProfiler::Frame()
 {
 	// Validate Profiler
-	if (JenovaProfiler::profilingMode == jenova::ProfilingMode::Disabled) return;
+	if (!IsEnabled()) return;
 	if (JenovaProfiler::isRecording == false) return;
+}
+class Ref<AutoSpan> JenovaProfiler::BeginAutoSpan(const std::string& friendlyName)
+{
+	Ref<AutoSpan> autospan;
+	autospan.instantiate();
+	autospan->Initialize(String(friendlyName.c_str()));
+	return autospan;
+}
+void JenovaProfiler::BeginSpan(int spanID)
+{
+	if (!IsEnabled()) return;
+	spansStorage[spanID] = std::chrono::high_resolution_clock::now();
+}
+void JenovaProfiler::EndSpan(int spanID, const std::string& friendlyName)
+{
+	if (!IsEnabled()) return;
+	auto now = std::chrono::high_resolution_clock::now();
+	auto duration = std::chrono::duration<double, std::milli>(now - spansStorage[spanID]).count();
+	AddStageRecord(friendlyName, duration);
 }
 
 // Jenova Profiler Implementation :: Callbacks
@@ -158,4 +178,15 @@ double JenovaProfiler::MonitorReport(const String& scriptPath, const String& fun
 		}
 	}
 	return 0.0;
+}
+
+// Auto Span Implementation
+void AutoSpan::Initialize(const String& autoSpanName)
+{
+	JenovaProfiler::BeginSpan(HASH_CSTR(AS_C_STRING(autoSpanName)));
+	spanName = autoSpanName;
+}
+AutoSpan::~AutoSpan()
+{
+	JenovaProfiler::EndSpan(HASH_CSTR(AS_C_STRING(spanName)), AS_STD_STRING(spanName));
 }

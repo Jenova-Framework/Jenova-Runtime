@@ -6037,6 +6037,13 @@ namespace jenova
 			<< std::setw(4) << now_ms.count();
 		return oss.str();
 	}
+	int GenerateHashFromString(const char* str)
+	{
+		std::string input(str);
+		size_t hash = 0;
+		for (char c : input) hash = hash * 31 + c;
+		return hash;
+	}
 	jenova::EngineMode GetCurrentEngineInstanceMode()
 	{
 		return jenova::GlobalStorage::CurrentEngineMode;

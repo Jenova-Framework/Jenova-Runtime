@@ -294,6 +294,7 @@ using namespace godot;
 #define FUNCTION_CHECK						jenova::Output("%s | %p", __FUNCSIG__, this);
 #define LINE_CHECK							jenova::Output("%d", __LINE__);
 #define LINE_CHECK_THIS						jenova::Output("%d | %p", __LINE__, this);
+#define HASH_CSTR(cstr)						jenova::GenerateHashFromString(cstr)
 #define AS_STD_STRING(gstr)					(*jenova::ConvertToStdString(gstr).str)
 #define AS_C_STRING(gstr)					((*jenova::ConvertToStdString(gstr).str).c_str())
 #define AS_STD_WSTRING(gstr)				(*jenova::ConvertToWideStdString(gstr).wstr)
@@ -555,6 +556,12 @@ namespace jenova
 	{
 		InstallFromPackageFile,
 		InstallFromPackageDirectory
+	};
+	enum class ProfilerSpanType : short
+	{
+		StageSpan						= 0x74,
+		ExecutionSpan					= 0x76,
+		Unknown							= 0x44,
 	};
 
 	// Flags
@@ -942,6 +949,7 @@ namespace jenova
 	String GenerateStandardUIDFromPath(const Resource* resourcePtr);
 	std::string GenerateRandomHashString();
 	std::string GenerateTerminalLogTime();
+	int GenerateHashFromString(const char* str);
 	jenova::EngineMode GetCurrentEngineInstanceMode();
 	bool IsEngineRuntimeExport();
 	String GetCurrentEngineInstanceModeAsString();
