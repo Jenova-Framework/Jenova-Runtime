@@ -27,5 +27,5 @@ public:
     static double GetCheckpointTimeAndDispose(const std::string& checkPointName);
 
 private:
-    inline static std::unordered_map<std::string, std::chrono::high_resolution_clock::time_point> checkpoints;
+    inline static std::unordered_map<std::string, jenova::SteadyTimePoint> checkpoints;
 };

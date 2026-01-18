@@ -367,6 +367,8 @@ namespace jenova
 	typedef uint16_t TaskID;
 	typedef std::function<void()> TaskFunction;
 	typedef void(*VoidFunc_t)();
+	typedef std::chrono::steady_clock::time_point SteadyTimePoint;
+	typedef std::chrono::system_clock::time_point SystemTimePoint;
 	typedef struct { uint32_t LowDateTime, HighDateTime; } FileTime;
 	typedef struct SmartString { std::string* str; ~SmartString() { if (str) delete str; }} SmartString;
 	typedef struct SmartWstring { std::wstring* wstr; ~SmartWstring() { if (wstr) delete wstr; }} SmartWstring;

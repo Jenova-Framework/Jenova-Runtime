@@ -19,7 +19,7 @@
 #include "CodeTemplates.h"
 
 // Shared Values/Objects
-static std::chrono::steady_clock::time_point lastScriptReloadTime = std::chrono::steady_clock::now();
+static jenova::SteadyTimePoint lastScriptReloadTime = std::chrono::steady_clock::now();
 
 // CPPScript Object Implementation
 void CPPScript::_bind_methods()

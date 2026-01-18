@@ -19,7 +19,7 @@
 template <typename T> using FrameRecord = std::vector<T>;
 typedef std::unordered_map<std::string, double> FunctionRecord;
 typedef std::unordered_map<std::string, FunctionRecord> ScriptRecord;
-typedef std::unordered_map<int, std::chrono::steady_clock::time_point> SpanRecord;
+typedef std::unordered_map<int, jenova::SteadyTimePoint> SpanRecord;
 
 // Storages
 std::vector<StringName>			activeMonitors;
@@ -149,8 +149,23 @@ void JenovaProfiler::SetCurrentExecutionContext(const std::string& scriptPath, c
 	// Set Current Context
 	currentContext.script = scriptPath;
 	currentContext.function = functionName;
+
+	// Set Context Check Time
+	contextCheckTime = std::chrono::steady_clock::now();
 }
 bool JenovaProfiler::AddStageRecord(const std::string& stageName, double duration)
+{
+	if (!IsEnabled()) return false;
+	if (duration == 0)
+	{
+		auto now = std::chrono::high_resolution_clock::now();
+		duration = std::chrono::duration<double, std::milli>(now - contextCheckTime).count();
+		contextCheckTime = now;
+	}
+	stageTimings[stageName] = duration;
+	return true;
+}
+bool JenovaProfiler::AddStageRecord(const std::string& scriptPath, const std::string& stageName, double duration)
 {
 	if (!IsEnabled()) return false;
 	stageTimings[stageName] = duration;

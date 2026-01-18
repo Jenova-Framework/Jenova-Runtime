@@ -4219,7 +4219,7 @@ namespace jenova
 							}
 
 							// Cooldown Time
-							static std::chrono::steady_clock::time_point lastScriptChangeTime = std::chrono::steady_clock::time_point();
+							static jenova::SteadyTimePoint lastScriptChangeTime = jenova::SteadyTimePoint();
 
 							// Trigger Cooldown
 							JenovaEditorPlugin::get_singleton()->buildSystemMutex->lock();

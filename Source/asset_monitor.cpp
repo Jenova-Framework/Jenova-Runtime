@@ -41,7 +41,7 @@ static String GetCallbackEventStringName(jenova::AssetMonitor::CallbackEvent cal
 // Global Storage
 Vector<filewatch::FileWatch<std::string>*> assetMonitors;
 Vector<jenova::AssetMonitor::AssetMonitorCallback> monitorCallbacks;
-std::unordered_map<std::string, std::chrono::system_clock::time_point> lastRead;
+std::unordered_map<std::string, jenova::SystemTimePoint> lastRead;
 
 // Singleton Instance
 JenovaAssetMonitor* jnvam_singleton = nullptr;

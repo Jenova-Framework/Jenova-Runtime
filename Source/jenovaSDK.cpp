@@ -652,6 +652,20 @@ namespace jenova::sdk
 	{
 		return this->BindSymbol(symbolPtr, symbolName.utf8().ptr(), returnType.utf8().ptr(), paramCount, args);
 	}
+
+	// Profiling Utilities (Sentinel)
+	bool JenovaSDK::IsProfilerEnabled()
+	{
+		return JenovaProfiler::IsEnabled();
+	}
+	bool JenovaSDK::CommitRecord(StringPtr recordName, double recordTime)
+	{
+		return JenovaProfiler::AddStageRecord(recordName, recordTime);
+	}
+	bool JenovaSDK::CommitScriptRecord(StringPtr fileName, StringPtr recordName, double recordTime)
+	{
+		return JenovaProfiler::AddStageRecord(fileName, recordName, recordTime);
+	}
 }
 
 // Jenova SDK Management

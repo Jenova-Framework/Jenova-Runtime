@@ -48,6 +48,7 @@ private:
 	static inline bool isRecording = false;
 	static inline jenova::ProfilingMode profilingMode = jenova::ProfilingMode::Unknown;
 	static inline struct { std::string script; std::string function; } currentContext = { "", "" };
+	static inline jenova::SteadyTimePoint contextCheckTime;
 	static inline size_t profilerTick = 0;
 };
 
