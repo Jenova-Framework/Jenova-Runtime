@@ -29,7 +29,10 @@ public:
 	static void StartRecording();
 	static void StopRecording();
 	static void ClearRecords();
+	static bool GenerateReportDatabase();
+	static void SetCurrentExecutionContext(const std::string& scriptPath, const std::string& functionName);
 	static bool AddStageRecord(const std::string& stageName, double duration);
+	static bool AddStageRecord(const std::string& scriptPath, const std::string& stageName, double duration);
 	static bool AddExecutionRecord(const std::string& scriptPath, const std::string& functionName, double duration);
 	static double GetStageRecord(const std::string& stageName);
 	static double GetExecutionRecord(const std::string& scriptPath, const std::string& functionName);
@@ -44,6 +47,8 @@ public:
 private:
 	static inline bool isRecording = false;
 	static inline jenova::ProfilingMode profilingMode = jenova::ProfilingMode::Unknown;
+	static inline struct { std::string script; std::string function; } currentContext = { "", "" };
+	static inline size_t profilerTick = 0;
 };
 
 // Auto Span Definitions

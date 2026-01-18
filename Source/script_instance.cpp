@@ -216,10 +216,13 @@ Variant CPPScriptInstance::callp(const StringName &p_method, const Variant **p_a
 	}
 
 	// Verbose Call
-	String script_name = this->script->get_path().get_file();
-	String owner_name = godot::Object::cast_to<godot::Node>(this->owner)->get_name();
-	jenova::VerboseByID(__LINE__, "Executing Script (%s | %s)[%s][%d] from (%s | %p) ...", 
-		AS_C_STRING(script_name), AS_C_STRING(scriptInstanceIdentity), AS_C_STRING(p_method), p_argument_count,AS_C_STRING(owner_name), this->instance);
+	if (jenova::GlobalStorage::DeveloperModeActivated)
+	{
+		String script_name = this->script->get_path().get_file();
+		String owner_name = godot::Object::cast_to<godot::Node>(this->owner)->get_name();
+		jenova::VerboseByID(__LINE__, "Executing Script (%s | %s)[%s][%d] from (%s | %p) ...",
+			AS_C_STRING(script_name), AS_C_STRING(scriptInstanceIdentity), AS_C_STRING(p_method), p_argument_count, AS_C_STRING(owner_name), this->instance);
+	}
 
 	// Handle Internal Methods
 	if (p_method == StringName("_get_editor_name"))
@@ -246,7 +249,7 @@ Variant CPPScriptInstance::callp(const StringName &p_method, const Variant **p_a
 	}
 
 	// Initial Update for Properties
-	if (p_method == StringName("_enter_world"))
+	if (p_method == StringName("_enter_tree"))
 	{
 		auto propContainer = JenovaInterpreter::GetPropertyContainer(AS_STD_STRING(this->scriptInstanceIdentity));
 		for (size_t i = 0; i < propContainer.scriptProperties.size(); i++)

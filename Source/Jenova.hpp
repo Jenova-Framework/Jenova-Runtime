@@ -834,6 +834,7 @@ namespace jenova
 		constexpr char* VisualStudioProjectFile					= "Jenova.Module.vcxproj";
 		constexpr char* VisualStudioWatchdogFile				= "Jenova.VisualStudio.jwd";
 		constexpr char* JenovaTemporaryBootScriptFile			= "Jenova.Temporary.Boot.ctron";
+		constexpr char* JenovaProfilerReportDatabaseFile		= "Jenova.Profiler.DBCache.json";
 		constexpr char* JenovaPackageDatabaseURL				= "https://raw.githubusercontent.com";
 		constexpr char* JenovaReleaseMetadataURL				= "https://raw.githubusercontent.com";
 		constexpr char* JenovaPackageRepositoryPath				= "res://Jenova/Packages";

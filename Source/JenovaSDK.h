@@ -637,10 +637,6 @@ namespace jenova::sdk
 	{ 
 		return static_cast<T*>(GetNodeByPath(nodePath));
 	}
-	template <typename T> T* Instantiate(const godot::String& className)
-	{ 
-		return Object::cast_to<T>(ClassDB::instantiate(className));
-	}
 	template <typename T> T* FindNode(godot::Node* parent, const godot::String& nodeName)
 	{
 		return static_cast<T*>(FindNodeByName(parent, nodeName));
@@ -669,6 +665,26 @@ namespace jenova::sdk
 	template <typename T> T* GetObjectFromIntPtr(godot::Variant variantPtr)
 	{
 		return reinterpret_cast<T*>(IntPtr(variantPtr));
+	}
+	template <typename T> T* Instantiate()
+	{
+		godot::String typeName(typeid(T).name());
+		typeName = typeName.substr(typeName.find("::") + 2);
+		return godot::Object::cast_to<T>(godot::ClassDB::instantiate(typeName));
+	}
+	template <typename T> T* Instantiate(const godot::String& className)
+	{
+		return godot::Object::cast_to<T>(godot::ClassDB::instantiate(className));
+	}
+	template <typename T> godot::Ref<T> InstantiateAsRef()
+	{
+		godot::String typeName(typeid(T).name());
+		typeName = typeName.substr(typeName.find("::") + 2);
+		return godot::Ref<T>(godot::Object::cast_to<T>(godot::ClassDB::instantiate(typeName)));
+	}
+	template <typename T> godot::Ref<T> InstantiateAsRef(const godot::String& className)
+	{
+		return godot::Ref<T>(godot::Object::cast_to<T>(godot::ClassDB::instantiate(className)));
 	}
 
 	// Internal Module Functions

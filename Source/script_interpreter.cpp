@@ -576,6 +576,7 @@ Variant JenovaInterpreter::CallFunction(const godot::Object* objectPtr, const st
                 Variant result = Variant::NIL;
                 if (JenovaProfiler::IsEnabled())
                 {
+                    JenovaProfiler::SetCurrentExecutionContext(scriptPath, functionName);
                     JenovaTinyProfiler::CreateCheckpoint("NitroJITExecution");
                     result = callerFunction();
                     double executionDuration = JenovaTinyProfiler::GetCheckpointTimeAndDispose("NitroJITExecution");
@@ -705,6 +706,7 @@ Variant JenovaInterpreter::CallFunction(const godot::Object* objectPtr, const st
         Variant* result = nullptr;
         if (JenovaProfiler::IsEnabled())
         {
+            JenovaProfiler::SetCurrentExecutionContext(scriptPath, functionName);
             JenovaTinyProfiler::CreateCheckpoint("MeteoraExecution");
             result = interpreterCaller();
             double executionDuration = JenovaTinyProfiler::GetCheckpointTimeAndDispose("MeteoraExecution");

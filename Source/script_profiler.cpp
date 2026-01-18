@@ -15,11 +15,19 @@
 // Jenova SDK
 #include "Jenova.hpp"
 
-// Storage
-std::unordered_map<std::string, double> stageTimings;
-std::unordered_map<std::string, std::unordered_map<std::string, double>> executionTimings;
-std::unordered_map<int, std::chrono::steady_clock::time_point> spansStorage;
-std::vector<StringName> activeMonitors;
+// Types
+template <typename T> using FrameRecord = std::vector<T>;
+typedef std::unordered_map<std::string, double> FunctionRecord;
+typedef std::unordered_map<std::string, FunctionRecord> ScriptRecord;
+typedef std::unordered_map<int, std::chrono::steady_clock::time_point> SpanRecord;
+
+// Storages
+std::vector<StringName>			activeMonitors;
+FunctionRecord					stageTimings;
+FrameRecord<FunctionRecord>		stageFrameRecords;
+ScriptRecord					executionTimings;
+FrameRecord<ScriptRecord>		executionFrameRecords;
+SpanRecord						spansStorage;
 
 // Jenova Profiler Implementation :: Main
 bool JenovaProfiler::Initialize()
@@ -32,6 +40,12 @@ bool JenovaProfiler::Initialize()
 }
 bool JenovaProfiler::Shutdown()
 {
+	// Generate Profiling Report
+	if (JenovaProfiler::profilingMode == jenova::ProfilingMode::Echo)
+	{
+		if (!GenerateReportDatabase()) jenova::Error("Jenova Profiler", "Failed to Generate Performance Report.");
+	}
+
 	// Clear Storage
 	ClearRecords();
 
@@ -98,17 +112,43 @@ void JenovaProfiler::SetProfilingMode(jenova::ProfilingMode profilingMode)
 }
 void JenovaProfiler::StartRecording()
 {
+	if (!IsEnabled()) return;
+	if (isRecording == true) return;
 	isRecording = true;
 }
 void JenovaProfiler::StopRecording()
 {
+	if (!IsEnabled()) return;
+	if (isRecording == false) return;
 	isRecording = false;
 }
 void JenovaProfiler::ClearRecords()
 {
 	// Clear Storage
 	stageTimings.clear();
+	stageFrameRecords.clear();
 	executionTimings.clear();
+	executionFrameRecords.clear();
+}
+bool JenovaProfiler::GenerateReportDatabase()
+{
+	// Generate Performance Report Database
+	jenova::json_t reportDatabase;
+	reportDatabase["StageFrameRecords"] = stageFrameRecords;
+	reportDatabase["ExecutionFrameRecords"] = executionFrameRecords;
+
+	// Write Performance Report Database On Disk
+	String reportPath = jenova::GetJenovaCacheDirectory() + jenova::GlobalSettings::JenovaProfilerReportDatabaseFile;
+	if (!jenova::WriteStdStringToFile(AS_STD_STRING(reportPath), reportDatabase.dump(2))) return false;
+
+	// All Good
+	return true;
+}
+void JenovaProfiler::SetCurrentExecutionContext(const std::string& scriptPath, const std::string& functionName)
+{
+	// Set Current Context
+	currentContext.script = scriptPath;
+	currentContext.function = functionName;
 }
 bool JenovaProfiler::AddStageRecord(const std::string& stageName, double duration)
 {
@@ -140,7 +180,26 @@ void JenovaProfiler::Frame()
 {
 	// Validate Profiler
 	if (!IsEnabled()) return;
-	if (JenovaProfiler::isRecording == false) return;
+	if (isRecording == false) return;
+
+	// Increase Profiler Tick
+	profilerTick++;
+
+	if (JenovaProfiler::profilingMode == jenova::ProfilingMode::Echo)
+	{
+		// Add Frame Records
+		stageFrameRecords.push_back(stageTimings);
+		executionFrameRecords.push_back(executionTimings);
+
+		// Reset Records
+		/*
+		 * Currently we're keeping non-executed functions as records, In future it can be improved.
+		 * Records can be just cleared and in data processing if the record hasn't the function we count it as 0.0
+		 * This will reduce the size of record database, also maybe use sql instead of json? :d
+		*/
+		for (auto& [stage, record] : stageTimings) record = 0;
+		for (auto& [script, records] : executionTimings) for (auto& [function, record] : records) record = 0;
+	}
 }
 class Ref<AutoSpan> JenovaProfiler::BeginAutoSpan(const std::string& friendlyName)
 {

@@ -4855,13 +4855,15 @@ namespace jenova
 				ClassDB::register_internal_class<CPPHeaderResourceSaver>();
 				ClassDB::register_internal_class<JenovaScriptManager>();
 
-				// Initialize Classes
+				// Initialize Core Classes
 				CPPScriptLanguage::init();
 				CPPHeaderLanguage::init();
 				CPPScriptResourceLoader::init();
 				CPPScriptResourceSaver::init();
 				CPPHeaderResourceLoader::init();
 				CPPHeaderResourceSaver::init();
+
+				// Initialize Utility Classes
 				JenovaScriptManager::init();
 				JenovaAssetMonitor::init();
 
@@ -4920,13 +4922,15 @@ namespace jenova
 			// Scene UnInitialize Event
 			if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE)
 			{
-				// Uninitialize Classes
+				// Uninitialize Core Classes
 				CPPScriptLanguage::deinit();
 				CPPHeaderLanguage::deinit();
 				CPPScriptResourceLoader::deinit();
 				CPPScriptResourceSaver::deinit();
 				CPPHeaderResourceLoader::deinit();
 				CPPHeaderResourceSaver::deinit();
+
+				// Uninitialize Utility Classes
 				JenovaScriptManager::deinit();
 				JenovaAssetMonitor::deinit();
 
