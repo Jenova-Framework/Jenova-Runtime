@@ -23,9 +23,9 @@ typedef std::unordered_map<int, jenova::SteadyTimePoint> SpanRecord;
 
 // Storages
 std::vector<StringName>			activeMonitors;
-FunctionRecord					stageTimings;
-FrameRecord<FunctionRecord>		stageFrameRecords;
-ScriptRecord					executionTimings;
+ScriptRecord					stageRecords;
+FrameRecord<ScriptRecord>		stageFrameRecords;
+ScriptRecord					executionRecords;
 FrameRecord<ScriptRecord>		executionFrameRecords;
 SpanRecord						spansStorage;
 
@@ -41,7 +41,7 @@ bool JenovaProfiler::Initialize()
 bool JenovaProfiler::Shutdown()
 {
 	// Generate Profiling Report
-	if (JenovaProfiler::profilingMode == jenova::ProfilingMode::Echo)
+	if (JenovaProfiler::profilingMode == jenova::ProfilingMode::Sentinel)
 	{
 		if (!GenerateReportDatabase()) jenova::Error("Jenova Profiler", "Failed to Generate Performance Report.");
 	}
@@ -125,15 +125,16 @@ void JenovaProfiler::StopRecording()
 void JenovaProfiler::ClearRecords()
 {
 	// Clear Storage
-	stageTimings.clear();
+	stageRecords.clear();
 	stageFrameRecords.clear();
-	executionTimings.clear();
+	executionRecords.clear();
 	executionFrameRecords.clear();
 }
 bool JenovaProfiler::GenerateReportDatabase()
 {
 	// Generate Performance Report Database
 	jenova::json_t reportDatabase;
+	reportDatabase["RecordedFrames"] = executionFrameRecords.size();
 	reportDatabase["StageFrameRecords"] = stageFrameRecords;
 	reportDatabase["ExecutionFrameRecords"] = executionFrameRecords;
 
@@ -162,34 +163,23 @@ bool JenovaProfiler::AddStageRecord(const std::string& stageName, double duratio
 		duration = std::chrono::duration<double, std::milli>(now - contextCheckTime).count();
 		contextCheckTime = now;
 	}
-	stageTimings[stageName] = duration;
+	std::string stageRecordName = currentContext.function + "::" + stageName;
+	stageRecords[currentContext.script][stageRecordName] = duration;
 	return true;
 }
 bool JenovaProfiler::AddStageRecord(const std::string& scriptPath, const std::string& stageName, double duration)
 {
 	if (!IsEnabled()) return false;
-	stageTimings[stageName] = duration;
+	std::string stageRecordName = currentContext.function + "::" + stageName;
+	std::string scriptPathLocal = AS_STD_STRING(ProjectSettings::get_singleton()->localize_path(String(scriptPath.c_str())));
+	stageRecords[scriptPathLocal][stageRecordName] = duration;
 	return true;
 }
 bool JenovaProfiler::AddExecutionRecord(const std::string& scriptPath, const std::string& functionName, double duration)
 {
 	if (!IsEnabled()) return false;
-	executionTimings[scriptPath][functionName] = duration;
+	executionRecords[scriptPath][functionName] = duration;
 	return true;
-}
-double JenovaProfiler::GetStageRecord(const std::string& stageName)
-{
-	if (stageTimings.contains(stageName)) return stageTimings[stageName];
-	return 0.0;
-}
-double JenovaProfiler::GetExecutionRecord(const std::string& scriptPath, const std::string& functionName)
-{
-	if (executionTimings.contains(scriptPath))
-	{
-		const auto& functionMap = executionTimings.at(scriptPath);
-		if (functionMap.contains(functionName)) return functionMap.at(functionName);
-	}
-	return 0.0;
 }
 void JenovaProfiler::Frame()
 {
@@ -200,11 +190,11 @@ void JenovaProfiler::Frame()
 	// Increase Profiler Tick
 	profilerTick++;
 
-	if (JenovaProfiler::profilingMode == jenova::ProfilingMode::Echo)
+	if (JenovaProfiler::profilingMode == jenova::ProfilingMode::Sentinel)
 	{
 		// Add Frame Records
-		stageFrameRecords.push_back(stageTimings);
-		executionFrameRecords.push_back(executionTimings);
+		stageFrameRecords.push_back(stageRecords);
+		executionFrameRecords.push_back(executionRecords);
 
 		// Reset Records
 		/*
@@ -212,8 +202,8 @@ void JenovaProfiler::Frame()
 		 * Records can be just cleared and in data processing if the record hasn't the function we count it as 0.0
 		 * This will reduce the size of record database, also maybe use sql instead of json? :d
 		*/
-		for (auto& [stage, record] : stageTimings) record = 0;
-		for (auto& [script, records] : executionTimings) for (auto& [function, record] : records) record = 0;
+		for (auto& [script, records] : stageRecords) for (auto& [function, record] : records) record = 0;
+		for (auto& [script, records] : executionRecords) for (auto& [function, record] : records) record = 0;
 	}
 }
 class Ref<AutoSpan> JenovaProfiler::BeginAutoSpan(const std::string& friendlyName)
@@ -239,8 +229,8 @@ void JenovaProfiler::EndSpan(int spanID, const std::string& friendlyName)
 // Jenova Profiler Implementation :: Callbacks
 double JenovaProfiler::MonitorReport(const String& scriptPath, const String& functionName)
 {
-	auto scriptIt = executionTimings.find(AS_STD_STRING(scriptPath));
-	if (scriptIt != executionTimings.end())
+	auto scriptIt = executionRecords.find(AS_STD_STRING(scriptPath));
+	if (scriptIt != executionRecords.end())
 	{
 		auto& functionMap = scriptIt->second;
 		auto funcIt = functionMap.find(AS_STD_STRING(functionName));

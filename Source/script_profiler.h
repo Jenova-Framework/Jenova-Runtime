@@ -34,8 +34,6 @@ public:
 	static bool AddStageRecord(const std::string& stageName, double duration);
 	static bool AddStageRecord(const std::string& scriptPath, const std::string& stageName, double duration);
 	static bool AddExecutionRecord(const std::string& scriptPath, const std::string& functionName, double duration);
-	static double GetStageRecord(const std::string& stageName);
-	static double GetExecutionRecord(const std::string& scriptPath, const std::string& functionName);
 	static void Frame();
 	static Ref<class AutoSpan> BeginAutoSpan(const std::string& friendlyName);
 	static void BeginSpan(int spanID);

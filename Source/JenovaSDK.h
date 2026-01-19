@@ -41,15 +41,18 @@
 #endif
 
 // Jenova Utilities
-#define JENOVA_EXPORT			extern "C" JENOVA_API_EXPORT
-#define JENOVA_CALLBACK			(void*)static_cast<void(*)(void)>([]()
+#define JENOVA_EXPORT				extern "C" JENOVA_API_EXPORT
+#define JENOVA_CALLBACK				(void*)static_cast<void(*)(void)>([]()
 
 // Jenova API Interface
-#define JNVAPI_WRAPPER			static inline
-#define JNVAPI_INTERNAL(fn)		virtual fn
+#define JNVAPI_WRAPPER				static inline
+#define JNVAPI_INTERNAL(fn)			virtual fn
 
 // Jenova Configuration Macros
 #define JENOVA_TOOL_SCRIPT
+
+// Jenova Profiler Macros
+#define JENOVA_SCRIPT_RECORD(n,t)	sentinel::CommitScriptRecord(__FILE__, n, t)
 
 // Jenova Script Block Macros
 #define JENOVA_SCRIPT_BEGIN
