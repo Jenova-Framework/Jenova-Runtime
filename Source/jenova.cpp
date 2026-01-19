@@ -1484,7 +1484,7 @@ namespace jenova
 				}
 
 				// Stop Interpreter Execution
-				JenovaInterpreter::SetExecutionState(false);
+				JenovaInterpreter::SetExecutionPermission(false);
 
 				// Update Settings
 				if (!UpdateStorageConfigurations())
@@ -1763,7 +1763,7 @@ namespace jenova
 						jenova::OutputColored("#2ebc78", "Falling Back to Previous Build, No Change Detected. Fallback Time : [color=#c8e38a]%f ms[/color]", JenovaTinyProfiler::GetCheckpointTimeAndDispose("JenovaCompileMT"));
 					
 						// Start Interpreter Execution
-						JenovaInterpreter::SetExecutionState(true);
+						JenovaInterpreter::SetExecutionPermission(true);
 
 						// Call Build Success
 						OnBuildSuccess();
@@ -2014,7 +2014,7 @@ namespace jenova
 				}
 
 				// Stop Interpreter Execution
-				JenovaInterpreter::SetExecutionState(false);
+				JenovaInterpreter::SetExecutionPermission(false);
 
 				// Verbose
 				jenova::Output("Bootstrapping Generated Module...");

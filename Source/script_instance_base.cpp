@@ -125,6 +125,9 @@ static void gdextension_script_instance_call(GDExtensionScriptInstanceDataPtr p_
 		{
 			// Suppres Engine Call Error
 			if (r_error) r_error->error = GDEXTENSION_CALL_OK;
+
+			// Abort Execution
+			JenovaInterpreter::AbortExecution();
 		}
 
 	#else

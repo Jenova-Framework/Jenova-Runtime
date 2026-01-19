@@ -270,7 +270,7 @@ Variant CPPScriptInstance::callp(const StringName &p_method, const Variant **p_a
 	}
 
 	// Update Interpreter Properties
-	if (this->instanceProperties.size() != 0)
+	if (this->instanceProperties.size() != 0 && !JenovaInterpreter::IsExecutingFunction())
 	{
 		Array instancePropertiesKeys = this->instanceProperties.keys();
 		for (size_t i = 0; i < instancePropertiesKeys.size(); i++)
