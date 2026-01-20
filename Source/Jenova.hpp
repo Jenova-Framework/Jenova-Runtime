@@ -20,11 +20,11 @@
 #define APP_COMPANYNAME					"MemarDesign™ LLC."
 #define APP_DESCRIPTION					"Real-Time C++ Scripting System for Godot Engine, Developed By Hamid.Memar."
 #define APP_COPYRIGHT					"Copyright MemarDesign™ LLC. (©) 2024-2026, All Rights Reserved."
-#define APP_VERSION						"0.3.9.2"
+#define APP_VERSION						"0.3.9.3"
 #define APP_VERSION_MIDDLEFIX			" "
 #define APP_VERSION_POSTFIX				"Beta"
 #define APP_VERSION_SINGLECHAR			"b"
-#define APP_VERSION_DATA				0, 3, 9, 2
+#define APP_VERSION_DATA				0, 3, 9, 3
 #define APP_VERSION_BUILD				"0"
 #define APP_VERSION_NAME				"Riot"
 
@@ -136,6 +136,7 @@
 #include <classes/time.hpp>
 #include <classes/timer.hpp>
 #include <classes/shader.hpp>
+#include <classes/material.hpp>
 #include <classes/shader_material.hpp>
 #include <classes/font.hpp>
 #include <classes/font_file.hpp>
@@ -178,11 +179,12 @@
 #include <classes/box_container.hpp>
 #include <classes/h_box_container.hpp>
 #include <classes/v_box_container.hpp>
+#include <classes/margin_container.hpp>
+#include <classes/scroll_container.hpp>
+#include <classes/foldable_container.hpp>
 #include <classes/separator.hpp>
 #include <classes/h_separator.hpp>
 #include <classes/v_separator.hpp>
-#include <classes/margin_container.hpp>
-#include <classes/scroll_container.hpp>
 #include <classes/style_box.hpp>
 #include <classes/style_box_empty.hpp>
 #include <classes/style_box_flat.hpp>
@@ -304,8 +306,10 @@ using namespace godot;
 #define JENOVA_RESOURCE(key)				jenova::resources::key
 #define CODE_TEMPLATE(id)					String(std::string(jenova::templates::id, sizeof(jenova::templates::id)).c_str())
 #define VALIDATE_FUNCTION(func)				if (!func) { jenova::Output("System Failure : %d", __LINE__); jenova::ExitWithCode(__LINE__); }
-#define CREATE_SVG_MENU_ICON(buffer)		jenova::CreateMenuItemIconFromByteArray(BUFFER_PTR_SIZE_PARAM(buffer), jenova::ImageCreationFormat::SVG)
-#define CREATE_PNG_MENU_ICON(buffer)		jenova::CreateMenuItemIconFromByteArray(BUFFER_PTR_SIZE_PARAM(buffer), jenova::ImageCreationFormat::PNG)
+#define MAKE_IMAGE_FROM_BUFFER				jenova::CreateImageTextureFromByteArray
+#define MAKE_IMAGE_FROM_BUFFER_EX			jenova::CreateImageTextureFromByteArrayEx
+#define CREATE_SVG_MENU_ICON(buffer)		jenova::CreateMenuItemIconFromByteArray(BUFFER_PTR_SIZE_PARAM(buffer), jenova::ImageFormat::SVG)
+#define CREATE_PNG_MENU_ICON(buffer)		jenova::CreateMenuItemIconFromByteArray(BUFFER_PTR_SIZE_PARAM(buffer), jenova::ImageFormat::PNG)
 #define CREATE_GLOBAL_TEMPLATE(a,b,c)		JenovaTemplateManager::get_singleton()->RegisterNewGlobalScriptTemplate(a, CODE_TEMPLATE(b), c);
 #define CREATE_CLASS_TEMPLATE(a,b,c,d)		JenovaTemplateManager::get_singleton()->RegisterNewClassScriptTemplate(a, b, CODE_TEMPLATE(c), d);
 #define QUERY_ENGINE_MODE(mode)				(jenova::GlobalStorage::CurrentEngineMode == jenova::EngineMode::mode)
@@ -406,7 +410,7 @@ namespace jenova
 		UnloadModuleToShutdown,
 		UnloadModuleManually
 	};
-	enum class ImageCreationFormat
+	enum class ImageFormat
 	{
 		PNG,
 		JPG,
@@ -936,6 +940,7 @@ namespace jenova
 	#pragma region JenovaUtilities
 	void Alert(const char* fmt, ...);
 	std::string Format(const char* fmt, ...);
+	String Format(const String fmt, ...);
 	void Output(const char* fmt, ...);
 	void Output(const wchar_t* fmt, ...);
 	void OutputColored(const char* colorHash, const char* fmt, ...);
@@ -953,12 +958,13 @@ namespace jenova
 	std::string GenerateRandomHashString();
 	std::string GenerateTerminalLogTime();
 	int GenerateHashFromString(const char* str);
+	Color GenerateColorVariation(Color initColor, int variationFactor);
 	jenova::EngineMode GetCurrentEngineInstanceMode();
 	bool IsEngineRuntimeExport();
 	String GetCurrentEngineInstanceModeAsString();
-	Ref<ImageTexture> CreateImageTextureFromByteArray(const uint8_t* imageDataPtr, size_t imageDataSize, ImageCreationFormat imageFormat = ImageCreationFormat::PNG);
-	Ref<ImageTexture> CreateImageTextureFromByteArrayEx(const uint8_t* imageDataPtr, size_t imageDataSize, const Vector2i& imageSize = Vector2i(), ImageCreationFormat imageFormat = ImageCreationFormat::PNG);
-	Ref<ImageTexture> CreateMenuItemIconFromByteArray(const uint8_t* imageDataPtr, size_t imageDataSize, ImageCreationFormat imageFormat = ImageCreationFormat::PNG);
+	Ref<ImageTexture> CreateImageTextureFromByteArray(const uint8_t* imageDataPtr, size_t imageDataSize, ImageFormat imageFormat = ImageFormat::SVG);
+	Ref<ImageTexture> CreateImageTextureFromByteArrayEx(const uint8_t* imageDataPtr, size_t imageDataSize, const Vector2i& imageSize = Vector2i(), ImageFormat imageFormat = ImageFormat::SVG);
+	Ref<ImageTexture> CreateMenuItemIconFromByteArray(const uint8_t* imageDataPtr, size_t imageDataSize, ImageFormat imageFormat = ImageFormat::SVG);
 	Ref<FontFile> CreateFontFileFromByteArray(const uint8_t* fontDataPtr, size_t fontDataSize);
 	Ref<Shader> CreateShaderFromString(const String& shaderCode);
 	Ref<ShaderMaterial> CreateShaderMaterialFromString(const String& shaderCode);

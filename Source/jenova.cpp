@@ -175,7 +175,7 @@ namespace jenova
 			{ 
 				Vector2i iconSize(20, 20);
 				iconSize *= EditorInterface::get_singleton()->get_editor_scale();
-				return jenova::CreateImageTextureFromByteArrayEx(BUFFER_PTR_SIZE_PARAM(jenova::resources::PNG_JENOVA_ICON_64), iconSize);
+				return MAKE_IMAGE_FROM_BUFFER_EX(BUFFER_PTR_SIZE_PARAM(jenova::resources::PNG_JENOVA_ICON_64), iconSize, jenova::ImageFormat::PNG);
 			}
 			bool _has_main_screen() const override { return false; }
 			bool _handles(Object* p_object) const override { return false; }
@@ -755,7 +755,7 @@ namespace jenova
 				// Register Runtime Class Icon
 				if (!editor_theme->has_icon("JenovaRuntime", "EditorIcons"))
 				{
-					Ref<ImageTexture> iconImage = jenova::CreateImageTextureFromByteArray(BUFFER_PTR_SIZE_PARAM(JENOVA_RESOURCE(PNG_JENOVA_ICON_64)));
+					Ref<ImageTexture> iconImage = MAKE_IMAGE_FROM_BUFFER(BUFFER_PTR_SIZE_PARAM(JENOVA_RESOURCE(PNG_JENOVA_ICON_64)), jenova::ImageFormat::PNG);
 					if (iconImage.is_valid())
 					{
 						editor_theme->set_icon("JenovaRuntime", "EditorIcons", iconImage);
@@ -773,9 +773,7 @@ namespace jenova
 					// Register C++ Script Icon
 					if (!editor_theme->has_icon(jenova::GlobalSettings::JenovaScriptType, "EditorIcons"))
 					{
-						Ref<ImageTexture> iconImage =
-							jenova::CreateImageTextureFromByteArrayEx(BUFFER_PTR_SIZE_PARAM(jenova::resources::SVG_CPP_SCRIPT_ICON),
-							Vector2i(SCALED(19), SCALED(18)), jenova::ImageCreationFormat::SVG);
+						Ref<ImageTexture> iconImage = MAKE_IMAGE_FROM_BUFFER_EX(BUFFER_PTR_SIZE_PARAM(jenova::resources::SVG_CPP_SCRIPT_ICON), Vector2i(SCALED(19), SCALED(18)));
 
 						if (iconImage != nullptr)
 						{
@@ -791,9 +789,7 @@ namespace jenova
 					// Register C++ Header Icon
 					if (!editor_theme->has_icon(jenova::GlobalSettings::JenovaHeaderType, "EditorIcons"))
 					{
-						Ref<ImageTexture> iconImage =  
-							jenova::CreateImageTextureFromByteArrayEx(BUFFER_PTR_SIZE_PARAM(jenova::resources::SVG_CPP_HEADER_ICON), 
-							Vector2i(SCALED(18), SCALED(18)), jenova::ImageCreationFormat::SVG);
+						Ref<ImageTexture> iconImage = MAKE_IMAGE_FROM_BUFFER_EX(BUFFER_PTR_SIZE_PARAM(jenova::resources::SVG_CPP_HEADER_ICON), Vector2i(SCALED(18), SCALED(18)));
 
 						if (iconImage != nullptr)
 						{
@@ -813,9 +809,7 @@ namespace jenova
 					// Register Console Icon
 					if (!editor_theme->has_icon("Console", "EditorIcons"))
 					{
-						Ref<ImageTexture> iconImage =
-							jenova::CreateImageTextureFromByteArrayEx(BUFFER_PTR_SIZE_PARAM(jenova::resources::SVG_CONSOLE_ICON),
-							Vector2i(SCALED(18), SCALED(18)), jenova::ImageCreationFormat::SVG);
+						Ref<ImageTexture> iconImage = MAKE_IMAGE_FROM_BUFFER_EX(BUFFER_PTR_SIZE_PARAM(jenova::resources::SVG_CONSOLE_ICON), Vector2i(SCALED(18), SCALED(18)));
 
 						if (iconImage != nullptr)
 						{
@@ -831,9 +825,7 @@ namespace jenova
 					// Register Console Scheme Icon
 					if (!editor_theme->has_icon("ConsoleScheme", "EditorIcons"))
 					{
-						Ref<ImageTexture> iconImage =
-							jenova::CreateImageTextureFromByteArrayEx(BUFFER_PTR_SIZE_PARAM(jenova::resources::SVG_CONSOLE_SCHEME_ICON),
-							Vector2i(SCALED(18), SCALED(18)), jenova::ImageCreationFormat::SVG);
+						Ref<ImageTexture> iconImage = MAKE_IMAGE_FROM_BUFFER_EX(BUFFER_PTR_SIZE_PARAM(jenova::resources::SVG_CONSOLE_SCHEME_ICON), Vector2i(SCALED(18), SCALED(18)));
 
 						if (iconImage != nullptr)
 						{
@@ -1519,7 +1511,7 @@ namespace jenova
 
 				// Collect Current Used Script
 				jenova::Output("Collecting ([color=#53b5ab]%lld[/color]) C++ Script Object In Use...", ScriptManager::get_singleton()->get_script_object_count());
-				unordered_map<string, Ref<CPPScript>> usedScripts;
+				std::unordered_map<std::string, Ref<CPPScript>> usedScripts;
 				for (size_t i = 0; i < ScriptManager::get_singleton()->get_script_object_count(); i++)
 				{
 					Ref<CPPScript> scriptObject = ScriptManager::get_singleton()->get_script_object(i);
@@ -4012,7 +4004,7 @@ namespace jenova
 				about_image->set_offset(Side::SIDE_BOTTOM, SCALED(-30.0));
 				about_image->set_v_grow_direction(Control::GROW_DIRECTION_BOTH);
 				about_image->set_expand_mode(TextureRect::ExpandMode::EXPAND_FIT_HEIGHT); 
-				about_image->set_texture(jenova::CreateImageTextureFromByteArray(BUFFER_PTR_SIZE_PARAM(JENOVA_RESOURCE(JPEG_ABOUT_IMAGE)), ImageCreationFormat::JPG));
+				about_image->set_texture(MAKE_IMAGE_FROM_BUFFER(BUFFER_PTR_SIZE_PARAM(JENOVA_RESOURCE(JPEG_ABOUT_IMAGE)), ImageFormat::JPG));
 				jenova_about_ui->add_child(about_image);
 
 				// Add Title Label
@@ -5690,6 +5682,15 @@ namespace jenova
 		va_end(args);
 		return std::string(buffer);
 	}
+	String Format(const String fmt, ...)
+	{
+		char buffer[jenova::GlobalSettings::FormatBufferSize];
+		va_list args;
+		va_start(args, fmt);
+		vsnprintf(buffer, sizeof(buffer), AS_STD_STRING(fmt).c_str(), args);
+		va_end(args);
+		return String(buffer);
+	}
 	void Output(const char* fmt, ...)
 	{
 		char buffer[jenova::GlobalSettings::PrintOutputBufferSize];
@@ -6048,6 +6049,17 @@ namespace jenova
 		for (char c : input) hash = hash * 31 + c;
 		return hash;
 	}
+	Color GenerateColorVariation(Color initColor, int variationFactor)
+	{
+		static int variationSeed = 0;
+		if (variationFactor == -1)
+		{
+			variationSeed = 0;
+			return initColor;
+		}
+		initColor.set_hsv(Math::fmod((1.0f / float(variationFactor)) * float(variationSeed++), 0.9f), initColor.get_s() * 0.9f, initColor.get_v() * 1.4f, 0.8f);
+		return initColor;
+	}
 	jenova::EngineMode GetCurrentEngineInstanceMode()
 	{
 		return jenova::GlobalStorage::CurrentEngineMode;
@@ -6070,11 +6082,11 @@ namespace jenova
 			return "Unknown";
 		}
 	}
-	Ref<ImageTexture> CreateImageTextureFromByteArray(const uint8_t* imageDataPtr, size_t imageDataSize, ImageCreationFormat imageFormat)
+	Ref<ImageTexture> CreateImageTextureFromByteArray(const uint8_t* imageDataPtr, size_t imageDataSize, ImageFormat imageFormat)
 	{
 		return CreateImageTextureFromByteArrayEx(imageDataPtr, imageDataSize, Vector2i(), imageFormat);
 	}
-	Ref<ImageTexture> CreateImageTextureFromByteArrayEx(const uint8_t* imageDataPtr, size_t imageDataSize, const Vector2i& imageSize, jenova::ImageCreationFormat imageFormat)
+	Ref<ImageTexture> CreateImageTextureFromByteArrayEx(const uint8_t* imageDataPtr, size_t imageDataSize, const Vector2i& imageSize, jenova::ImageFormat imageFormat)
 	{
 		PackedByteArray imageDataPackedBytes;
 		imageDataPackedBytes.resize(imageDataSize);
@@ -6083,13 +6095,13 @@ namespace jenova
 		godot::Error loadResult = godot::Error::FAILED;
 		switch (imageFormat)
 		{
-		case jenova::ImageCreationFormat::PNG:
+		case jenova::ImageFormat::PNG:
 			loadResult = createdImage->load_png_from_buffer(imageDataPackedBytes);
 			break;
-		case jenova::ImageCreationFormat::JPG:
+		case jenova::ImageFormat::JPG:
 			loadResult = createdImage->load_jpg_from_buffer(imageDataPackedBytes);
 			break;
-		case jenova::ImageCreationFormat::SVG:
+		case jenova::ImageFormat::SVG:
 			loadResult = createdImage->load_svg_from_buffer(imageDataPackedBytes);
 			break;
 		default:
@@ -6109,7 +6121,7 @@ namespace jenova
 		}
 		return nullptr;
 	}
-	Ref<ImageTexture> CreateMenuItemIconFromByteArray(const uint8_t* imageDataPtr, size_t imageDataSize, jenova::ImageCreationFormat imageFormat)
+	Ref<ImageTexture> CreateMenuItemIconFromByteArray(const uint8_t* imageDataPtr, size_t imageDataSize, jenova::ImageFormat imageFormat)
 	{
 		PackedByteArray imageDataPackedBytes;
 		imageDataPackedBytes.resize(imageDataSize);
@@ -6118,13 +6130,13 @@ namespace jenova
 		godot::Error loadResult = godot::Error::FAILED;
 		switch (imageFormat)
 		{
-		case jenova::ImageCreationFormat::PNG:
+		case jenova::ImageFormat::PNG:
 			loadResult = createdImage->load_png_from_buffer(imageDataPackedBytes);
 			break;
-		case jenova::ImageCreationFormat::JPG:
+		case jenova::ImageFormat::JPG:
 			loadResult = createdImage->load_jpg_from_buffer(imageDataPackedBytes);
 			break;
-		case jenova::ImageCreationFormat::SVG:
+		case jenova::ImageFormat::SVG:
 			loadResult = createdImage->load_svg_from_buffer(imageDataPackedBytes);
 			break;
 		default:

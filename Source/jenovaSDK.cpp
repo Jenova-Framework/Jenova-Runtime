@@ -38,7 +38,9 @@
 #include <classes/scene_tree.hpp>
 #include <classes/resource_saver.hpp>
 #include <classes/resource_loader.hpp>
+#include <classes/font.hpp>
 #include <classes/texture2d.hpp>
+#include <classes/material.hpp>
 #include <templates/vector.hpp>
 #include <variant/string.hpp>
 #include <variant/node_path.hpp>
@@ -319,6 +321,30 @@ namespace jenova::sdk
 	jenova::sdk::EngineMode JenovaSDK::GetEngineMode()
 	{
 		return jenova::sdk::EngineMode(jenova::GlobalStorage::CurrentEngineMode);
+	}
+	godot::Ref<godot::Font> JenovaSDK::CreateFontFromBuffer(BufferPtr bufferPtr, size_t bufferSize)
+	{
+		return jenova::CreateFontFileFromByteArray(bufferPtr, bufferSize);
+	}
+	godot::Ref<godot::Texture2D> JenovaSDK::CreateImageFromBuffer(BufferPtr bufferPtr, size_t bufferSize, StringPtr format, ImageSize size)
+	{
+		if (godot::String(format).to_lower() == "png")
+		{
+			return jenova::CreateImageTextureFromByteArrayEx(bufferPtr, bufferSize, size, jenova::ImageFormat::PNG);
+		}
+		if (godot::String(format).to_lower() == "jpg")
+		{
+			return jenova::CreateImageTextureFromByteArrayEx(bufferPtr, bufferSize, size, jenova::ImageFormat::JPG);
+		}
+		if (godot::String(format).to_lower() == "svg")
+		{
+			return jenova::CreateImageTextureFromByteArrayEx(bufferPtr, bufferSize, size, jenova::ImageFormat::SVG);
+		}
+		return nullptr;
+	}
+	godot::Ref<godot::Material> JenovaSDK::CreateShaderMaterialFromSource(const godot::String& shaderSource)
+	{
+		return jenova::CreateShaderMaterialFromString(shaderSource);
 	}
 	bool JenovaSDK::CreateDirectoryMonitor(const String& directoryPath)
 	{

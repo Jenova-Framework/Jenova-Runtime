@@ -132,6 +132,9 @@ void JenovaProfiler::ClearRecords()
 }
 bool JenovaProfiler::GenerateReportDatabase()
 {
+	// Check if There's Any Records
+	if (!executionFrameRecords.size() && !stageFrameRecords.size()) return true;
+
 	// Generate Performance Report Database
 	jenova::json_t reportDatabase;
 	reportDatabase["RecordedFrames"] = executionFrameRecords.size();

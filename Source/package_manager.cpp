@@ -685,7 +685,7 @@ bool JenovaPackageManager::FetchOnlinePackages(const String& packageDatabaseURL)
 			double scaleFactor = EditorInterface::get_singleton()->get_editor_scale();
 			Vector2 packageIconSize(SCALED(64), SCALED(64));
 			std::string packageIconBuffer = base64::base64_decode(packageItem["pkgImage"].get<std::string>());
-			newPackage.pkgImage = jenova::CreateImageTextureFromByteArrayEx((uint8_t*)packageIconBuffer.data(), packageIconBuffer.size(), packageIconSize);
+			newPackage.pkgImage = MAKE_IMAGE_FROM_BUFFER_EX((uint8_t*)packageIconBuffer.data(), packageIconBuffer.size(), packageIconSize, jenova::ImageFormat::PNG);
 
 			// Add Package
 			onlinePackages.push_back(newPackage);

@@ -92,14 +92,16 @@
 
 // GodotSDK Imports
 #ifndef JENOVA_SDK_BUILD
+	#include <Godot/classes/object.hpp>
+	#include <Godot/classes/node.hpp>
+	#include <Godot/classes/scene_tree.hpp>
 	#include <Godot/variant/variant.hpp>
 	#include <Godot/variant/string.hpp>
 	#include <Godot/variant/string_name.hpp>
 	#include <Godot/classes/global_constants.hpp>
-	#include <Godot/classes/object.hpp>
-	#include <Godot/classes/node.hpp>
-	#include <Godot/classes/scene_tree.hpp>
+	#include <Godot/classes/font.hpp>
 	#include <Godot/classes/texture2d.hpp>
+	#include <Godot/classes/material.hpp>
 #endif
 
 // Jenova SDK Implementation
@@ -157,9 +159,11 @@ namespace jenova::sdk
 	typedef void*						FunctionPtr;
 	typedef void*						NativePtr;
 	typedef int64_t						IntPtr;
+	typedef uint8_t*					BufferPtr;
 	typedef godot::Variant				ObjectPtr;
 	typedef const char*					StringPtr;
 	typedef const wchar_t*				WideStringPtr;
+	typedef godot::Vector2i				ImageSize;
 	typedef const char*					MemoryID;
 	typedef const char*					VariableID;
 	typedef unsigned short				TaskID;
@@ -224,6 +228,9 @@ namespace jenova::sdk
 		JNVAPI_INTERNAL(StringPtr GetCStr(const godot::String& godotStr));
 		JNVAPI_INTERNAL(WideStringPtr GetWCStr(const godot::String& godotStr));
 		JNVAPI_INTERNAL(ObjectPtr GetObjectPointer(NativePtr obj));
+		JNVAPI_INTERNAL(godot::Ref<godot::Font> CreateFontFromBuffer(BufferPtr bufferPtr, size_t bufferSize));
+		JNVAPI_INTERNAL(godot::Ref<godot::Texture2D> CreateImageFromBuffer(BufferPtr bufferPtr, size_t bufferSize, StringPtr format, ImageSize size));
+		JNVAPI_INTERNAL(godot::Ref<godot::Material> CreateShaderMaterialFromSource(const godot::String& shaderSource));
 		JNVAPI_INTERNAL(bool SetClassIcon(const godot::String& className, const godot::Ref<godot::Texture2D> iconImage));
 		JNVAPI_INTERNAL(double MatchScaleFactor(double inputSize));
 		JNVAPI_INTERNAL(godot::Error CreateSignalCallback(godot::Object* object, const godot::String& signalName, FunctionPtr callbackPtr));
@@ -409,6 +416,21 @@ namespace jenova::sdk
 	{
 		if (!JenovaSDK::ValidateInterface(bridge)) return nullptr;
 		return bridge->GetObjectPointer(obj);
+	}
+	JNVAPI_WRAPPER godot::Ref<godot::Font> CreateFontFromBuffer(BufferPtr bufferPtr, size_t bufferSize)
+	{
+		if (!JenovaSDK::ValidateInterface(bridge)) return nullptr;
+		return bridge->CreateFontFromBuffer(bufferPtr, bufferSize);
+	}
+	JNVAPI_WRAPPER godot::Ref<godot::Texture2D> CreateImageFromBuffer(BufferPtr bufferPtr, size_t bufferSize, StringPtr format, ImageSize size = ImageSize())
+	{
+		if (!JenovaSDK::ValidateInterface(bridge)) return nullptr;
+		return bridge->CreateImageFromBuffer(bufferPtr, bufferSize, format, size);
+	}
+	JNVAPI_WRAPPER godot::Ref<godot::Material> CreateShaderMaterialFromSource(const godot::String& shaderSource)
+	{
+		if (!JenovaSDK::ValidateInterface(bridge)) return nullptr;
+		return bridge->CreateShaderMaterialFromSource(shaderSource);
 	}
 	JNVAPI_WRAPPER bool SetClassIcon(const godot::String& className, const godot::Ref<godot::Texture2D> iconImage)
 	{
