@@ -531,36 +531,49 @@ private:
 			jenova::json_t stagesRecords = profilerDatabase["StageFrameRecords"][frameNumber];
 			for (const auto& stagesRecord : stagesRecords.items())
 			{
-				std::string scriptPath = stagesRecord.key();
-				if (loadedScripts.contains(scriptPath))
-				{
-					FoldableContainer* scriptItem = loadedScripts[scriptPath];
-					auto stagesRecordItems = stagesRecord.value().items();
-					for (const auto& stageRecord : stagesRecordItems)
-					{
-						std::string stageFullName = stageRecord.key();
-						stageFullName = stageFullName.substr(stageFullName.find('$') + 1);
-						double stageTime = stageRecord.value();
-						size_t pos = stageFullName.find("::");
-						if (pos != std::string::npos)
-						{
-							std::string functionName = stageFullName.substr(0, pos);
-							std::string stageName = stageFullName.substr(pos + 2);
+				const std::string scriptPath = stagesRecord.key();
+				if (!loadedScripts.contains(scriptPath)) continue;
 
-							if (recordItems.contains(scriptPath))
-							{
-								if (recordItems[scriptPath].contains(functionName))
-								{
-									bool isFirst = (stageRecord == stagesRecordItems.begin());
-									bool isLast = (std::next(stageRecord) == stagesRecordItems.end());
-									bool isMiddle = (!isLast && !isFirst);
-									RecordItemData recordItem = recordItems[scriptPath][functionName];
-									Panel* newStageRecord = CreateNewStageRecordItem(String(stageName.c_str()), stageTime, recordItem.baseColor, isLast, isMiddle);
-									AddNewStageRecordItem(newStageRecord, recordItem.recordItem);
-								}
-							}
-						}
-					}
+				FoldableContainer* scriptItem = loadedScripts[scriptPath];
+				auto stagesRecordItems = stagesRecord.value().items();
+
+				std::unordered_map<std::string, std::vector<decltype(stagesRecordItems.begin())>> stagesPerFunction;
+
+				for (auto it = stagesRecordItems.begin(); it != stagesRecordItems.end(); ++it)
+				{
+					std::string stageFullName = it.key();
+					stageFullName = stageFullName.substr(stageFullName.find('$') + 1);
+
+					size_t pos = stageFullName.find("::");
+					if (pos == std::string::npos) continue;
+
+					std::string functionName = stageFullName.substr(0, pos);
+					stagesPerFunction[functionName].push_back(it);
+				}
+
+				for (const auto& stageRecord : stagesRecordItems)
+				{
+					std::string stageFullName = stageRecord.key();
+					stageFullName = stageFullName.substr(stageFullName.find('$') + 1);
+					double stageTime = stageRecord.value();
+
+					size_t pos = stageFullName.find("::");
+					if (pos == std::string::npos) continue;
+
+					std::string functionName = stageFullName.substr(0, pos);
+					std::string stageName = stageFullName.substr(pos + 2);
+
+					if (!recordItems.contains(scriptPath) || !recordItems[scriptPath].contains(functionName)) continue;
+
+					auto& funcStages = stagesPerFunction[functionName];
+
+					bool isFirst = (stageRecord == funcStages.front());
+					bool isLast = (stageRecord == funcStages.back());
+					bool isMiddle = (!isFirst && !isLast);
+
+					RecordItemData recordItem = recordItems[scriptPath][functionName];
+					Panel* newStageRecord = CreateNewStageRecordItem( String(stageName.c_str()), stageTime, recordItem.baseColor, isLast, isMiddle);
+					AddNewStageRecordItem(newStageRecord, recordItem.recordItem);
 				}
 			}
 
@@ -751,7 +764,6 @@ private:
 		_Name->add_theme_font_override("font", spaceMonoItalicFont);
 		_Name->add_theme_font_size_override("font_size", SCALED(14));
 		_Name->set_text(stageName);
-		if (stageTime == 0) _Name->set_self_modulate(Color(1, 1, 1, 0.4));
 		_Name->set_vertical_alignment(VerticalAlignment::VERTICAL_ALIGNMENT_CENTER);
 		_StageRecordItem->add_child(_Name);
 
@@ -771,7 +783,6 @@ private:
 		_Duration->add_theme_color_override("font_color", Color(1, 1, 1, 0.55));
 		_Duration->add_theme_font_override("font", spaceMonoRegularFont);
 		_Duration->set_text(jenova::Format(String("%.4f (ms)"), stageTime));
-		if (stageTime == 0) _Duration->set_self_modulate(Color(1, 1, 1, 0.2));
 		_Duration->set_horizontal_alignment(HorizontalAlignment::HORIZONTAL_ALIGNMENT_RIGHT);
 		_StageRecordItem->add_child(_Duration);
 
@@ -794,8 +805,15 @@ private:
 			_ConnectionCircle->set_offset(Side::SIDE_RIGHT, lastItem ? SCALED(55.0) : SCALED(34.0));
 			_ConnectionCircle->set_offset(Side::SIDE_BOTTOM, lastItem ? SCALED(25.0) : SCALED(3.0));
 			_ConnectionCircle->add_theme_stylebox_override("panel", connectionCircleStyle);
-			_ConnectionCircle->set_modulate(baseColor);
+			_ConnectionCircle->set_modulate(stageTime == 0 ? Color(1, 1, 1, 0.2) : baseColor);
 			_StageRecordItem->add_child(_ConnectionCircle);
+		}
+
+		if (stageTime == 0)
+		{
+			_Name->set_self_modulate(Color(1, 1, 1, 0.4));
+			_Duration->set_self_modulate(Color(1, 1, 1, 0.2));
+			_Connection->set_self_modulate(Color(1, 1, 1, 0.2));
 		}
 
 		return _StageRecordItem;
