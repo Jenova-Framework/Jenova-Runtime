@@ -41,6 +41,7 @@ public:
     size_t get_script_instance_count();
     CPPScriptInstance* get_script_instance(size_t index);
     bool register_script_runtime_start_event(jenova::VoidFunc_t callbackPtr);
+    void initialize_script_manager_window();
     bool open_script_manager_window();
 
 public:

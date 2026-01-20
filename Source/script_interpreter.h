@@ -89,5 +89,4 @@ private:
     static inline jenova::InterpreterBackend    interpreterBackend      = jenova::InterpreterBackend::TinyCC;
     static inline jenova::PointerStorage        propertyStorage         = jenova::PointerStorage();
     static inline jenova::PropertySetMethod     propertySetMethod       = jenova::PropertySetMethod::DirectAssign;
-
 };

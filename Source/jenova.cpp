@@ -267,7 +267,6 @@ namespace jenova
 			// Input Events
 			void _unhandled_key_input(const Ref<InputEvent>& inputEvent) override
 			{
-				// Can Also Use : if (Input::get_singleton()->is_key_pressed(KEY_ALT))
 				Ref<InputEventKey> keyEvent = inputEvent;
 				if (keyEvent.is_valid())
 				{
@@ -1141,7 +1140,7 @@ namespace jenova
 				if (jenovaTerminal)
 				{
 					// Remove Terminal from Bottom Panel
-					this->remove_control_from_bottom_panel(jenovaTerminal);
+					if (isTerminalVisible) this->remove_control_from_bottom_panel(jenovaTerminal);
 
 					// Update Flags
 					isTerminalVisible = false;

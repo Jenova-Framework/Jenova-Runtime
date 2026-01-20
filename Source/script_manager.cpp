@@ -38,6 +38,9 @@ void JenovaScriptManager::init()
 {
 	// Initialize Singleton
 	scriptManager = memnew(JenovaScriptManager);
+
+	// Register Script Manager Window
+	scriptManager->initialize_script_manager_window();
 }
 void JenovaScriptManager::deinit()
 {
@@ -181,6 +184,17 @@ protected:
 	static void _bind_methods() {}
 
 public:
+	// Constructor/Deconstructor
+	ScriptManagerWindow()
+	{
+		currentInstance = this;
+	}
+	~ScriptManagerWindow()
+	{
+		currentInstance = nullptr;
+	}
+
+public:
 	// Routines
 	void _ready() override
 	{
@@ -206,15 +220,16 @@ private:
 	bool MoveProfilerFrame(int offset)
 	{
 		if (totalLoadedFrames == 0) return true;
+		if (Input::get_singleton()->is_key_pressed(KEY_SHIFT)) offset *= 10;
 		int newFrameIndex = ::CLAMP(currentLoadedFrame + (offset), 0, totalLoadedFrames - 1);
 		if (newFrameIndex == currentLoadedFrame) return true;
 		currentLoadedFrame = newFrameIndex;
-		for (auto& recordItem : recordItems) for (auto& recordItemData : recordItem.second) recordItemData.second.recordItem->queue_free();
-		recordItems.clear();
+		ClearProfilerRecords();
 		return LoadProfilerFrame(currentLoadedFrame);
 	}
 	void ReloadProfilerDatabase()
 	{
+		ClearProfilerRecords();
 		String reportPath = jenova::GetJenovaCacheDirectory() + jenova::GlobalSettings::JenovaProfilerReportDatabaseFile;
 		if (std::filesystem::exists(AS_STD_STRING(reportPath)))
 		{
@@ -329,10 +344,10 @@ private:
 		connectionLastImage = MAKE_IMAGE_FROM_BUFFER(BUFFER_PTR_SIZE_PARAM(JENOVA_RESOURCE(SVG_CONNECTION_END_ICON)));
 
 		// Create Toolbar Icon Image Resources
-		reloadToolbarImage = MAKE_IMAGE_FROM_BUFFER(BUFFER_PTR_SIZE_PARAM(JENOVA_RESOURCE(SVG_FOLD_OPENED_ARROW_ICON)));
-		backwardFrameImage = MAKE_IMAGE_FROM_BUFFER(BUFFER_PTR_SIZE_PARAM(JENOVA_RESOURCE(SVG_BACKWARD_FRAME_ICON)));
-		forwardFrameImage = MAKE_IMAGE_FROM_BUFFER(BUFFER_PTR_SIZE_PARAM(JENOVA_RESOURCE(SVG_FORWARD_FRAME_ICON)));
-		foldAllImage = MAKE_IMAGE_FROM_BUFFER(BUFFER_PTR_SIZE_PARAM(JENOVA_RESOURCE(SVG_FOLD_ALL_ICON)));
+		reloadToolbarImage = jenova::CreateMenuItemIconFromByteArray(BUFFER_PTR_SIZE_PARAM(JENOVA_RESOURCE(SVG_RELOAD_ICON)));
+		backwardFrameImage = jenova::CreateMenuItemIconFromByteArray(BUFFER_PTR_SIZE_PARAM(JENOVA_RESOURCE(SVG_BACKWARD_FRAME_ICON)));
+		forwardFrameImage = jenova::CreateMenuItemIconFromByteArray(BUFFER_PTR_SIZE_PARAM(JENOVA_RESOURCE(SVG_FORWARD_FRAME_ICON)));
+		foldAllImage = jenova::CreateMenuItemIconFromByteArray(BUFFER_PTR_SIZE_PARAM(JENOVA_RESOURCE(SVG_FOLD_ALL_ICON)));
 
 		// Create Font Resources
 		cascadiaFont = jenova::CreateFontFileFromByteArray(BUFFER_PTR_SIZE_PARAM(JENOVA_RESOURCE(FONT_CASCADIACODE_REGULAR)));
@@ -403,9 +418,9 @@ private:
 	void IntializeToolbarButtons()
 	{
 		// Create Toolbar Items
-		reloadProfilerCacheTool = CreateNewToolbarItem("ReloadProfilerDatabse", reloadToolbarImage, "Reload Profiler Database", _Toolbar);
-		profilerPreviousFrameTool = CreateNewToolbarItem("FrameBackward", backwardFrameImage, "Back to Previous Frame", _Toolbar);
-		profilerNextFrameTool = CreateNewToolbarItem("FrameForward", forwardFrameImage, "Forward to Next Frame", _Toolbar);
+		reloadProfilerCacheTool = CreateNewToolbarItem("ReloadDatabse", reloadToolbarImage, "Reload Profiler Database", _Toolbar);
+		profilerPreviousFrameTool = CreateNewToolbarItem("FrameBackward", backwardFrameImage, "Back to Previous Frame (Hold Shift to 10x)", _Toolbar);
+		profilerNextFrameTool = CreateNewToolbarItem("FrameForward", forwardFrameImage, "Forward to Next Frame (Hold Shift to 10x)", _Toolbar);
 		CreateNewToolbarSeparator(_Toolbar);
 		foldAllScriptsTool = CreateNewToolbarItem("FoldAllScriptItems", foldAllImage, "Fold All Script Items", _Toolbar);
 
@@ -442,15 +457,22 @@ private:
 			{
 				// Get C++ Script Object
 				Ref<CPPScript> scriptResource = Object::cast_to<CPPScript>(cppResource.ptr());
-				bool isUsedScript = usedScripts.contains(AS_STD_STRING(scriptResource->GetScriptIdentity()));
-				String scriptUID = scriptResource->GetScriptIdentity();
 
 				// Get Script Function and Property Count
-				int scriptFunctionCount = 0;
-				int scriptPropertyCount = 0;
+				std::string scriptUID = AS_STD_STRING(scriptResource->GetScriptIdentity());
+				int scriptFunctionCount = JenovaInterpreter::GetFunctionContainer(scriptUID).scriptFunctions.size();
+				int scriptPropertyCount = JenovaInterpreter::GetPropertyContainer(scriptUID).scriptProperties.size();
 
 				// Detect Script Type
 				ScriptType scriptType = ScriptType::UNKNOWN;
+				String scriptContent = scriptResource->get_source_code();
+				bool isScriptActive = usedScripts.contains(AS_STD_STRING(scriptResource->GetScriptIdentity()));
+				bool hasScriptBlock = scriptContent.contains("JENOVA_SCRIPT_BEGIN");
+				bool hasExtension = scriptContent.contains("GDCLASS");
+				if (isScriptActive && hasScriptBlock) scriptType = ScriptType::ACTIVE;
+				if (!isScriptActive && hasScriptBlock) scriptType = ScriptType::INACTIVE;
+				if (hasExtension) scriptType = ScriptType::EXTENSION;
+				if (hasExtension && hasScriptBlock) scriptType = ScriptType::HYBRID;
 
 				// Create New Script Item
 				AddNewScriptItem(CreateNewScriptItem(scriptResource->get_path(), scriptType, scriptFunctionCount, scriptPropertyCount));
@@ -517,6 +539,7 @@ private:
 					for (const auto& stageRecord : stagesRecordItems)
 					{
 						std::string stageFullName = stageRecord.key();
+						stageFullName = stageFullName.substr(stageFullName.find('$') + 1);
 						double stageTime = stageRecord.value();
 						size_t pos = stageFullName.find("::");
 						if (pos != std::string::npos)
@@ -567,7 +590,7 @@ private:
 		_ScriptItem->add_theme_stylebox_override("title_collapsed_hover_panel", scriptItemFoldedHoverStyle);
 		_ScriptItem->add_theme_stylebox_override("panel", scriptItemPanelStyle);
 		_ScriptItem->set_folded(false);
-		_ScriptItem->set_title(scriptPath.get_file());
+		_ScriptItem->set_title(scriptPath.replace("res://", ""));
 		_ScriptItem->set_title_alignment(HorizontalAlignment::HORIZONTAL_ALIGNMENT_CENTER);
 
 		VBoxContainer* _ScriptItemContent = memnew(VBoxContainer);
@@ -584,22 +607,22 @@ private:
 		_RightSpace->set_color(Color(1, 1, 1, 0));
 		_ScriptDetails->add_child(_RightSpace);
 
-		RichTextLabel* _ScriptPath = memnew(RichTextLabel);
-		_ScriptPath->set_name("ScriptPath");
-		_ScriptPath->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		_ScriptPath->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
-		_ScriptPath->add_theme_font_override("normal_font", spaceMonoRegularFont);
-		_ScriptPath->add_theme_font_override("bold_font", spaceMonoBoldFont);
-		_ScriptPath->add_theme_font_override("bold_italics_font", spaceMonoBoldItalicFont);
-		_ScriptPath->add_theme_font_override("italics_font", spaceMonoItalicFont);
-		_ScriptPath->add_theme_font_size_override("normal_font_size", SCALED(13));
-		_ScriptPath->add_theme_stylebox_override("normal", panelEmptyStyle);
-		_ScriptPath->set_use_bbcode(true);
-		_ScriptPath->set_text("[b]Path[/b] : " + scriptPath.replace("res://", ""));
-		_ScriptPath->set_fit_content(true);
-		_ScriptPath->set_scroll_active(false);
-		_ScriptPath->set_autowrap_mode(TextServer::AUTOWRAP_OFF);
-		_ScriptDetails->add_child(_ScriptPath);
+		RichTextLabel* _ScriptUID = memnew(RichTextLabel);
+		_ScriptUID->set_name("ScriptPath");
+		_ScriptUID->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		_ScriptUID->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
+		_ScriptUID->add_theme_font_override("normal_font", spaceMonoRegularFont);
+		_ScriptUID->add_theme_font_override("bold_font", spaceMonoBoldFont);
+		_ScriptUID->add_theme_font_override("bold_italics_font", spaceMonoBoldItalicFont);
+		_ScriptUID->add_theme_font_override("italics_font", spaceMonoItalicFont);
+		_ScriptUID->add_theme_font_size_override("normal_font_size", SCALED(13));
+		_ScriptUID->add_theme_stylebox_override("normal", panelEmptyStyle);
+		_ScriptUID->set_use_bbcode(true);
+		_ScriptUID->set_text("[b]UID[/b] : " + jenova::GenerateStandardUIDFromPath(scriptPath));
+		_ScriptUID->set_fit_content(true);
+		_ScriptUID->set_scroll_active(false);
+		_ScriptUID->set_autowrap_mode(TextServer::AUTOWRAP_OFF);
+		_ScriptDetails->add_child(_ScriptUID);
 
 		RichTextLabel* _ScriptProperties = memnew(RichTextLabel);
 		_ScriptProperties->set_name("ScriptProperties");
@@ -653,7 +676,7 @@ private:
 
 		return _ScriptItem;
 	}
-	VBoxContainer* CreateNewRecordItem(String functionName, double functionRecord, Color baseColor)
+	VBoxContainer* CreateNewRecordItem(String functionName, double functionRecord, Color baseColor) const
 	{
 		VBoxContainer* _RecordItem = memnew(VBoxContainer);
 		_RecordItem->set_name("RecordItem");
@@ -706,7 +729,7 @@ private:
 
 		return _RecordItem;
 	}
-	Panel* CreateNewStageRecordItem(String stageName, double stageTime, Color baseColor, bool lastItem = false, bool middleItem = false)
+	Panel* CreateNewStageRecordItem(String stageName, double stageTime, Color baseColor, bool lastItem = false, bool middleItem = false) const
 	{
 		Panel* _StageRecordItem = memnew(Panel);
 		_StageRecordItem->set_name("StageRecordItem");
@@ -755,9 +778,9 @@ private:
 		TextureRect* _Connection = memnew(TextureRect);
 		_Connection->set_name("Connection");
 		_Connection->set_offset(Side::SIDE_LEFT, SCALED(25.0));
-		_Connection->set_offset(Side::SIDE_TOP, SCALED(lastItem ? -7.0 : -4.0));
+		_Connection->set_offset(Side::SIDE_TOP, lastItem ? SCALED(-7.0) : SCALED(-4.0));
 		_Connection->set_offset(Side::SIDE_RIGHT, SCALED(53.0));
-		_Connection->set_offset(Side::SIDE_BOTTOM, SCALED(lastItem ? 25.0 : 33.0));
+		_Connection->set_offset(Side::SIDE_BOTTOM, lastItem ? SCALED(25.0) : SCALED(33.0));
 		_Connection->set_texture(lastItem ? connectionLastImage : connectionMiddleImage);
 		_Connection->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
 		_StageRecordItem->add_child(_Connection);
@@ -766,10 +789,10 @@ private:
 		{
 			Panel* _ConnectionCircle = memnew(Panel);
 			_ConnectionCircle->set_name("ConnectionCircle");
-			_ConnectionCircle->set_offset(Side::SIDE_LEFT, SCALED(lastItem ? 48.0 : 27.0));
-			_ConnectionCircle->set_offset(Side::SIDE_TOP, SCALED(lastItem ? 18.0 : -4.0));
-			_ConnectionCircle->set_offset(Side::SIDE_RIGHT, SCALED(lastItem ? 55.0 : 34.0));
-			_ConnectionCircle->set_offset(Side::SIDE_BOTTOM, SCALED(lastItem ? 25.0 : 3.0));
+			_ConnectionCircle->set_offset(Side::SIDE_LEFT, lastItem ? SCALED(48.0) : SCALED(27.0));
+			_ConnectionCircle->set_offset(Side::SIDE_TOP, lastItem ? SCALED(17.0) : SCALED(-4.0));
+			_ConnectionCircle->set_offset(Side::SIDE_RIGHT, lastItem ? SCALED(55.0) : SCALED(34.0));
+			_ConnectionCircle->set_offset(Side::SIDE_BOTTOM, lastItem ? SCALED(25.0) : SCALED(3.0));
 			_ConnectionCircle->add_theme_stylebox_override("panel", connectionCircleStyle);
 			_ConnectionCircle->set_modulate(baseColor);
 			_StageRecordItem->add_child(_ConnectionCircle);
@@ -794,9 +817,9 @@ private:
 		switch (scriptType)
 		{
 			case ScriptManagerWindow::ACTIVE:
-				return "[color=green]Inactive[/color]";
+				return "[color=green]Active[/color]";
 			case ScriptManagerWindow::INACTIVE:
-				return "[color=red]Inactive[/color]";
+				return "[color=red]Passive[/color]";
 			case ScriptManagerWindow::HYBRID:
 				return "[color=orange]Hybrid[/color]";
 			case ScriptManagerWindow::EXTENSION:
@@ -806,7 +829,7 @@ private:
 				return "[color=gray]Unknown[/color]";
 		}
 	}
-	Button* CreateNewToolbarItem(const String& toolName, const Ref<Texture2D>& toolIcon, const String& toolTip, Control* toolbar)
+	Button* CreateNewToolbarItem(const String& toolName, const Ref<Texture2D>& toolIcon, const String& toolTip, Control* toolbar) const
 	{
 		Button* toolbar_item = memnew(Button);
 		toolbar_item->set_name(toolName);
@@ -821,7 +844,7 @@ private:
 		toolbar->add_child(toolbar_item);
 		return toolbar_item;
 	}
-	VSeparator* CreateNewToolbarSeparator(Control* toolbar)
+	VSeparator* CreateNewToolbarSeparator(Control* toolbar) const
 	{
 		VSeparator* toolbar_separator = memnew(VSeparator);
 		toolbar_separator->set_v_size_flags(Control::SizeFlags::SIZE_SHRINK_CENTER);
@@ -830,27 +853,48 @@ private:
 		toolbar->add_child(toolbar_separator);
 		return toolbar_separator;
 	}
+	void ClearProfilerRecords()
+	{
+		for (auto& recordItem : recordItems) for (auto& recordItemData : recordItem.second) recordItemData.second.recordItem->queue_free();
+		recordItems.clear();
+	}
+
+public:
+	// Instance
+	static inline ScriptManagerWindow* currentInstance = nullptr;
 };
 
 // Jenova Script Manager Window Creator
+void JenovaScriptManager::initialize_script_manager_window()
+{
+	// Regsiter Only for Editor
+	if (QUERY_ENGINE_MODE(Editor)) ClassDB::register_internal_class<ScriptManagerWindow>();
+}
 bool JenovaScriptManager::open_script_manager_window()
 {
 	// Get Scale Factor
 	double scaleFactor = EditorInterface::get_singleton()->get_editor_scale();
 
 	// Create A New Script Manager Window
-	ScriptManagerWindow* scriptManWindow = memnew(ScriptManagerWindow);
-	if (!scriptManWindow) return false;
-	scriptManWindow->set_name("JenovaScriptManager");
-	scriptManWindow->set_title("Script Manager");
-	scriptManWindow->set_size(Vector2(SCALED(780), 1200));
-	scriptManWindow->set_min_size(Vector2i(SCALED(780), 1200));
-	scriptManWindow->connect("close_requested", callable_mp((Node*)scriptManWindow, &Window::queue_free));
+	if (ScriptManagerWindow::currentInstance == nullptr)
+	{
+		ScriptManagerWindow* scriptManWindow = memnew(ScriptManagerWindow);
+		if (!scriptManWindow) return false;
+		scriptManWindow->set_name("JenovaScriptManager");
+		scriptManWindow->set_title("Script Manager");
+		scriptManWindow->set_size(Vector2(SCALED(780), 1200));
+		scriptManWindow->set_min_size(Vector2i(SCALED(780), 1200));
+		scriptManWindow->connect("close_requested", callable_mp((Node*)scriptManWindow, &Window::queue_free));
 
-	// Show Script Manager Window
-	jenova::GetSceneTree()->get_root()->add_child(scriptManWindow);
-	jenova::AssignPopUpWindow(scriptManWindow);
-	scriptManWindow->popup_centered();
+		// Show Script Manager Window
+		scriptManWindow->hide();
+		scriptManWindow->popup_exclusive_centered(EditorInterface::get_singleton()->get_base_control());
+		scriptManWindow->set_owner(EditorInterface::get_singleton()->get_base_control()->get_window());
+	}
+	else
+	{
+		ScriptManagerWindow::currentInstance->grab_focus();
+	}
 
 	// All Good
 	return true;

@@ -153,6 +153,7 @@ void JenovaProfiler::SetCurrentExecutionContext(const std::string& scriptPath, c
 	// Set Current Context
 	currentContext.script = scriptPath;
 	currentContext.function = functionName;
+	currentContext.counter = 0;
 
 	// Set Context Check Time
 	contextCheckTime = std::chrono::steady_clock::now();
@@ -166,14 +167,14 @@ bool JenovaProfiler::AddStageRecord(const std::string& stageName, double duratio
 		duration = std::chrono::duration<double, std::milli>(now - contextCheckTime).count();
 		contextCheckTime = now;
 	}
-	std::string stageRecordName = currentContext.function + "::" + stageName;
+	std::string stageRecordName = jenova::Format("%05d$%s::%s", currentContext.counter++, currentContext.function.c_str(), stageName.c_str());
 	stageRecords[currentContext.script][stageRecordName] = duration;
 	return true;
 }
 bool JenovaProfiler::AddStageRecord(const std::string& scriptPath, const std::string& stageName, double duration)
 {
 	if (!IsEnabled()) return false;
-	std::string stageRecordName = currentContext.function + "::" + stageName;
+	std::string stageRecordName = jenova::Format("%05d$%s::%s", currentContext.counter++, currentContext.function.c_str(), stageName.c_str());
 	std::string scriptPathLocal = AS_STD_STRING(ProjectSettings::get_singleton()->localize_path(String(scriptPath.c_str())));
 	stageRecords[scriptPathLocal][stageRecordName] = duration;
 	return true;
@@ -193,6 +194,7 @@ void JenovaProfiler::Frame()
 	// Increase Profiler Tick
 	profilerTick++;
 
+	// Collect Frame Data
 	if (JenovaProfiler::profilingMode == jenova::ProfilingMode::Sentinel)
 	{
 		// Add Frame Records
