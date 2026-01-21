@@ -82,6 +82,12 @@ bool JenovaProfiler::Prepare(jenova::json_t& data)
 	// Validate Profiler
 	if (!IsEnabled()) return false;
 
+	// Prepare for Echo Mode
+	if (JenovaProfiler::profilingMode == jenova::ProfilingMode::Echo)
+	{
+		// Create WebSocket Server
+	}
+
 	// Prepare for Monitor Mode
 	if (JenovaProfiler::profilingMode == jenova::ProfilingMode::Monitor)
 	{
@@ -143,7 +149,7 @@ bool JenovaProfiler::GenerateReportDatabase()
 
 	// Write Performance Report Database On Disk
 	String reportPath = jenova::GetJenovaCacheDirectory() + jenova::GlobalSettings::JenovaProfilerReportDatabaseFile;
-	if (!jenova::WriteStdStringToFile(AS_STD_STRING(reportPath), reportDatabase.dump(2))) return false;
+	if (!jenova::WriteStdStringToFile(AS_STD_STRING(reportPath), reportDatabase.dump())) return false;
 
 	// All Good
 	return true;

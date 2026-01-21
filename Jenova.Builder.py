@@ -1,5 +1,5 @@
 # Jenova Runtime Build System Script
-# Developed by Hamid.Memar (2024-2025)
+# Developed by Hamid.Memar (2024-present)
 # Usage : python3 ./Jenova.Builder.py --compiler win-msvc --skip-banner
 # Use python3 ./Jenova.Builder.py --help For More Information.
 

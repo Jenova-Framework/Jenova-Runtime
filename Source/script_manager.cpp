@@ -464,7 +464,7 @@ private:
 				int scriptPropertyCount = JenovaInterpreter::GetPropertyContainer(scriptUID).scriptProperties.size();
 
 				// Detect Script Type
-				ScriptType scriptType = ScriptType::UNKNOWN;
+				ScriptType scriptType = ScriptType::INACTIVE;
 				String scriptContent = scriptResource->get_source_code();
 				bool isScriptActive = usedScripts.contains(AS_STD_STRING(scriptResource->GetScriptIdentity()));
 				bool hasScriptBlock = scriptContent.contains("JENOVA_SCRIPT_BEGIN");

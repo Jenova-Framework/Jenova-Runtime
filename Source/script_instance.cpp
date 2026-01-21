@@ -266,6 +266,10 @@ Variant CPPScriptInstance::callp(const StringName &p_method, const Variant **p_a
 					this->instanceProperties[scriptProperty.propertyInfo.name] = scriptProperty.defaultValue;
 				}
 			}
+
+			// Set Initial Value of Property
+			Variant initialValue = this->instanceProperties[scriptProperty.propertyInfo.name];
+			JenovaInterpreter::SetPropertyValueFromVariant(scriptProperty.propertyInfo.name, initialValue, scriptInstanceIdentity);
 		}
 	}
 

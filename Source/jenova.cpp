@@ -6056,6 +6056,7 @@ namespace jenova
 			variationSeed = 0;
 			return initColor;
 		}
+		variationFactor = MIN(variationFactor, 30);
 		initColor.set_hsv(Math::fmod((1.0f / float(variationFactor)) * float(variationSeed++), 0.9f), initColor.get_s() * 0.9f, initColor.get_v() * 1.4f, 0.8f);
 		return initColor;
 	}
