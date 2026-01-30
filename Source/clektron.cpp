@@ -77,7 +77,7 @@ extern "C" namespace ClektronSystem
     };
 
     // Utilities
-    static const char* InternalFormat(const char* fmt, ...)
+    const char* InternalFormat(const char* fmt, ...)
     {
         char buffer[2048];
         va_list args;
@@ -86,7 +86,7 @@ extern "C" namespace ClektronSystem
         va_end(args);
         return jenova::CloneString(buffer);
     }
-    static bool HasAdministratorAccess()
+    bool HasAdministratorAccess()
     {
         // Windows Implementation
         #ifdef TARGET_PLATFORM_WINDOWS
@@ -141,14 +141,14 @@ extern "C" namespace ClektronSystem
     }
 
     // Callbacks
-    static size_t OnDownloadBufferWrite(void* bufferPtr, size_t bufferSize, size_t newBufferSize, void* outBufferPtr)
+    size_t OnDownloadBufferWrite(void* bufferPtr, size_t bufferSize, size_t newBufferSize, void* outBufferPtr)
     {
         size_t totalSize = bufferSize * newBufferSize;
         std::vector<uint8_t>* outBuffer = static_cast<std::vector<uint8_t>*>(outBufferPtr);
         outBuffer->insert(outBuffer->end(), static_cast<uint8_t*>(bufferPtr), static_cast<uint8_t*>(bufferPtr) + totalSize);
         return totalSize;
     }
-    static size_t OnDownloadProgress(void* metaDataPtr, size_t downloadTotal, size_t downloadNow, size_t uploadTotal, size_t uploadNow)
+    size_t OnDownloadProgress(void* metaDataPtr, size_t downloadTotal, size_t downloadNow, size_t uploadTotal, size_t uploadNow)
     {
         // Unreference Unused Parameters
         UnreferenceParameter(uploadTotal);
@@ -183,7 +183,7 @@ extern "C" namespace ClektronSystem
     }
 
     // User Interface API
-    static int API_Alert(CString message, CString title, AlertType type)
+    int API_Alert(CString message, CString title, AlertType type)
     {
         switch (type)
         {
@@ -200,29 +200,29 @@ extern "C" namespace ClektronSystem
         }
         return jenova::ShowMessageBox(message, title, 0);
     }
-    static void API_Wait(int msec)
+    void API_Wait(int msec)
     {
         OS::get_singleton()->delay_msec(msec);
     }
-    static void API_Refresh()
+    void API_Refresh()
     {
         jenova::DoApplicationEvents();
     }
-    static void API_Exit(int exitCode)
+    void API_Exit(int exitCode)
     {
         jenova::ExitWithCode(exitCode);
     }
 
     // File Manager API
-    static bool API_DoesFileExist(CString filePath)
+    bool API_DoesFileExist(CString filePath)
     {
         return std::filesystem::exists(filePath);
     }
-    static bool API_DoesDirectoryExist(CString directoryPath)
+    bool API_DoesDirectoryExist(CString directoryPath)
     {
         return std::filesystem::exists(directoryPath);
     }
-    static bool API_WriteStringToFile(CString filePath, CString str)
+    bool API_WriteStringToFile(CString filePath, CString str)
     {
         std::ofstream outFile(filePath, std::ios::out | std::ios::binary);
         if (outFile.is_open())
@@ -236,7 +236,7 @@ extern "C" namespace ClektronSystem
             return false;
         }
     }
-    static CString API_ReadStringFromFile(CString filePath)
+    CString API_ReadStringFromFile(CString filePath)
     {
         std::ifstream inFile(filePath);
         if (inFile.is_open())
@@ -250,7 +250,7 @@ extern "C" namespace ClektronSystem
             return nullptr;
         }
     }
-    static bool API_MakeDirectory(CString directoryPath)
+    bool API_MakeDirectory(CString directoryPath)
     {
         try
         {
@@ -261,11 +261,11 @@ extern "C" namespace ClektronSystem
             return false;
         }
     }
-    static Size API_GetFileSize(CString filePath)
+    Size API_GetFileSize(CString filePath)
     {
         return std::filesystem::file_size(filePath);
     }
-    static bool API_RenameFile(CString filePath, CString newName)
+    bool API_RenameFile(CString filePath, CString newName)
     {
         try
         {
@@ -282,7 +282,7 @@ extern "C" namespace ClektronSystem
             return false;
         }
     }
-    static bool API_RenameDirectory(CString directoryPath, CString newName)
+    bool API_RenameDirectory(CString directoryPath, CString newName)
     {
         try
         {
@@ -298,7 +298,7 @@ extern "C" namespace ClektronSystem
             return false;
         }
     }
-    static bool API_MoveFile(CString srcPath, CString dstPath)
+    bool API_MoveFile(CString srcPath, CString dstPath)
     {
         try
         {
@@ -320,7 +320,7 @@ extern "C" namespace ClektronSystem
             return false;
         }
     }
-    static bool API_MoveDirectory(CString srcPath, CString dstPath)
+    bool API_MoveDirectory(CString srcPath, CString dstPath)
     {
         try
         {
@@ -342,7 +342,7 @@ extern "C" namespace ClektronSystem
             return false;
         }
     }
-    static bool API_RemoveFile(CString filePath)
+    bool API_RemoveFile(CString filePath)
     {
         try
         {
@@ -353,7 +353,7 @@ extern "C" namespace ClektronSystem
             return false;
         }
     }
-    static bool API_RemoveDirectory(CString directoryPath)
+    bool API_RemoveDirectory(CString directoryPath)
     {
         try
         {
@@ -364,7 +364,7 @@ extern "C" namespace ClektronSystem
             return false;
         }
     }
-    static Instance API_CreateFile(CString filePath)
+    Instance API_CreateFile(CString filePath)
     {
         auto file = std::make_shared<std::fstream>(filePath, std::ios::out | std::ios::binary);
         if (file->is_open())
@@ -374,7 +374,7 @@ extern "C" namespace ClektronSystem
         }
         return nullptr;
     }
-    static Instance API_OpenFile(CString filePath)
+    Instance API_OpenFile(CString filePath)
     {
         auto file = std::make_shared<std::fstream>(filePath, std::ios::in | std::ios::out | std::ios::binary);
         if (file->is_open())
@@ -384,7 +384,7 @@ extern "C" namespace ClektronSystem
         }
         return nullptr;
     }
-    static bool API_WriteFile(Instance fileInstance, Buffer bufferPtr, Size bufferSize)
+    bool API_WriteFile(Instance fileInstance, Buffer bufferPtr, Size bufferSize)
     {
         auto file = static_cast<std::fstream*>(fileInstance);
         if (file && file->is_open())
@@ -394,7 +394,7 @@ extern "C" namespace ClektronSystem
         }
         return false;
     }
-    static bool API_ReadFile(Instance fileInstance, Buffer bufferPtr, Size readPosition, Size readSize)
+    bool API_ReadFile(Instance fileInstance, Buffer bufferPtr, Size readPosition, Size readSize)
     {
         auto file = static_cast<std::fstream*>(fileInstance);
         if (file && file->is_open())
@@ -405,7 +405,7 @@ extern "C" namespace ClektronSystem
         }
         return false;
     }
-    static bool API_CloseFile(Instance fileInstance)
+    bool API_CloseFile(Instance fileInstance)
     {
         auto file = static_cast<std::fstream*>(fileInstance);
         if (file && file->is_open())
@@ -425,35 +425,35 @@ extern "C" namespace ClektronSystem
     }
 
     // Memory Manager API
-    static Buffer API_Allocate(Size size)
+    Buffer API_Allocate(Size size)
     {
         return malloc(size);
     }
-    static bool API_Free(Buffer bufferPtr)
+    bool API_Free(Buffer bufferPtr)
     {
         if (!bufferPtr) return false;
         free(bufferPtr);
         return true;
     }
-    static void API_Delete(Instance targetPtr)
+    void API_Delete(Instance targetPtr)
     {
         delete targetPtr;
     }
-    static Buffer API_CopyMemory(Buffer srcBuffer, Buffer dstBuffer, Size copySize)
+    Buffer API_CopyMemory(Buffer srcBuffer, Buffer dstBuffer, Size copySize)
     {
         return memcpy(dstBuffer, srcBuffer, copySize);
     }
-    static Buffer API_ZeroMemory(Buffer bufferPtr, Size bufferSize)
+    Buffer API_ZeroMemory(Buffer bufferPtr, Size bufferSize)
     {
         return memset(bufferPtr, 0, bufferSize);
     }
-    static Size API_CompareMemory(Buffer bufferA, Buffer bufferB, Size compareSize)
+    Size API_CompareMemory(Buffer bufferA, Buffer bufferB, Size compareSize)
     {
         return memcmp(bufferA, bufferB, compareSize);
     }
 
     // Downloader API
-    static bool API_DownloadToBuffer(CString fileURL, Buffer* outBuffer, Size* bufferSize, FunctionPtr downloadCallback)
+    bool API_DownloadToBuffer(CString fileURL, Buffer* outBuffer, Size* bufferSize, FunctionPtr downloadCallback)
     {
         #ifdef JENOVA_PROTECTED_MODE
             return false;
@@ -538,7 +538,7 @@ extern "C" namespace ClektronSystem
         // All Good
         return true;
     }
-    static void API_FreeDownloadBuffer(Buffer* dataBuffer)
+    void API_FreeDownloadBuffer(Buffer* dataBuffer)
     {
         if (dataBuffer && *dataBuffer)
         {
@@ -548,7 +548,7 @@ extern "C" namespace ClektronSystem
     }
 
     // Archive API
-    static bool API_ExtractArchive(CString archivePath, CString destinationPath, FunctionPtr extractionCallback)
+    bool API_ExtractArchive(CString archivePath, CString destinationPath, FunctionPtr extractionCallback)
     {
         // Create Destination If Not Exist
         if (!std::filesystem::exists(destinationPath))
@@ -671,21 +671,21 @@ extern "C" namespace ClektronSystem
     }
 
     // Utility API
-    static void API_Print(CString message)
+    void API_Print(CString message)
     {
         printf("[ Electron-C ] :: ");
         printf(message);
         printf("\n");
     }
-    static void API_PrintError(CString stage, CString message)
+    void API_PrintError(CString stage, CString message)
     {
         jenova::Error(stage, message);
     }
-    static void API_PrintWarning(CString stage, CString message)
+    void API_PrintWarning(CString stage, CString message)
     {
         jenova::Warning(stage, message);
     }
-    static CString API_Format(CString fmt, ...)
+    CString API_Format(CString fmt, ...)
     {
         char buffer[2048] = { 0 };
         va_list args;
@@ -694,22 +694,22 @@ extern "C" namespace ClektronSystem
         va_end(args);
         return jenova::CloneString(buffer);
     }
-    static int API_System(CString command)
+    int API_System(CString command)
     {
         #ifdef JENOVA_PROTECTED_MODE
             return 0;
         #endif
         return system(command);
     }
-    static CString API_GetFileMD5Hash(CString filePath)
+    CString API_GetFileMD5Hash(CString filePath)
     {
         return jenova::CloneString(AS_C_STRING(jenova::GenerateMD5HashFromFile(godot::String(filePath))));
     }
-    static OperatingSystem API_GetOperatingSystem()
+    OperatingSystem API_GetOperatingSystem()
     {
         return OperatingSystem::Unsupported;
     }
-    static CString API_GetOperatingSystemName(OperatingSystem os)
+    CString API_GetOperatingSystemName(OperatingSystem os)
     {
         switch (os)
         {
@@ -722,39 +722,39 @@ extern "C" namespace ClektronSystem
             return "Unsupported OS";
         }
     }
-    static bool API_HasAdministratorAccess()
+    bool API_HasAdministratorAccess()
     {
         return HasAdministratorAccess();
     }
-    static Instance API_LoadModule(CString modulePath)
+    Instance API_LoadModule(CString modulePath)
     {
         #ifdef JENOVA_PROTECTED_MODE
             return nullptr;
         #endif
         return jenova::LoadModule(modulePath);
     }
-    static FunctionPtr API_GetModuleFunction(Instance moduleInstance, CString functionName)
+    FunctionPtr API_GetModuleFunction(Instance moduleInstance, CString functionName)
     {
         #ifdef JENOVA_PROTECTED_MODE
             return nullptr;
         #endif
         return jenova::GetModuleFunction(moduleInstance, functionName);
     }
-    static bool API_FreeModule(Instance moduleInstance)
+    bool API_FreeModule(Instance moduleInstance)
     {
         #ifdef JENOVA_PROTECTED_MODE
             return false;
         #endif
         return jenova::ReleaseModule(moduleInstance);
     }
-    static CString API_CombineStrings(CString strA, CString strB)
+    CString API_CombineStrings(CString strA, CString strB)
     {
         std::string stringA(strA);
         std::string stringB(strB);
         std::string combinedCString = stringA + stringB;
         return jenova::CloneString(combinedCString.c_str());
     }
-    static bool API_CompareStrings(CString strA, CString strB)
+    bool API_CompareStrings(CString strA, CString strB)
     {
         std::string stringA(strA);
         std::string stringB(strB);
@@ -1211,8 +1211,13 @@ bool Clektron::BindSymbol(void* symbolPtr, const std::string& symbolName, const 
 }
 bool Clektron::SafeExecute(ClektronMainFunction ctronEntrypoint)
 {
-    bool executionResult = false;
-    __try { executionResult = ctronEntrypoint(); }
-    __except (jenova::JenovaExecutionCrashHandler(GetExceptionInformation())) { }
-    return executionResult;
+    // Managed Safe Execution [Windows Only]
+	#if defined(TARGET_PLATFORM_WINDOWS) && defined(_MSC_VER)
+        bool executionResult = false;
+        __try { executionResult = ctronEntrypoint(); }
+        __except (jenova::JenovaExecutionCrashHandler(GetExceptionInformation())) { }
+        return executionResult;
+    #else
+		return ctronEntrypoint();
+	#endif
 }

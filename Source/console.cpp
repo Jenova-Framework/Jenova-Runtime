@@ -79,13 +79,13 @@ namespace ConsoleInterface
 		highlighter->add_keyword_color("exit", Color("#ff3958"));
 
 		// Bind Symbols
-		Clektron::get_singleton()->BindSymbol(ConsoleInterface::ClearOutput, "clear");
-		Clektron::get_singleton()->BindSymbol(ConsoleInterface::ClearHistory, "clear_history");
-		Clektron::get_singleton()->BindSymbol(ConsoleInterface::ClearHistory, "ch");
-		Clektron::get_singleton()->BindSymbol(ConsoleInterface::PrintOutput, "print", "void", 2, "String", "...");
-		Clektron::get_singleton()->BindSymbol(ConsoleInterface::PrintTime, "time");
-		Clektron::get_singleton()->BindSymbol(ConsoleInterface::QuitProcess, "quit");
-		Clektron::get_singleton()->BindSymbol(ConsoleInterface::QuitProcess, "exit");
+		Clektron::get_singleton()->BindSymbol((void*)&ConsoleInterface::ClearOutput, "clear");
+		Clektron::get_singleton()->BindSymbol((void*)&ConsoleInterface::ClearHistory, "clear_history");
+		Clektron::get_singleton()->BindSymbol((void*)&ConsoleInterface::ClearHistory, "ch");
+		Clektron::get_singleton()->BindSymbol((void*)&ConsoleInterface::PrintOutput, "print", "void", 2, "String", "...");
+		Clektron::get_singleton()->BindSymbol((void*)&ConsoleInterface::PrintTime, "time");
+		Clektron::get_singleton()->BindSymbol((void*)&ConsoleInterface::QuitProcess, "quit");
+		Clektron::get_singleton()->BindSymbol((void*)&ConsoleInterface::QuitProcess, "exit");
 	}
 }
 

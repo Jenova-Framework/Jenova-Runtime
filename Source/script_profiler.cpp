@@ -169,7 +169,7 @@ bool JenovaProfiler::AddStageRecord(const std::string& stageName, double duratio
 	if (!IsEnabled()) return false;
 	if (duration == 0)
 	{
-		auto now = std::chrono::high_resolution_clock::now();
+		auto now = std::chrono::steady_clock::now();
 		duration = std::chrono::duration<double, std::milli>(now - contextCheckTime).count();
 		contextCheckTime = now;
 	}
@@ -227,12 +227,12 @@ class Ref<AutoSpan> JenovaProfiler::BeginAutoSpan(const std::string& friendlyNam
 void JenovaProfiler::BeginSpan(int spanID)
 {
 	if (!IsEnabled()) return;
-	spansStorage[spanID] = std::chrono::high_resolution_clock::now();
+	spansStorage[spanID] = std::chrono::steady_clock::now();
 }
 void JenovaProfiler::EndSpan(int spanID, const std::string& friendlyName)
 {
 	if (!IsEnabled()) return;
-	auto now = std::chrono::high_resolution_clock::now();
+	auto now = std::chrono::steady_clock::now();
 	auto duration = std::chrono::duration<double, std::milli>(now - spansStorage[spanID]).count();
 	AddStageRecord(friendlyName, duration);
 }
