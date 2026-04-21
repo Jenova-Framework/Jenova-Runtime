@@ -114,7 +114,7 @@ static const jenova::FunctionList godot_functions =
 };
 
 // C++ Script Instance Implementation
-bool CPPScriptInstance::set(const StringName &p_name, const Variant &p_value) 
+bool CPPScriptInstance::set(const StringName& p_name, const Variant& p_value)
 {
 	// Remove
 	jenova::VerboseByID(__LINE__, "Setting Property (%s)...", AS_C_STRING(p_name));
@@ -148,13 +148,13 @@ bool CPPScriptInstance::set(const StringName &p_name, const Variant &p_value)
 	// Not Handled
 	return false;
 }
-bool CPPScriptInstance::get(const StringName &p_name, Variant &r_ret) const
- {
+bool CPPScriptInstance::get(const StringName& p_name, Variant& r_ret) const
+{
 	// Remove
 	jenova::VerboseByID(__LINE__, "Getting Property (%s)...", AS_C_STRING(p_name));
 
 	// Get Script
-	if (p_name == StringName("script")) 
+	if (p_name == StringName("script"))
 	{
 		r_ret = script;
 		return true;
@@ -189,7 +189,7 @@ bool CPPScriptInstance::get(const StringName &p_name, Variant &r_ret) const
 	// Not Handled
 	return false;
 }
-godot::String CPPScriptInstance::to_string(bool *r_is_valid) 
+godot::String CPPScriptInstance::to_string(bool* r_is_valid)
 {
 	jenova::VerboseByID(__LINE__, "CPPScriptInstance::to_string");
 	*r_is_valid = true;
@@ -199,7 +199,7 @@ void CPPScriptInstance::notification(int p_notification, bool p_reversed)
 {
 	if (p_notification == Object::NOTIFICATION_PREDELETE) isDeleting = true;
 }
-Variant CPPScriptInstance::callp(const StringName &p_method, const Variant **p_args, const int p_argument_count, GDExtensionCallError &r_error) 
+Variant CPPScriptInstance::callp(const StringName& p_method, const Variant** p_args, const int p_argument_count, GDExtensionCallError& r_error)
 {
 	// Validate Scripting Backend
 	if (!jenova::GlobalSettings::ScriptingEnabled)
@@ -230,12 +230,12 @@ Variant CPPScriptInstance::callp(const StringName &p_method, const Variant **p_a
 		r_error.error = GDEXTENSION_CALL_OK;
 		return Variant(String(jenova::Format("[ %s · Powered by Jenova ]", AS_C_STRING(godot::Object::cast_to<godot::Node>(this->owner)->get_name())).c_str()));
 	}
-	else if (p_method == StringName("_hide_script_from_inspector")) 
+	else if (p_method == StringName("_hide_script_from_inspector"))
 	{
 		r_error.error = GDEXTENSION_CALL_OK;
 		return false;
 	}
-	else if (p_method == StringName("_is_read_only")) 
+	else if (p_method == StringName("_is_read_only"))
 	{
 		r_error.error = GDEXTENSION_CALL_OK;
 		return false;
@@ -335,7 +335,7 @@ Variant CPPScriptInstance::callp(const StringName &p_method, const Variant **p_a
 	r_error.error = GDEXTENSION_CALL_ERROR_INVALID_METHOD;
 	return Variant();
 }
-void CPPScriptInstance::update_methods() const 
+void CPPScriptInstance::update_methods() const
 {
 	// Remove
 	jenova::VerboseByID(__LINE__, "CPPScriptInstance::update_methods (%s)", AS_C_STRING(scriptInstanceIdentity));
@@ -351,13 +351,13 @@ void CPPScriptInstance::update_methods() const
 		this->methodsInfo.push_back(scriptFunction.methodInfo);
 	}
 }
-const GDExtensionMethodInfo* CPPScriptInstance::get_method_list(uint32_t *r_count) const 
+const GDExtensionMethodInfo* CPPScriptInstance::get_method_list(uint32_t* r_count) const
 {
 	// Remove
 	jenova::VerboseByID(__LINE__, "CPPScriptInstance::get_method_list (%s)", AS_C_STRING(scriptInstanceIdentity));
 
 	// Validate Script
-	if (script.is_null()) 
+	if (script.is_null())
 	{
 		*r_count = 0;
 		return nullptr;
@@ -370,7 +370,7 @@ const GDExtensionMethodInfo* CPPScriptInstance::get_method_list(uint32_t *r_coun
 	const int size = methodsInfo.size();
 	GDExtensionMethodInfo* list = memnew_arr(GDExtensionMethodInfo, size);
 	int i = 0;
-	for (auto& methodInfo : methodsInfo) 
+	for (auto& methodInfo : methodsInfo)
 	{
 		CPPScriptInstance* self = const_cast<CPPScriptInstance*>(this);
 		list[i] = CreateMethodInfo(methodInfo, self);
@@ -391,7 +391,7 @@ void CPPScriptInstance::free_method_list(const GDExtensionMethodInfo* p_list, ui
 
 	if (p_list) memdelete_arr(p_list);
 }
-const GDExtensionPropertyInfo* CPPScriptInstance::get_property_list(uint32_t *r_count) const
+const GDExtensionPropertyInfo* CPPScriptInstance::get_property_list(uint32_t* r_count) const
 {
 	// Create Property List
 	LocalVector<GDExtensionPropertyInfo> propertiesInfo;
@@ -408,7 +408,7 @@ const GDExtensionPropertyInfo* CPPScriptInstance::get_property_list(uint32_t *r_
 		sourceCodeProperty.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
 		propertiesInfo.push_back(sourceCodeProperty);
 	}
-	
+
 	// Add Jenova Script Interpreted Properties
 	auto propContainer = JenovaInterpreter::GetPropertyContainer(AS_STD_STRING(this->scriptInstanceIdentity));
 	for (size_t i = 0; i < propContainer.scriptProperties.size(); i++)
@@ -434,7 +434,7 @@ const GDExtensionPropertyInfo* CPPScriptInstance::get_property_list(uint32_t *r_
 	memcpy(list, propertiesInfo.ptr(), sizeof(GDExtensionPropertyInfo) * propertiesInfo.size());
 	return list;
 }
-void CPPScriptInstance::free_property_list(const GDExtensionPropertyInfo *p_list, uint32_t p_count) const 
+void CPPScriptInstance::free_property_list(const GDExtensionPropertyInfo* p_list, uint32_t p_count) const
 {
 	jenova::VerboseByID(__LINE__, "CPPScriptInstance::free_property_list");
 	if (p_list)
@@ -444,7 +444,7 @@ void CPPScriptInstance::free_property_list(const GDExtensionPropertyInfo *p_list
 		memdelete_with_size<GDExtensionPropertyInfo>(p_list);
 	}
 }
-Variant::Type CPPScriptInstance::get_property_type(const StringName &p_name, bool *r_is_valid) const 
+Variant::Type CPPScriptInstance::get_property_type(const StringName& p_name, bool* r_is_valid) const
 {
 	jenova::VerboseByID(__LINE__, "CPPScriptInstance::get_property_type");
 
@@ -470,14 +470,14 @@ Variant::Type CPPScriptInstance::get_property_type(const StringName &p_name, boo
 	*r_is_valid = false;
 	return Variant::NIL;
 }
-void CPPScriptInstance::get_property_state(GDExtensionScriptInstancePropertyStateAdd p_add_func, void *p_userdata) 
+void CPPScriptInstance::get_property_state(GDExtensionScriptInstancePropertyStateAdd p_add_func, void* p_userdata)
 {
 	// Remove
 	jenova::VerboseByID(__LINE__, "CPPScriptInstance::get_property_state");
 
 	p_add_func = AddState; // Needs Investigation
 }
-bool CPPScriptInstance::validate_property(GDExtensionPropertyInfo &p_property) const 
+bool CPPScriptInstance::validate_property(GDExtensionPropertyInfo& p_property) const
 {
 	// Remove
 	jenova::VerboseByID(__LINE__, "CPPScriptInstance::validate_property %s", AS_C_STRING(*(StringName*)p_property.name));
@@ -503,7 +503,7 @@ bool CPPScriptInstance::validate_property(GDExtensionPropertyInfo &p_property) c
 	// Not Implemented Yet
 	return false;
 }
-bool CPPScriptInstance::has_method(const StringName &p_name) const 
+bool CPPScriptInstance::has_method(const StringName& p_name) const
 {
 	// Remove
 	jenova::VerboseByID(__LINE__, "CPPScriptInstance::has_method (%s) [%s]", AS_C_STRING(scriptInstanceIdentity), AS_C_STRING(p_name));
@@ -514,7 +514,7 @@ bool CPPScriptInstance::has_method(const StringName &p_name) const
 	bool result = false;
 
 	// Search Over Pre-Defined Functions [These will be not filtered by Tool Mode]
-	for (auto& function : godot_functions) 
+	for (auto& function : godot_functions)
 	{
 		if (p_name == StringName(function.c_str()))
 		{
@@ -522,7 +522,7 @@ bool CPPScriptInstance::has_method(const StringName &p_name) const
 			break;
 		}
 	}
-	
+
 	// Jenova Module Functions Handling
 	if (!result)
 	{
@@ -541,7 +541,7 @@ bool CPPScriptInstance::has_method(const StringName &p_name) const
 		if (!result && QUERY_ENGINE_MODE(Editor) && script->is_tool()) result = true;
 	}
 
-	// Temp Remove
+	// Remove
 	jenova::VerboseByID(__LINE__, "CPPScriptInstance::has_method (%s) [%s] returned %s", AS_C_STRING(scriptInstanceIdentity), AS_C_STRING(p_name), result ? "TRUE" : "FALSE");
 	return result;
 }
@@ -552,7 +552,7 @@ int CPPScriptInstance::get_method_argument_count(const StringName& p_method, boo
 	*r_is_valid = false;
 	return 0;
 }
-bool CPPScriptInstance::property_can_revert(const StringName &p_name) const 
+bool CPPScriptInstance::property_can_revert(const StringName& p_name) const
 {
 	// Remove
 	jenova::VerboseByID(__LINE__, "CPPScriptInstance::property_can_revert");
@@ -567,7 +567,7 @@ bool CPPScriptInstance::property_can_revert(const StringName &p_name) const
 	// Not Found
 	return false;
 }
-bool CPPScriptInstance::property_get_revert(const StringName &p_name, Variant &r_ret) const 
+bool CPPScriptInstance::property_get_revert(const StringName& p_name, Variant& r_ret) const
 {
 	// Remove
 	jenova::VerboseByID(__LINE__, "CPPScriptInstance::property_get_revert");
@@ -586,14 +586,14 @@ bool CPPScriptInstance::property_get_revert(const StringName &p_name, Variant &r
 	// Not Found
 	return false;
 }
-void CPPScriptInstance::refcount_incremented() 
+void CPPScriptInstance::refcount_incremented()
 {
 	// Remove
 	jenova::VerboseByID(__LINE__, "CPPScriptInstance::refcount_incremented");
 
 	refCount++;
 }
-bool CPPScriptInstance::refcount_decremented() 
+bool CPPScriptInstance::refcount_decremented()
 {
 	// Remove
 	jenova::VerboseByID(__LINE__, "CPPScriptInstance::refcount_decremented");
@@ -601,34 +601,34 @@ bool CPPScriptInstance::refcount_decremented()
 	refCount--;
 	return false;
 }
-Object* CPPScriptInstance::get_owner() 
+Object* CPPScriptInstance::get_owner()
 {
 	// Remove
 	jenova::VerboseByID(__LINE__, "CPPScriptInstance::get_owner");
 
 	return owner;
 }
-Ref<Script> CPPScriptInstance::get_script() const 
+Ref<Script> CPPScriptInstance::get_script() const
 {
 	// Remove
 	jenova::VerboseByID(__LINE__, "CPPScriptInstance::get_script");
 	return script;
 }
-bool CPPScriptInstance::is_placeholder() const 
+bool CPPScriptInstance::is_placeholder() const
 {
 	// Remove
 	jenova::VerboseByID(__LINE__, "CPPScriptInstance::is_placeholder");
 
 	return false;
 }
-void CPPScriptInstance::property_set_fallback(const StringName &p_name, const Variant &p_value, bool *r_valid) 
+void CPPScriptInstance::property_set_fallback(const StringName& p_name, const Variant& p_value, bool* r_valid)
 {
 	// Remove
 	jenova::VerboseByID(__LINE__, "CPPScriptInstance::property_set_fallback");
 
 	*r_valid = false;
 }
-Variant CPPScriptInstance::property_get_fallback(const StringName &p_name, bool *r_valid) 
+Variant CPPScriptInstance::property_get_fallback(const StringName& p_name, bool* r_valid)
 {
 	// Remove
 	jenova::VerboseByID(__LINE__, "CPPScriptInstance::property_get_fallback");
@@ -636,7 +636,7 @@ Variant CPPScriptInstance::property_get_fallback(const StringName &p_name, bool 
 	*r_valid = false;
 	return Variant::NIL;
 }
-ScriptLanguage* CPPScriptInstance::_get_language() 
+ScriptLanguage* CPPScriptInstance::_get_language()
 {
 	// Remove
 	jenova::VerboseByID(__LINE__, "CPPScriptInstance::_get_language");
@@ -649,8 +649,7 @@ String CPPScriptInstance::get_identity()
 }
 
 // C++ Script Instance Initializer/Destructor
-CPPScriptInstance::CPPScriptInstance(Object *p_owner, const Ref<CPPScript> p_script) :
-		owner(p_owner), script(p_script) 
+CPPScriptInstance::CPPScriptInstance(Object* p_owner, const Ref<CPPScript> p_script) : owner(p_owner), script(p_script) 
 {
 	// Remove
 	jenova::VerboseByID(__LINE__, "CPPScriptInstance::CPPScriptInstance");

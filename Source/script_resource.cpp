@@ -58,7 +58,7 @@ String CPPScriptResourceLoader::_get_resource_type(const String& p_path) const
 	return "";
 }
 
-// Script Resource Loader Implementation
+// Script Resource Saver Implementation
 void CPPScriptResourceSaver::init()
 {
 	cpp_saver.instantiate();
@@ -154,7 +154,7 @@ String CPPHeaderResourceLoader::_get_resource_type(const String& p_path) const
 	return "";
 }
 
-// Header Resource Loader Implementation
+// Header Resource Saver Implementation
 void CPPHeaderResourceSaver::init()
 {
 	h_saver.instantiate();

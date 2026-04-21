@@ -4182,7 +4182,7 @@ namespace jenova
 					// Handle Changes to C++/Header Scripts in Project
 					if (targetPath.get_extension() == jenova::GlobalSettings::JenovaScriptExtension || targetPath.get_extension() == jenova::GlobalSettings::HandlePreLaunchErrors)
 					{
-						// Check If 
+						// Check If Script is Inside Project
 						std::string projectPath = AS_STD_STRING(jenova::GetJenovaProjectDirectory());
 						if (std::filesystem::absolute(AS_STD_STRING(targetPath)).string().find(std::filesystem::absolute(projectPath).string()) != 0) return;
 
@@ -5000,7 +5000,7 @@ namespace jenova
 			GDExtensionBinding::InitObject init_obj(p_get_proc_address, p_library, r_initialization);
 			init_obj.register_initializer(InitializeModule);
 			init_obj.register_terminator(UninitializeModule);
-			init_obj.set_minimum_library_initialization_level(jenova::GlobalSettings::PluginInitializationLevel);
+			init_obj.set_minimum_library_initialization_level(MODULE_INITIALIZATION_LEVEL_SCENE);
 			return init_obj.init();
 		}
 

@@ -20,7 +20,7 @@
 class CPPScriptInstance : public ScriptInstanceExtension
 {
 protected:
-	Object* owner;
+	Object* owner = nullptr;
 	Ref<CPPScript> script;
 	mutable Dictionary instanceProperties;
 	mutable List<MethodInfo> methodsInfo;

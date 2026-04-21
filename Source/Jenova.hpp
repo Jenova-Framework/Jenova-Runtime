@@ -20,13 +20,13 @@
 #define APP_COMPANYNAME					"MemarDesign™ LLC."
 #define APP_DESCRIPTION					"Real-Time C++ Scripting System for Godot Engine, Developed By Hamid.Memar."
 #define APP_COPYRIGHT					"Copyright MemarDesign™ LLC. (©) 2024-2026, All Rights Reserved."
-#define APP_VERSION						"0.3.9.3"
+#define APP_VERSION						"0.3.9.4"
 #define APP_VERSION_MIDDLEFIX			" "
 #define APP_VERSION_POSTFIX				"Beta"
 #define APP_VERSION_SINGLECHAR			"b"
-#define APP_VERSION_DATA				0, 3, 9, 3
+#define APP_VERSION_DATA				0, 3, 9, 4
 #define APP_VERSION_BUILD				"0"
-#define APP_VERSION_NAME				"Riot"
+#define APP_VERSION_NAME				"Shutdown"
 
 #ifndef NO_JENOVA_RUNTIME_SDK
 
@@ -236,8 +236,6 @@
 #include <templates/pair.hpp>
 #include <templates/self_list.hpp>
 #include <templates/vector.hpp>
-#include <templates/list.hpp>
-#include <templates/pair.hpp>
 #include <templates/local_vector.hpp>
 
 // Godot SDK :: Variant
@@ -774,8 +772,6 @@ namespace jenova
 	// Global Settings
 	namespace GlobalSettings
 	{
-		constexpr ModuleInitializationLevel PluginInitializationLevel(MODULE_INITIALIZATION_LEVEL_SCENE);
-
 		constexpr bool VerboseEnabled							= false;
 		constexpr bool ScriptingEnabled							= true;
 		constexpr bool ConsoleEnabled							= true;

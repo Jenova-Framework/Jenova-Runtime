@@ -23,7 +23,6 @@ class CPPScriptLanguage : public ScriptLanguageExtension
 
 protected:
 	static void _bind_methods() {}
-	String file;
 
 public:
 	static void init();

@@ -16,7 +16,7 @@
 #include "Jenova.hpp"
 
 // Jenova Script Language Implementation
-static CPPScriptLanguage* cpp_language;
+static CPPScriptLanguage* cpp_language = nullptr;
 CPPScriptLanguage* CPPScriptLanguage::get_singleton()
 {
 	return cpp_language;
@@ -91,7 +91,7 @@ bool CPPScriptLanguage::_is_control_flow_keyword(const String& p_keyword) const
 		jenova::GlobalSettings::ScriptActivatorIdentifier,
 		jenova::GlobalSettings::ScriptFunctionExportIdentifier
 	};
-	return control_flow_keywords.find(p_keyword.utf8().get_data()) != control_flow_keywords.end();
+	return control_flow_keywords.find(AS_STD_STRING(p_keyword)) != control_flow_keywords.end();
 }
 PackedStringArray CPPScriptLanguage::_get_comment_delimiters() const
 {
@@ -363,8 +363,8 @@ Dictionary CPPScriptLanguage::_get_global_class_name(const String& p_path) const
 	return classInfo;
 }
 
-// Jenova Script Language Implementation
-static CPPHeaderLanguage* header_language;
+// Jenova Header Language Implementation
+static CPPHeaderLanguage* header_language = nullptr;
 CPPHeaderLanguage* CPPHeaderLanguage::get_singleton()
 {
 	return header_language;
