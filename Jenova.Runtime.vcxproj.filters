@@ -21,40 +21,46 @@
       <Filter>Core\Exporters</Filter>
     </ClCompile>
     <ClCompile Include="Source\script_compiler.cpp">
-      <Filter>Core\Engine\C++</Filter>
+      <Filter>Core\Engines\C++</Filter>
     </ClCompile>
     <ClCompile Include="Source\script_instance.cpp">
-      <Filter>Core\Engine\C++</Filter>
+      <Filter>Core\Engines\C++</Filter>
     </ClCompile>
     <ClCompile Include="Source\script_instance_base.cpp">
-      <Filter>Core\Engine\C++</Filter>
+      <Filter>Core\Engines\C++</Filter>
     </ClCompile>
     <ClCompile Include="Source\script_interpreter.cpp">
-      <Filter>Core\Engine\C++</Filter>
+      <Filter>Core\Engines\C++</Filter>
     </ClCompile>
     <ClCompile Include="Source\script_language.cpp">
-      <Filter>Core\Engine\C++</Filter>
+      <Filter>Core\Engines\C++</Filter>
     </ClCompile>
     <ClCompile Include="Source\script_manager.cpp">
-      <Filter>Core\Engine\C++</Filter>
+      <Filter>Core\Engines\C++</Filter>
     </ClCompile>
     <ClCompile Include="Source\script_object.cpp">
-      <Filter>Core\Engine\C++</Filter>
+      <Filter>Core\Engines\C++</Filter>
     </ClCompile>
     <ClCompile Include="Source\script_resource.cpp">
-      <Filter>Core\Engine\C++</Filter>
+      <Filter>Core\Engines\C++</Filter>
     </ClCompile>
     <ClCompile Include="Source\script_templates.cpp">
-      <Filter>Core\Engine\C++</Filter>
+      <Filter>Core\Engines\C++</Filter>
     </ClCompile>
     <ClCompile Include="Source\clektron.cpp">
-      <Filter>Core\Engine\Clektron</Filter>
+      <Filter>Core\Engines\Clektron</Filter>
     </ClCompile>
     <ClCompile Include="Source\script_profiler.cpp">
-      <Filter>Core\Engine\C++</Filter>
+      <Filter>Core\Engines\C++</Filter>
     </ClCompile>
     <ClCompile Include="Source\console.cpp">
-      <Filter>Core\Engine\Clektron</Filter>
+      <Filter>Core\Engines\Clektron</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\blade.cpp">
+      <Filter>Core\Engines\Blade</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\blade_instance.cpp">
+      <Filter>Core\Engines\Blade</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -70,15 +76,6 @@
     <Filter Include="Core">
       <UniqueIdentifier>{b60540e3-4a20-4dc2-bb38-7e5d4cb2b657}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Core\Engine">
-      <UniqueIdentifier>{84fa0f04-3783-4208-be24-eaa1f69f68c3}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Core\Engine\C++">
-      <UniqueIdentifier>{4ce67dbc-ae4b-49e7-94ee-b8c09b55edb3}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Core\Engine\Clektron">
-      <UniqueIdentifier>{e8057c48-d73d-4eb7-9483-37a7cf8c82f8}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Core\Utilities">
       <UniqueIdentifier>{9978979a-25ce-44f5-ab70-bebce0c53e75}</UniqueIdentifier>
     </Filter>
@@ -87,6 +84,18 @@
     </Filter>
     <Filter Include="Core\Exporters">
       <UniqueIdentifier>{41aafcac-862e-4b66-8ce9-9fbc8aba7f0b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Engines">
+      <UniqueIdentifier>{84fa0f04-3783-4208-be24-eaa1f69f68c3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Engines\C++">
+      <UniqueIdentifier>{4ce67dbc-ae4b-49e7-94ee-b8c09b55edb3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Engines\Clektron">
+      <UniqueIdentifier>{e8057c48-d73d-4eb7-9483-37a7cf8c82f8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Engines\Blade">
+      <UniqueIdentifier>{d904830f-55de-4fe5-8774-176d4d9bd75e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -134,43 +143,49 @@
       <Filter>Resources\Storage</Filter>
     </ClInclude>
     <ClInclude Include="Source\script_compiler.h">
-      <Filter>Core\Engine\C++</Filter>
+      <Filter>Core\Engines\C++</Filter>
     </ClInclude>
     <ClInclude Include="Source\script_instance.h">
-      <Filter>Core\Engine\C++</Filter>
+      <Filter>Core\Engines\C++</Filter>
     </ClInclude>
     <ClInclude Include="Source\script_instance_base.h">
-      <Filter>Core\Engine\C++</Filter>
+      <Filter>Core\Engines\C++</Filter>
     </ClInclude>
     <ClInclude Include="Source\script_interpreter.h">
-      <Filter>Core\Engine\C++</Filter>
+      <Filter>Core\Engines\C++</Filter>
     </ClInclude>
     <ClInclude Include="Source\script_language.h">
-      <Filter>Core\Engine\C++</Filter>
+      <Filter>Core\Engines\C++</Filter>
     </ClInclude>
     <ClInclude Include="Source\script_manager.h">
-      <Filter>Core\Engine\C++</Filter>
+      <Filter>Core\Engines\C++</Filter>
     </ClInclude>
     <ClInclude Include="Source\script_object.h">
-      <Filter>Core\Engine\C++</Filter>
+      <Filter>Core\Engines\C++</Filter>
     </ClInclude>
     <ClInclude Include="Source\script_resource.h">
-      <Filter>Core\Engine\C++</Filter>
+      <Filter>Core\Engines\C++</Filter>
     </ClInclude>
     <ClInclude Include="Source\script_templates.h">
-      <Filter>Core\Engine\C++</Filter>
+      <Filter>Core\Engines\C++</Filter>
     </ClInclude>
     <ClInclude Include="Source\clektron.h">
-      <Filter>Core\Engine\Clektron</Filter>
+      <Filter>Core\Engines\Clektron</Filter>
     </ClInclude>
     <ClInclude Include="Source\InternalSources.h">
       <Filter>Resources\Storage</Filter>
     </ClInclude>
     <ClInclude Include="Source\script_profiler.h">
-      <Filter>Core\Engine\C++</Filter>
+      <Filter>Core\Engines\C++</Filter>
     </ClInclude>
     <ClInclude Include="Source\console.h">
-      <Filter>Core\Engine\Clektron</Filter>
+      <Filter>Core\Engines\Clektron</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\blade.h">
+      <Filter>Core\Engines\Blade</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\blade_instance.h">
+      <Filter>Core\Engines\Blade</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

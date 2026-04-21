@@ -1,22 +1,21 @@
 
 /*-------------------------------------------------------------+
 |                                                              |
-|                   _________   ______ _    _____              |
-|                  / / ____/ | / / __ \ |  / /   |             |
-|             __  / / __/ /  |/ / / / / | / / /| |             |
-|            / /_/ / /___/ /|  / /_/ /| |/ / ___ |             |
-|            \____/_____/_/ |_/\____/ |___/_/  |_|             |
+|           ______         _______ ______  _______             |
+|           |_____] |      |_____| |     \ |______             |
+|           |_____] |_____ |     | |_____/ |______             |
 |                                                              |
-|                        Jenova Runtime                        |
+|                        Blade Language                        |
 |                   Developed by Hamid.Memar                   |
 |                                                              |
 +-------------------------------------------------------------*/
 
-// Jenova SDK
-#include "Jenova.hpp"
+// Blade SDK
+#include <blade.h>
+#include <blade_instance.h>
 
-// Jenova Script Instance Base Implementation
-namespace jenova
+// Blade Script Instance Base Implementation
+namespace blade
 {
 	static GDExtensionBool gdextension_script_instance_set(GDExtensionScriptInstanceDataPtr p_instance, GDExtensionConstStringNamePtr p_name, GDExtensionConstVariantPtr p_value)
 	{
@@ -107,34 +106,7 @@ namespace jenova
 		const StringName* method = reinterpret_cast<const StringName*>(p_method);
 		const Variant** args = reinterpret_cast<const Variant**>(const_cast<const void**>(p_args));
 		Variant* ret = reinterpret_cast<Variant*>(r_return);
-
-		// Managed Safe Execution [Windows Only]
-#if defined(TARGET_PLATFORM_WINDOWS) && defined(_MSC_VER)
-
-	// Create Invoker
-		auto invoke_callp = [&]() { *ret = instance->callp(*method, args, p_argument_count, *r_error); };
-
-		// Skip Managed Safe Execution If Disabled or Running in Debug Mode
-		if (!jenova::GlobalStorage::UseManagedSafeExecution || JenovaInterpreter::GetDebugModeExecutionState())
-		{
-			invoke_callp();
-			return;
-		}
-
-		// Safe Call By Invocation
-		__try { invoke_callp(); }
-		__except (jenova::JenovaExecutionCrashHandler(GetExceptionInformation()))
-		{
-			// Suppres Engine Call Error
-			if (r_error) r_error->error = GDEXTENSION_CALL_OK;
-
-			// Abort Execution
-			JenovaInterpreter::AbortExecution();
-		}
-
-#else
-		* ret = instance->callp(*method, args, p_argument_count, *r_error);
-#endif
+		*ret = instance->callp(*method, args, p_argument_count, *r_error);
 	}
 	static void gdextension_script_instance_notification(GDExtensionScriptInstanceDataPtr p_instance, int32_t p_what, GDExtensionBool p_reversed)
 	{
@@ -246,11 +218,11 @@ namespace jenova
 	// Script Instance Class Category
 	bool ScriptInstanceExtension::get_class_category(GDExtensionPropertyInfo& r_class_category) const
 	{
-		Ref<CPPScript> script = get_script();
+		Ref<BladeScript> script = get_script();
 		if (script.is_valid())
 		{
 			// Update Script Class Information
-			script->scriptClassName = CPPScriptLanguage::get_singleton()->_get_global_class_name(script->get_path())["name"];
+			script->scriptClassName = script->get_global_name();
 			script->scriptClassType = script->get_class();
 			script->scriptClassPath = script->get_path();
 

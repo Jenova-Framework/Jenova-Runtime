@@ -18,7 +18,7 @@
 // String Resources
 #define APP_NAME						"Jenova Runtime for Godot Engine"
 #define APP_COMPANYNAME					"MemarDesign™ LLC."
-#define APP_DESCRIPTION					"Real-Time C++ Scripting System for Godot Engine, Developed By Hamid.Memar."
+#define APP_DESCRIPTION					"Real-Time C++ Scripting System for Godot Engine, Developed By Hamid.Memar (Architect)."
 #define APP_COPYRIGHT					"Copyright MemarDesign™ LLC. (©) 2024-2026, All Rights Reserved."
 #define APP_VERSION						"0.3.9.4"
 #define APP_VERSION_MIDDLEFIX			" "
@@ -119,7 +119,6 @@
 #include <filesystem>
 
 // Godot SDK :: Core
-#include <gdextension_interface.h>
 #include <godot.hpp>
 #include <core/defs.hpp>
 #include <core/version.hpp>
@@ -220,8 +219,6 @@
 #include <classes/semaphore.hpp>
 #include <classes/performance.hpp>
 #include <classes/script.hpp>
-#include <classes/script_editor.hpp>
-#include <classes/script_editor_base.hpp>
 #include <classes/script_extension.hpp>
 #include <classes/script_language.hpp>
 #include <classes/script_language_extension.hpp>
@@ -251,6 +248,7 @@
 #include <variant/utility_functions.hpp>
 
 // Godot SDK :: Editor
+#include <classes/script_editor.hpp>
 #include <classes/editor_file_system.hpp>
 #include <classes/editor_file_dialog.hpp>
 #include <classes/editor_interface.hpp>
@@ -264,6 +262,7 @@
 #include <classes/editor_import_plugin.hpp>
 #include <classes/editor_inspector_plugin.hpp>
 #include <classes/editor_command_palette.hpp>
+#include <classes/editor_syntax_highlighter.hpp>
 #include <classes/editor_debugger_session.hpp>
 #include <classes/editor_debugger_plugin.hpp>
 #include <classes/editor_resource_conversion_plugin.hpp>
@@ -277,6 +276,15 @@
 #include <classes/editor_feature_profile.hpp>
 #include <classes/editor_scene_post_import_plugin.hpp>
 #endif
+
+// GDExtension Interface
+#include <gdextension_interface.h>
+#define GDX_LIBRARY godot::gdextension_interface::library
+#define GDX_UNREGISTER_EXCLASS ::godot::gdextension_interface::classdb_unregister_extension_class
+#define GDX_CREATE_SCRIPT_INSTANCE ::godot::gdextension_interface::script_instance_create3
+#define GDX_DESTROY_OBJECT ::godot::gdextension_interface::object_destroy
+#define GDX_LOAD_XML_FROM_UTF8 ::godot::gdextension_interface::editor_help_load_xml_from_utf8_chars_and_len
+#define GDX_GET_UTILITY_FUNC_PTR ::godot::gdextension_interface::variant_get_ptr_utility_function
 
 // Shared Third-Party
 #include <Parsers/json.hpp>

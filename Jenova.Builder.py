@@ -1,7 +1,12 @@
+# ============================================================================
 # Jenova Runtime Build System Script
+# ----------------------------------------------------------------------------
 # Developed by Hamid.Memar (2024-present)
-# Usage : python3 ./Jenova.Builder.py --compiler win-msvc --skip-banner
-# Use python3 ./Jenova.Builder.py --help For More Information.
+# ----------------------------------------------------------------------------
+# USAGE GUIDE:
+# 1. Standard Run:   python ./Jenova.Builder.py --compiler win-msvc
+# 2. Help/Details:   python ./Jenova.Builder.py --help
+# ============================================================================
 
 # Imports
 import os
@@ -62,7 +67,7 @@ sources = [
 ]
 
 # Global Options
-builder_version     = "3.0"
+builder_version     = "3.2"
 deps_version        = "4.6"
 double_precision    = False
 static_build        = False
@@ -1474,6 +1479,7 @@ if __name__ == "__main__":
     parser.add_argument('--deep-clean-up', action='store_true', help='Clean Up Everything')
     parser.add_argument('--generate-gdsdk', action='store_true', help='Generate GodotSDK Package')
     parser.add_argument('--protected-mode', action='store_true', help='Build Jenova Runtime in Protected Mode')
+    parser.add_argument('--enable-blade', action='store_true', help='Build Jenova Runtime featuring Blade Language')
     parser.add_argument('--lithium-edition', action='store_true', help='Build Jenova Runtime for Lithium IDE')
 
     # Parser Arguments
@@ -1520,6 +1526,12 @@ if __name__ == "__main__":
     # Handle Protected Mode
     if args.protected_mode:
         flags.append("JENOVA_PROTECTED_MODE")
+
+    # Handle Blade Language Integration
+    if args.enable_blade:
+        sources.append("Source/blade.cpp")
+        sources.append("Source/blade_instance.cpp")
+        flags.append("BLADE_LANG_ENABLED")
 
     # Handle Lithium Edition
     if args.lithium_edition:

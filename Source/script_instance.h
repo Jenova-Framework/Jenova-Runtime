@@ -17,7 +17,7 @@
 #include "Jenova.hpp"
 
 // Jenova Script Instance Definition
-class CPPScriptInstance : public ScriptInstanceExtension
+class CPPScriptInstance : public jenova::ScriptInstanceExtension
 {
 protected:
 	Object* owner = nullptr;

@@ -1012,6 +1012,20 @@ bool Clektron::ExecuteScript(const std::string& ctronScriptContent, bool noEntry
     #define String              const char*
     #define Size                unsigned long long int
 
+    // Control Flow Macros
+    #define if IF
+    #define else ELSE
+    #define while WHILE
+    #define for FOR
+    #define do DO
+    #define break BREAK
+    #define continue CONTINUE
+    #define return RETURN
+    #define switch SWITCH
+    #define case CASE
+    #define default DEFAULT
+    #define goto GOTO
+
     // Enums
     typedef enum { Alert_Info, Alert_Warn, Alert_Error } AlertType;
     typedef enum { TaskIcon_Working, TaskIcon_Warning, TaskIcon_Error, TaskIcon_Done } TaskIcon;

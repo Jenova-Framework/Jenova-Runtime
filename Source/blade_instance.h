@@ -2,13 +2,11 @@
 
 /*-------------------------------------------------------------+
 |                                                              |
-|                   _________   ______ _    _____              |
-|                  / / ____/ | / / __ \ |  / /   |             |
-|             __  / / __/ /  |/ / / / / | / / /| |             |
-|            / /_/ / /___/ /|  / /_/ /| |/ / ___ |             |
-|            \____/_____/_/ |_/\____/ |___/_/  |_|             |
+|           ______         _______ ______  _______             |
+|           |_____] |      |_____| |     \ |______             |
+|           |_____] |_____ |     | |_____/ |______             |
 |                                                              |
-|                        Jenova Runtime                        |
+|                        Blade Language                        |
 |                   Developed by Hamid.Memar                   |
 |                                                              |
 +-------------------------------------------------------------*/
@@ -17,7 +15,7 @@
 #include "Jenova.hpp"
 
 // Jenova Script Instance Wrapper Definition
-namespace jenova
+namespace blade
 {
 	class ScriptInstanceExtension
 	{
@@ -32,11 +30,7 @@ namespace jenova
 			p_instance->instance = GDX_CREATE_SCRIPT_INSTANCE(&script_instance_info, p_instance);
 			return p_instance->instance;
 		}
-		static GDExtensionScriptInstanceInfo3* get_script_insatnce_info()
-		{
-			return &script_instance_info;
-		}
-
+		static GDExtensionScriptInstanceInfo3* get_script_insatnce_info() { return &script_instance_info; }
 		virtual bool set(const StringName& p_name, const Variant& p_value) = 0;
 		virtual bool get(const StringName& p_name, Variant& r_ret) const = 0;
 		virtual const GDExtensionPropertyInfo* get_property_list(uint32_t* r_count) const = 0;
@@ -62,7 +56,6 @@ namespace jenova
 		virtual void property_set_fallback(const StringName& p_name, const Variant& p_value, bool* r_valid) = 0;
 		virtual Variant property_get_fallback(const StringName& p_name, bool* r_valid) = 0;
 		virtual ScriptLanguage* _get_language() = 0;
-
 		virtual ~ScriptInstanceExtension() {};
 	};
 };

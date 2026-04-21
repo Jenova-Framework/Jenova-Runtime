@@ -32,6 +32,12 @@
 #include <Parsers/argparse.hpp>
 #include <Zlib/zlib.h>
 
+// External Modules
+#ifdef BLADE_LANG_ENABLED
+extern void RegisterBlade(ModuleInitializationLevel p_level);
+extern void UnregisterBlade(ModuleInitializationLevel p_level);
+#endif
+
 // Windows Routine
 #ifdef TARGET_PLATFORM_WINDOWS
 
@@ -469,7 +475,7 @@ namespace jenova
 
 						// Add the Setting Descriptions to The Editor Settings
 						PropertyInfo RemoveSourcesFromBuildProperty(Variant::BOOL, RemoveSourcesFromBuildEditorConfigPath, 
-							PropertyHint::PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, JenovaEditorSettingsCategory);
+							PropertyHint::PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE, JenovaEditorSettingsCategory);
 						editor_settings->add_property_info(RemoveSourcesFromBuildProperty);
 						editor_settings->set_initial_value(RemoveSourcesFromBuildEditorConfigPath, true, false);
 
@@ -478,151 +484,150 @@ namespace jenova
 						if (QUERY_PLATFORM(Windows)) availableCompilers = "Microsoft Visual C++ (MSVC),LLVM Toolchain (Clang-cl),MinGW Standard (GCC),MinGW LLVM Toolchain (Clang)";
 						if (QUERY_PLATFORM(Linux)) availableCompilers = "GNU Compiler Collection (GCC),LLVM Toolchain (Clang)";					
 						PropertyInfo CompilerModelProperty(Variant::INT, CompilerModelConfigPath, 
-							PropertyHint::PROPERTY_HINT_ENUM, availableCompilers,
-							PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED, JenovaEditorSettingsCategory);
+							PropertyHint::PROPERTY_HINT_ENUM, availableCompilers, PROPERTY_USAGE_NONE, JenovaEditorSettingsCategory);
 						editor_settings->add_property_info(CompilerModelProperty);
 						editor_settings->set_initial_value(CompilerModelConfigPath, int32_t(CompilerDefaultModel), false);
 
 						// Multi-Threaded Compilation Property
 						PropertyInfo MultiThreadedCompilationProperty(Variant::BOOL, MultiThreadedCompilationConfigPath, 
-							PropertyHint::PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, JenovaEditorSettingsCategory);
+							PropertyHint::PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE, JenovaEditorSettingsCategory);
 						editor_settings->add_property_info(MultiThreadedCompilationProperty);
 						editor_settings->set_initial_value(MultiThreadedCompilationConfigPath, true, false);
 
 						// Generate Debug Information Property
 						PropertyInfo CompilerGenerateDebugInformationProperty(Variant::BOOL, GenerateDebugInformationConfigPath, 
-							PropertyHint::PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, JenovaEditorSettingsCategory);
+							PropertyHint::PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE, JenovaEditorSettingsCategory);
 						editor_settings->add_property_info(CompilerGenerateDebugInformationProperty);
 						editor_settings->set_initial_value(GenerateDebugInformationConfigPath, true, false);
 
 						// Interpreter Backend Property
 						PropertyInfo InterpreterBackendProperty(Variant::INT, InterpreterBackendConfigPath,
 							PropertyHint::PROPERTY_HINT_ENUM, "NitroJIT (Fastest),Meteora (Fast),Halo (Soon)",
-							PROPERTY_USAGE_DEFAULT, JenovaEditorSettingsCategory);
+							PROPERTY_USAGE_NONE, JenovaEditorSettingsCategory);
 						editor_settings->add_property_info(InterpreterBackendProperty);
 						editor_settings->set_initial_value(InterpreterBackendConfigPath, int32_t(InterpreterBackendDefaultMode), false);
 
 						// Profiling Mode Property
 						PropertyInfo ProfilingModeProperty(Variant::INT, ProfilingModeConfigPath,
-							PropertyHint::PROPERTY_HINT_ENUM, "Disabled,Echo,Sentinel,Monitor", PROPERTY_USAGE_DEFAULT, JenovaEditorSettingsCategory);
+							PropertyHint::PROPERTY_HINT_ENUM, "Disabled,Echo,Sentinel,Monitor", PROPERTY_USAGE_NONE, JenovaEditorSettingsCategory);
 						editor_settings->add_property_info(ProfilingModeProperty);
 						editor_settings->set_initial_value(ProfilingModeConfigPath, int32_t(ProfilingModeDefaultMode), false);
 
 						// Build And Run Mode Property
 						PropertyInfo BuildAndRunModeProperty(Variant::INT, BuildAndRunModeConfigPath, 
 							PropertyHint::PROPERTY_HINT_ENUM, "Run Game After Successful Build,Build Project Before Running Game,Don't Take Any Action",
-							PROPERTY_USAGE_DEFAULT, JenovaEditorSettingsCategory);
+							PROPERTY_USAGE_NONE, JenovaEditorSettingsCategory);
 						editor_settings->add_property_info(BuildAndRunModeProperty);
 						editor_settings->set_initial_value(BuildAndRunModeConfigPath, int32_t(BuildAndRunDefaultMode), false);
 
 						// Preprocessor Definitions Property
 						PropertyInfo PreprocessorDefinitionsProperty(Variant::STRING, PreprocessorDefinitionsConfigPath, 
-							PropertyHint::PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, JenovaEditorSettingsCategory);
+							PropertyHint::PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE, JenovaEditorSettingsCategory);
 						editor_settings->add_property_info(PreprocessorDefinitionsProperty);
 						editor_settings->set_initial_value(PreprocessorDefinitionsConfigPath, "JENOVA_CUSTOM", false);
 
 						// Additional Include Directories Property
 						PropertyInfo AdditionalIncludeDirectoriesProperty(Variant::STRING, AdditionalIncludeDirectoriesConfigPath, 
-							PropertyHint::PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, JenovaEditorSettingsCategory);
+							PropertyHint::PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE, JenovaEditorSettingsCategory);
 						editor_settings->add_property_info(AdditionalIncludeDirectoriesProperty);
 						editor_settings->set_initial_value(AdditionalIncludeDirectoriesConfigPath, "", false);
 
 						// Additional Library Directories Property
 						PropertyInfo AdditionalLibraryDirectoriesProperty(Variant::STRING, AdditionalLibraryDirectoriesConfigPath, 
-							PropertyHint::PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, JenovaEditorSettingsCategory);
+							PropertyHint::PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE, JenovaEditorSettingsCategory);
 						editor_settings->add_property_info(AdditionalLibraryDirectoriesProperty);
 						editor_settings->set_initial_value(AdditionalLibraryDirectoriesConfigPath, "", false);
 
 						// Additional Dependencies Property
 						PropertyInfo AdditionalDependenciesProperty(Variant::STRING, AdditionalDependenciesConfigPath, 
-							PropertyHint::PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, JenovaEditorSettingsCategory);
+							PropertyHint::PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE, JenovaEditorSettingsCategory);
 						editor_settings->add_property_info(AdditionalDependenciesProperty);
 						editor_settings->set_initial_value(AdditionalDependenciesConfigPath, "", false);
 
 						// Custom Compiler Commands Property
 						PropertyInfo CustomCompilerCommandsProperty(Variant::STRING, CustomCompilerCommandsConfigPath,
-							PropertyHint::PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, JenovaEditorSettingsCategory);
+							PropertyHint::PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE, JenovaEditorSettingsCategory);
 						editor_settings->add_property_info(CustomCompilerCommandsProperty);
 						editor_settings->set_initial_value(CustomCompilerCommandsConfigPath, "", false);
 
 						// Custom Linker Commands Property
 						PropertyInfo CustomLinkerCommandsProperty(Variant::STRING, CustomLinkerCommandsConfigPath,
-							PropertyHint::PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, JenovaEditorSettingsCategory);
+							PropertyHint::PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE, JenovaEditorSettingsCategory);
 						editor_settings->add_property_info(CustomLinkerCommandsProperty);
 						editor_settings->set_initial_value(CustomLinkerCommandsConfigPath, "", false);
 
 						// External Changes Trigger Mode Property
 						PropertyInfo ExternalChangesTriggerModeProperty(Variant::INT, ExternalChangesTriggerModeConfigPath, 
 							PropertyHint::PROPERTY_HINT_ENUM, "Build Project On Script Reload,Build Project On Script Change,Bootstrap Project On Watchdog Invoke,Don't Take Any Action",
-							PROPERTY_USAGE_DEFAULT, JenovaEditorSettingsCategory);
+							PROPERTY_USAGE_NONE, JenovaEditorSettingsCategory);
 						editor_settings->add_property_info(ExternalChangesTriggerModeProperty);
 						editor_settings->set_initial_value(ExternalChangesTriggerModeConfigPath, int32_t(ExternalChangesDefaultTriggerMode), false);
 						
 						// Use Hot Reload At Runtime Property
 						PropertyInfo UseHotReloadAtRuntimeProperty(Variant::BOOL, UseHotReloadAtRuntimeConfigPath, 
-							PropertyHint::PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, JenovaEditorSettingsCategory);
+							PropertyHint::PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE, JenovaEditorSettingsCategory);
 						editor_settings->add_property_info(UseHotReloadAtRuntimeProperty);
 						editor_settings->set_initial_value(UseHotReloadAtRuntimeConfigPath, true, false);
 						
 						// Editor Verbose Output Property
 						PropertyInfo EditorVerboseOutputProperty(Variant::INT, EditorVerboseOutputConfigPath, 
 							PropertyHint::PROPERTY_HINT_ENUM, "Standard Editor Output,Dedicated Log System,Disabled",
-							PROPERTY_USAGE_DEFAULT, JenovaEditorSettingsCategory);
+							PROPERTY_USAGE_NONE, JenovaEditorSettingsCategory);
 						editor_settings->add_property_info(EditorVerboseOutputProperty);
 						editor_settings->set_initial_value(EditorVerboseOutputConfigPath, int32_t(EditorVerboseDefaultOutput), false);
 
 						// Use Monospace Font For Terminal Property
 						PropertyInfo UseMonospaceFontForTerminalProperty(Variant::BOOL, UseMonospaceFontForTerminalConfigPath, 
-							PropertyHint::PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, JenovaEditorSettingsCategory);
+							PropertyHint::PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE, JenovaEditorSettingsCategory);
 						editor_settings->add_property_info(UseMonospaceFontForTerminalProperty);
 						editor_settings->set_initial_value(UseMonospaceFontForTerminalConfigPath, true, false);
 
 						// Terminal Default Font Size Property
 						PropertyInfo TerminalDefaultFontSizeProperty(Variant::INT, TerminalDefaultFontSizeConfigPath, 
-							PropertyHint::PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, JenovaEditorSettingsCategory);
+							PropertyHint::PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE, JenovaEditorSettingsCategory);
 						editor_settings->add_property_info(TerminalDefaultFontSizeProperty);
 						editor_settings->set_initial_value(TerminalDefaultFontSizeConfigPath, jenova::GlobalSettings::JenovaTerminalLogFontSize, false);
 
 						// Compiler Package Property
 						PropertyInfo CompilerPackageProperty(Variant::STRING, CompilerPackageConfigPath,
-							PropertyHint::PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, JenovaEditorSettingsCategory);
+							PropertyHint::PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE, JenovaEditorSettingsCategory);
 						editor_settings->add_property_info(CompilerPackageProperty);
 						editor_settings->set_initial_value(CompilerPackageConfigPath, "Latest", false);
 
 						// GodotKit Package Property
 						PropertyInfo GodotKitPackageProperty(Variant::STRING, GodotKitPackageConfigPath,
-							PropertyHint::PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, JenovaEditorSettingsCategory);
+							PropertyHint::PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE, JenovaEditorSettingsCategory);
 						editor_settings->add_property_info(GodotKitPackageProperty);
 						editor_settings->set_initial_value(GodotKitPackageConfigPath, "Latest", false);
 
 						// Managed Safe Execution (MSE) Property
 						PropertyInfo ManagedSafeExecutionProperty(Variant::BOOL, ManagedSafeExecutionConfigPath,
-							PropertyHint::PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, JenovaEditorSettingsCategory);
+							PropertyHint::PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE, JenovaEditorSettingsCategory);
 						editor_settings->add_property_info(ManagedSafeExecutionProperty);
 						editor_settings->set_initial_value(ManagedSafeExecutionConfigPath, true, false);
 
 						// Managed Safe Execution (MSE) Property
 						PropertyInfo UseBuiltinSDKProperty(Variant::BOOL, UseBuiltinSDKConfigPath,
-							PropertyHint::PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, JenovaEditorSettingsCategory);
+							PropertyHint::PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE, JenovaEditorSettingsCategory);
 						editor_settings->add_property_info(UseBuiltinSDKProperty);
 						editor_settings->set_initial_value(UseBuiltinSDKConfigPath, true, false);
 
 						// Refresh Scene Tree After Build Property
 						PropertyInfo RefreshTreeAfterBuildProperty(Variant::BOOL, RefreshTreeAfterBuildConfigPath,
-							PropertyHint::PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, JenovaEditorSettingsCategory);
+							PropertyHint::PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE, JenovaEditorSettingsCategory);
 						editor_settings->add_property_info(RefreshTreeAfterBuildProperty);
 						editor_settings->set_initial_value(RefreshTreeAfterBuildConfigPath, false, false);
 
 						// Package Repository Path Property
 						PropertyInfo PackageRepositoryPathProperty(Variant::STRING, PackageRepositoryPathConfigPath,
-							PropertyHint::PROPERTY_HINT_DIR, "", PROPERTY_USAGE_DEFAULT, JenovaEditorSettingsCategory);
+							PropertyHint::PROPERTY_HINT_DIR, "", PROPERTY_USAGE_NONE, JenovaEditorSettingsCategory);
 						editor_settings->add_property_info(PackageRepositoryPathProperty);
 						editor_settings->set_initial_value(PackageRepositoryPathConfigPath, jenova::GlobalSettings::JenovaPackageRepositoryPath, false);
 
 						// Build Tool Button Placement Property
 						String buttonPlacements = "Before Main Menu,After Main Menu,Before Stage Selector,After Stage Selector,Before Run Bar,After Run Bar,After Render Method";
 						PropertyInfo BuildToolButtonPlacementProperty(Variant::INT, BuildToolButtonEditorConfigPath, PropertyHint::PROPERTY_HINT_ENUM, buttonPlacements,
-							PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED, JenovaEditorSettingsCategory);
+							PROPERTY_USAGE_NONE, JenovaEditorSettingsCategory);
 						editor_settings->add_property_info(BuildToolButtonPlacementProperty);
 						editor_settings->set_initial_value(BuildToolButtonEditorConfigPath, int32_t(BuildToolButtonDefaultPlacement), false);
 
@@ -4884,6 +4889,12 @@ namespace jenova
 				// Initialize Runtime
 				JenovaRuntime::init();
 			}
+		
+			// Blade Module Redirection
+			#ifdef BLADE_LANG_ENABLED
+				jenova::Output("Initializing Blade Language...");
+				RegisterBlade(p_level);
+			#endif
 		}
 		static void UninitializeModule(ModuleInitializationLevel p_level)
 		{
@@ -4952,6 +4963,11 @@ namespace jenova
 				// Exit (Temp Fix for TLS Handling Failure)
 				if (jenova::GlobalSettings::SafeExitOnPluginUnload && !QUERY_ENGINE_MODE(Editor)) jenova::ExitWithCode(EXIT_SUCCESS);
 			}
+		
+			// Blade Module Redirection
+			#ifdef BLADE_LANG_ENABLED
+				UnregisterBlade(p_level);
+			#endif
 		}
 
 		// Wrapper
@@ -6334,7 +6350,7 @@ namespace jenova
 	void RegisterDocumentationFromByteArray(const char* xmlDataPtr, size_t xmlDataSize)
 	{
 		std::string documentationData(xmlDataPtr, xmlDataSize);
-		::godot::gdextension_interface::editor_help_load_xml_from_utf8_chars_and_len(documentationData.data(), documentationData.size());
+		GDX_LOAD_XML_FROM_UTF8(documentationData.data(), documentationData.size());
 	}
 	void CopyStringToClipboard(const String& str)
 	{

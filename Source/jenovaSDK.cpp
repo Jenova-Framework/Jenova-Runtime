@@ -648,7 +648,7 @@ namespace jenova::sdk
 	{
 		godot::StringName classNameStr(className);
 		if (!godot::ClassDB::class_exists(classNameStr)) return;
-		::godot::gdextension_interface::classdb_unregister_extension_class(godot::gdextension_interface::library, classNameStr._native_ptr());
+		GDX_UNREGISTER_EXCLASS(GDX_LIBRARY, classNameStr._native_ptr());
 	}
 
 	// C Scripting Utilities (Clektron)

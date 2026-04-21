@@ -44,7 +44,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;JENOVA_RUNTIME;JENOVA_SDK_BUILD;JENOVA_STATIC_BUILD_DISABLED;JENOVA_PROTECTED_MODE_DISABLED;LITHIUM_EDITION_DISABLED;TYPED_METHOD_BIND;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;JENOVA_RUNTIME;JENOVA_SDK_BUILD;JENOVA_STATIC_BUILD_DISABLED;JENOVA_PROTECTED_MODE_DISABLED;BLADE_LANG_ENABLED;LITHIUM_EDITION_DISABLED;TYPED_METHOD_BIND;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -87,6 +87,8 @@ ren "$(BuildPath)JenovaSDK\$(TargetName).lib" "Jenova.SDK.x64.lib"
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Source\asset_monitor.cpp" />
+    <ClCompile Include="Source\blade.cpp" />
+    <ClCompile Include="Source\blade_instance.cpp" />
     <ClCompile Include="Source\clektron.cpp" />
     <ClCompile Include="Source\console.cpp" />
     <ClCompile Include="Source\gdextension_exporter.cpp" />
@@ -109,6 +111,8 @@ ren "$(BuildPath)JenovaSDK\$(TargetName).lib" "Jenova.SDK.x64.lib"
   <ItemGroup>
     <ClInclude Include="Source\AboutImage.h" />
     <ClInclude Include="Source\asset_monitor.h" />
+    <ClInclude Include="Source\blade.h" />
+    <ClInclude Include="Source\blade_instance.h" />
     <ClInclude Include="Source\clektron.h" />
     <ClInclude Include="Source\console.h" />
     <ClInclude Include="Source\ExtensionHosts.h" />

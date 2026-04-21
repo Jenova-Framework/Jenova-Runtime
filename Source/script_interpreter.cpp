@@ -640,6 +640,7 @@ Variant JenovaInterpreter::CallFunction(const godot::Object* objectPtr, const st
         interpreterCallerCode += jenova::Format("struct Variant { unsigned char opaque[%d]; };\n", GODOT_CPP_VARIANT_SIZE);
         interpreterCallerCode += "typedef struct Variant Variant;\n";
         interpreterCallerCode += "Variant* MakeVariant(void*, char*);\n";
+        interpreterCallerCode += "#define return RETURN\n";
         interpreterCallerCode += "void* interpreter_call()\n";
         interpreterCallerCode += "{\n";
         interpreterCallerCode += "typedef " + jenova::ResolveReturnTypeForJIT(functionReturnType) + "(*function_t)(";
