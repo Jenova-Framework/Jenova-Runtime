@@ -22,7 +22,7 @@ namespace blade
 {
 	static const char* BladeVersion						= "0.3.0 [alpha-release]";
 
-	static const char* BladeCore						= "Native-Extension";
+	static const char* BladeCore						= "Jenova-Native-Extension";
 	static const char* BladeScriptType					= "BladeScript";
 	static const char* BladeLangaugeName				= "Blade";
 	static const char* BladeExtension					= "blade";

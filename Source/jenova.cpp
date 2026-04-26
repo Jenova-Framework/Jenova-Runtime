@@ -4892,7 +4892,6 @@ namespace jenova
 		
 			// Blade Module Redirection
 			#ifdef BLADE_LANG_ENABLED
-				jenova::Output("Initializing Blade Language...");
 				RegisterBlade(p_level);
 			#endif
 		}

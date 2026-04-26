@@ -1570,7 +1570,7 @@ namespace blade
 {
 	namespace configuration
 	{
-		static bool bl_print_banner				= true;
+		static bool bl_print_banner				= false;
 		static bool bl_use_64bit_integer		= true;
 		static bool bl_use_64bit_float			= true;
 		static bool bl_support_structs			= true;
@@ -6210,6 +6210,9 @@ void RegisterBlade(ModuleInitializationLevel p_level)
 {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE)
 	{
+		// Verbose [Jenova]
+		jenova::Output("Initializing Blade Language...");
+
 		// Register Classes
 		ClassDB::register_internal_class<BladeScript>();
 		ClassDB::register_internal_class<BladeLanguage>();
@@ -6225,7 +6228,7 @@ void RegisterBlade(ModuleInitializationLevel p_level)
 		// Print Banner
 		if(blade::configuration::bl_print_banner) PrintBladeBanner();
 
-		// Verbose
+		// Verbose [Blade]
 		Verbose("[color=#24ffab][Success][/color] Blade Runtime %s Initialized.", blade::BladeVersion);
 	}
 	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR)
