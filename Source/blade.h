@@ -35,8 +35,8 @@ namespace blade
 
 	static const bool  CacheScriptMetadataOnDisk		= true;			// Required for Exporter
 	static const bool  DumpPreprocessedScriptOnDisk		= false;		// Developer Mode
-	static const bool  GenerateControlFlowWrappers		= true;			// Optional
-	static const bool  ExtensionSystemEnabled			= true;			// Optional
+	static const bool  GenerateControlFlowWrappers		= false;		// Optional for Custom Compiler
+	static const bool  ExtensionSystemEnabled			= true;			// Optional Feature
 }
 
 // Forward Declarationss
