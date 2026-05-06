@@ -47,13 +47,26 @@ static const char* GetCStr(const String& godotStr)
 {
 	std::string str((char*)godotStr.utf8().ptr(), godotStr.utf8().size());
 	if (!str.empty() && str.back() == '\0') str.pop_back();
-	return _strdup(str.c_str());
+	#ifdef _MSC_VER
+		return _strdup(str.c_str());
+	#else
+		return strdup(str.c_str());
+	#endif
 }
 static std::string GetStdStr(const String& godotStr)
 {
 	std::string str((char*)godotStr.utf8().ptr(), godotStr.utf8().size());
 	if (!str.empty() && str.back() == '\0') str.pop_back();
 	return std::string(str.c_str());
+}
+static void StringCopy(char* dest, size_t destSize, const char* src)
+{
+#ifdef _MSC_VER
+	strcpy_s(dest, destSize, src);
+#else
+	strncpy(dest, src, destSize - 1);
+	dest[destSize - 1] = '\0';
+#endif
 }
 
 // Utilities
@@ -1023,7 +1036,7 @@ namespace blade
 			// Create Wrapper
 			BladeObject* bobj = new BladeObject();
 			bobj->ptr = godotObj;
-			strcpy_s(bobj->type, sizeof bobj->type, bladeObj->type);
+			StringCopy(bobj->type, sizeof bobj->type, bladeObj->type);
 			bobj->ref = bladeObj->ref;
 			bobj->singleton = bladeObj->singleton;
 			return bobj;
@@ -1517,7 +1530,7 @@ namespace blade
 			// Create Wrapper
 			BladeObject bobj;
 			bobj.ptr = obj;
-			strcpy_s(bobj.type, sizeof bobj.type, bladeObj->type);
+			StringCopy(bobj.type, sizeof bobj.type, bladeObj->type);
 			bobj.ref = bladeObj->ref;
 			bobj.singleton = bladeObj->singleton;
 			return bobj;
@@ -1535,7 +1548,7 @@ namespace blade
 			// Create Wrapper
 			BladeObject bobj;
 			bobj.ptr = obj;
-			strcpy_s(bobj.type, sizeof bobj.type, bladeObj->type);
+			StringCopy(bobj.type, sizeof bobj.type, bladeObj->type);
 			bobj.ref = bladeObj->ref;
 			bobj.singleton = bladeObj->singleton;
 			return bobj;
@@ -5357,7 +5370,7 @@ Variant BladeScriptInstance::callp(const StringName& p_method, const Variant** p
 	// Build Wrapper for Owner
 	blade::BladeObject bladeObj;
 	bladeObj.ptr = owner;
-	strcpy_s(bladeObj.type, sizeof bladeObj.type, GetStdStr(owner->get_class()).c_str());
+	StringCopy(bladeObj.type, sizeof bladeObj.type, GetStdStr(owner->get_class()).c_str());
 	bladeObj.ref = owner->is_class("RefCounted");
 	bladeObj.singleton = Engine::get_singleton()->has_singleton(owner->get_class());
 
