@@ -52,6 +52,7 @@ public:
 	virtual String _make_function(const String& p_class_name, const String& p_function_name, const PackedStringArray& p_function_args) const override;
 	virtual Error _open_in_external_editor(const Ref<Script>& p_script, int32_t p_line, int32_t p_column) override;
 	virtual bool _overrides_external_editor() override;
+	virtual ScriptNameCasing _preferred_file_name_casing() const override;
 	virtual bool _can_make_function() const override;
 	virtual Dictionary _complete_code(const String& p_code, const String& p_path, Object* p_owner) const override;
 	virtual Dictionary _lookup_code(const String& p_code, const String& p_symbol, const String& p_path, Object* p_owner) const override;
@@ -132,6 +133,7 @@ public:
 	virtual String _make_function(const String& p_class_name, const String& p_function_name, const PackedStringArray& p_function_args) const override;
 	virtual Error _open_in_external_editor(const Ref<Script>& p_script, int32_t p_line, int32_t p_column) override;
 	virtual bool _overrides_external_editor() override;
+	virtual ScriptNameCasing _preferred_file_name_casing() const override;
 	virtual bool _can_make_function() const override;
 	virtual Dictionary _complete_code(const String& p_code, const String& p_path, Object* p_owner) const override;
 	virtual Dictionary _lookup_code(const String& p_code, const String& p_symbol, const String& p_path, Object* p_owner) const override;

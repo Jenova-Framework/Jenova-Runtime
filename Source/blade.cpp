@@ -2799,11 +2799,20 @@ void BladeLanguage::_reload_all_scripts()
 }
 void BladeLanguage::_reload_scripts(const Array& p_scripts, bool p_soft_reload)
 {
-	/* Called by the remote debugger on “reload_scripts” command and by tool script wrappers. */
+	for (const Variant& v : p_scripts)
+	{
+		Ref<BladeScript> script = v;
+		if (script.is_valid())
+		{
+			script->ReloadSourceCode();
+			script->reload(p_soft_reload);
+		}
+	}
 }
 void BladeLanguage::_reload_tool_script(const Ref<Script>& p_script, bool p_soft_reload)
 {
-	/* Called by script resource savers on save (if reload-on-save is enabled) and by Script::reload_from_file for tool scripts. */
+	Array scripts = { p_script };
+	_reload_scripts(scripts, p_soft_reload);
 }
 PackedStringArray BladeLanguage::_get_recognized_extensions() const
 {

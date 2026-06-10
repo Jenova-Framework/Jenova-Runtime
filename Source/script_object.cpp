@@ -242,7 +242,7 @@ Variant CPPScript::_get_rpc_config() const
 void CPPScript::SetDefaultSourceCode()
 {
 	// Set Default Source Code
-	source_code = CODE_TEMPLATE(CODE_TEMPLATE_DEFAULT);
+	set_source_code(CODE_TEMPLATE(CODE_TEMPLATE_DEFAULT));
 }
 jenova::ScriptIdentifier CPPScript::GetScriptIdentity() const
 {
@@ -250,7 +250,7 @@ jenova::ScriptIdentifier CPPScript::GetScriptIdentity() const
 }
 void CPPScript::ReloadScriptSourceCode()
 {
-	source_code = FileAccess::get_file_as_string(this->get_path());
+	set_source_code(FileAccess::get_file_as_string(this->get_path()));
 }
 
 // CPPScript Initializer/Destructor
@@ -329,9 +329,9 @@ bool CPPHeader::_is_placeholder_fallback_enabled() const { return false; }
 Variant CPPHeader::_get_rpc_config() const { return Variant(); }
 void CPPHeader::ReloadHeaderSourceCode()
 {
-	source_code = FileAccess::get_file_as_string(this->get_path());
+	set_source_code(FileAccess::get_file_as_string(this->get_path()));
 }
 CPPHeader::CPPHeader()
 {
-	this->source_code = "#pragma once\n";
+	set_source_code("#pragma once\n");
 }

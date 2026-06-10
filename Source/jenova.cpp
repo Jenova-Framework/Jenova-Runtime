@@ -4189,7 +4189,11 @@ namespace jenova
 					{
 						// Check If Script is Inside Project
 						std::string projectPath = AS_STD_STRING(jenova::GetJenovaProjectDirectory());
-						if (std::filesystem::absolute(AS_STD_STRING(targetPath)).string().find(std::filesystem::absolute(projectPath).string()) != 0) return;
+						if (!IsPathInsidePath(AS_STD_STRING(targetPath), projectPath)) return;
+
+						// Check if Script is Inside Cache Directory
+						std::string cacheDirectoryPath = AS_STD_STRING(jenova::GetJenovaCacheDirectory());
+						if (IsPathInsidePath(AS_STD_STRING(targetPath), cacheDirectoryPath)) return;
 
 						// Update Global Storage
 						if (!jenova::UpdateGlobalStorageFromEditorSettings()) return;
@@ -4202,6 +4206,7 @@ namespace jenova
 
 							// Update Script Object Source
 							String updatedScriptPath = ProjectSettings::get_singleton()->localize_path(targetPath);
+
 							Ref<Resource> updatedScript = ResourceLoader::get_singleton()->load(updatedScriptPath);
 							if (updatedScript->get_class() == jenova::GlobalSettings::JenovaScriptType)
 							{
@@ -4233,7 +4238,6 @@ namespace jenova
 					}
 				}
 			}
-
 		};
 		class JenovaExportPlugin : public EditorExportPlugin 
 		{
@@ -4486,7 +4490,7 @@ namespace jenova
 				VALIDATE_FUNCTION(RegisterRuntimeProfiler());
 
 				// Verbose
-				jenova::Output("Jenova Runtime (%s%s%s) Initialized.", APP_VERSION, APP_VERSION_MIDDLEFIX, APP_VERSION_POSTFIX);
+				jenova::Output("[color=#42abfc]Jenova Runtime (%s%s%s)[/color] Initialized Successfully.", APP_VERSION, APP_VERSION_MIDDLEFIX, APP_VERSION_POSTFIX);
 			}
 			static void start()
 			{
@@ -4516,7 +4520,7 @@ namespace jenova
 				VALIDATE_FUNCTION(UnRegisterRuntimeProfiler());
 
 				// Verbose
-				jenova::Output("Jenova Runtime (%s%s%s) Uninitialized.", APP_VERSION, APP_VERSION_MIDDLEFIX, APP_VERSION_POSTFIX);
+				jenova::Output("[color=#42abfc]Jenova Runtime (%s%s%s)[/color] Uninitialized Gracefully.", APP_VERSION, APP_VERSION_MIDDLEFIX, APP_VERSION_POSTFIX);
 			}
 
 			// Singleton Handling
@@ -4709,6 +4713,11 @@ namespace jenova
 
 				// Verbose Mode
 				jenova::Output("Running Jenova Core in [%s] Engine Mode.", AS_C_STRING(jenova::GetCurrentEngineInstanceModeAsString()));
+
+				// Verbose GDExtension Interface
+				jenova::Output("GDExtension Interface : [color=ffa41c]godotcpp_%d.%d.%d_%s_%s (%s)[/color]",
+					GODOT_VERSION_MAJOR, GODOT_VERSION_MINOR, GODOT_VERSION_PATCH, GODOT_VERSION_STATUS, GODOT_VERSION_BUILD,
+					jenova::GetRuntimeCompilerName().c_str());
 			}
 		
 			// Create Static Build Required Files
@@ -5730,7 +5739,7 @@ namespace jenova
 			}
 
 			// Standard Log
-			UtilityFunctions::print_rich(String("[b][JENOVA][/b] [color=#ed266c]>[/color] ") + String(buffer));
+			UtilityFunctions::print_rich("[b]" + SignatureText("[JENOVA]") + "[/b] [color=#ed266c]>[/color] " + String(buffer));
 		}
 		else
 		{
@@ -6016,6 +6025,10 @@ namespace jenova
 		size_t pos = path.find("res://");
 		if (pos != std::string::npos){ path.erase(pos, 6); }
 		return path;
+	}
+	bool IsPathInsidePath(const std::string& firstPath, const std::string& secondPath)
+	{
+		return std::filesystem::absolute(firstPath).string().rfind(std::filesystem::absolute(secondPath).string(), 0) == 0;
 	}
 	String GenerateStandardUIDFromPath(String resourcePath)
 	{
@@ -6322,18 +6335,12 @@ namespace jenova
 				if (file_name.get_extension() == "tscn" || file_name.get_extension() == "scn")
 				{
 					Ref<PackedScene> scene = ResourceLoader::get_singleton()->load(full_path);
-					if (scene.is_valid())
-					{
-						CollectEmbeddedScriptsFromScene(scene, collectedResources);
-					}
+					if (scene.is_valid()) CollectEmbeddedScriptsFromScene(scene, collectedResources);
 				}
 				else if (file_name.get_extension() == extension)
 				{
-					Ref<Resource> resource = ResourceLoader::get_singleton()->load(full_path);
-					if (resource.is_valid())
-					{
-						collectedResources.push_back(resource);
-					}
+					Ref<Resource> resource = ResourceLoader::get_singleton()->load(full_path, String(), ResourceLoader::CACHE_MODE_IGNORE);
+					if (resource.is_valid()) collectedResources.push_back(resource);
 				}
 			}
 
@@ -10026,12 +10033,12 @@ namespace jenova
 			std::string vsVersion = (_MSC_VER >= 1930) ? "2022" :
 				(_MSC_VER >= 1920) ? "2019" :
 				(_MSC_VER >= 1910) ? "2017" : "Unknown";
-			return "msvc-" + vsVersion + "-" + std::to_string(_MSVC_STL_VERSION) + "-llvm";
+			return "msvc-" + vsVersion + "-v" + std::to_string(_MSVC_STL_VERSION) + "-llvm";
 		#elif defined(_MSC_VER)
 			std::string vsVersion = (_MSC_VER >= 1930) ? "2022" :
 				(_MSC_VER >= 1920) ? "2019" :
 				(_MSC_VER >= 1910) ? "2017" : "Unknown";
-			return "msvc-" + vsVersion + "-" + std::to_string(_MSVC_STL_VERSION);
+			return "msvc-" + vsVersion + "-v" + std::to_string(_MSVC_STL_VERSION);
 		#elif defined(__clang__)
 			return "llvm-clang-" + std::to_string(__clang_major__) + "." + std::to_string(__clang_minor__) + "." + std::to_string(__clang_patchlevel__);
 		#elif defined(__MINGW32__) || defined(__MINGW64__)
@@ -10286,6 +10293,22 @@ namespace jenova
 	{
 		if (!jenova::plugin::JenovaEditorPlugin::get_singleton()) return;
 		jenova::plugin::JenovaEditorPlugin::get_singleton()->call_deferred("SwitchToTerminal");
+	}
+	String GradientText(const String& text, const Color& from, const Color& to)
+	{
+		String rich;
+		int len = text.length();
+		for (int i = 0; i < len; i++)
+		{
+			float t = (float)i / (float)(len - 1);
+			Color cl = from.lerp(to, t);
+			rich += "[color=#" + cl.to_html(false) + "]" + text[i] + "[/color]";
+		}
+		return rich;
+	}
+	String SignatureText(const String& sig)
+	{
+		return GradientText(sig, Color::html("#35f086"), Color::html("#35f0c7"));
 	}
 	#pragma endregion
 	

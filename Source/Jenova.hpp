@@ -20,13 +20,13 @@
 #define APP_COMPANYNAME					"MemarDesign™ LLC."
 #define APP_DESCRIPTION					"Real-Time C++ Scripting System for Godot Engine, Developed By Hamid.Memar (Architect)."
 #define APP_COPYRIGHT					"Copyright MemarDesign™ LLC. (©) 2024-2026, All Rights Reserved."
-#define APP_VERSION						"0.3.9.4"
+#define APP_VERSION						"0.3.9.5"
 #define APP_VERSION_MIDDLEFIX			" "
 #define APP_VERSION_POSTFIX				"Beta"
 #define APP_VERSION_SINGLECHAR			"b"
-#define APP_VERSION_DATA				0, 3, 9, 4
+#define APP_VERSION_DATA				0, 3, 9, 5
 #define APP_VERSION_BUILD				"0"
-#define APP_VERSION_NAME				"Shutdown"
+#define APP_VERSION_NAME				"Forfeit"
 
 #ifndef NO_JENOVA_RUNTIME_SDK
 
@@ -957,6 +957,7 @@ namespace jenova
 	jenova::SmartString ConvertToStdString(const godot::StringName& gstr);
 	jenova::SmartWstring ConvertToWideStdString(const godot::String& gstr);
 	std::string GetNameFromPath(godot::String gstr);
+	bool IsPathInsidePath(const std::string& firstPath, const std::string& secondPath);
 	String GenerateStandardUIDFromPath(String resourcePath);
 	String GenerateStandardUIDFromPath(const Resource* resourcePtr);
 	std::string GenerateRandomHashString();
@@ -1106,6 +1107,8 @@ namespace jenova
 	void CheckForRuntimeUpdate();
 	std::string FormatTimestampToStdString(time_t timestamp);
 	void SwitchToJenovaTerminalTab();
+	String GradientText(const String& text, const Color& from, const Color& to);
+	String SignatureText(const String& sig);
 	#pragma endregion
 
 	// Crash Handlers

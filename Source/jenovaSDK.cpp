@@ -567,10 +567,14 @@ namespace jenova::sdk
 		for (size_t i = 0; i < openedScenes.size(); i++)
 		{
 			// Get Scene Root
-			godot::Node* sceneRoot = (godot::Node*)openedScenes[i]._native_ptr();
+			godot::Node* sceneRoot = godot::Object::cast_to<godot::Node>(openedScenes[0]);
 
 			// Validate Scene Root
-			if (!sceneRoot) continue;
+			if (!sceneRoot)
+			{
+				ERR_PRINT("Something went seriously wrong! Engine unable to cast scene root! Operation aborted.");
+				continue;
+			}
 
 			// Collect Nodes With Class Name
 			godot::Vector<godot::Node*> classNodes;
