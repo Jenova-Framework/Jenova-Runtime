@@ -133,7 +133,7 @@ namespace jenova
 		}
 
 #else
-		* ret = instance->callp(*method, args, p_argument_count, *r_error);
+		*ret = instance->callp(*method, args, p_argument_count, *r_error);
 #endif
 	}
 	static void gdextension_script_instance_notification(GDExtensionScriptInstanceDataPtr p_instance, int32_t p_what, GDExtensionBool p_reversed)

@@ -34,7 +34,6 @@ private:
 	RichTextLabel* statusLabel		= nullptr;
 	jenova::TaskID currentTaskID	= 0;
 	int64_t currentTabID			= 0;
-	std::string currentDatabaseURL	= "";
 	bool isBusy						= false;
 
 public:
@@ -42,7 +41,7 @@ public:
 	static void deinit();
 
 public:
-	bool OpenPackageManager(const String& packageDatabaseURL);
+	bool OpenPackageManager();
 	jenova::PackageList GetInstalledPackages(const jenova::PackageType& packageType);
 
 private:
@@ -50,7 +49,7 @@ private:
 	VSeparator* CreateToolbarSeparator(Control* toolbar);
 	Panel* CreatePackageItem(const jenova::JenovaPackage& jenovaPackage, const Ref<Theme> itemTheme);
 	void ReloadEntireDatabase();
-	bool FetchOnlinePackages(const String& packageDatabaseURL);
+	bool FetchOnlinePackages();
 	bool ObtainInstalledPackages();
 	bool CacheInstalledPackages();
 	jenova::JenovaPackage GetOnlinePackage(const String& packageHash);

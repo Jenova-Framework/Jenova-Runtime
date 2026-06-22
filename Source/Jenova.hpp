@@ -20,11 +20,11 @@
 #define APP_COMPANYNAME					"MemarDesign™ LLC."
 #define APP_DESCRIPTION					"Real-Time C++ Scripting System for Godot Engine, Developed By Hamid.Memar (Architect)."
 #define APP_COPYRIGHT					"Copyright MemarDesign™ LLC. (©) 2024-2026, All Rights Reserved."
-#define APP_VERSION						"0.3.9.5"
+#define APP_VERSION						"0.3.9.6"
 #define APP_VERSION_MIDDLEFIX			" "
 #define APP_VERSION_POSTFIX				"Beta"
 #define APP_VERSION_SINGLECHAR			"b"
-#define APP_VERSION_DATA				0, 3, 9, 5
+#define APP_VERSION_DATA				0, 3, 9, 6
 #define APP_VERSION_BUILD				"0"
 #define APP_VERSION_NAME				"Forfeit"
 
@@ -181,6 +181,10 @@
 #include <classes/margin_container.hpp>
 #include <classes/scroll_container.hpp>
 #include <classes/foldable_container.hpp>
+#include <classes/split_container.hpp>
+#include <classes/h_split_container.hpp>
+#include <classes/v_split_container.hpp>
+#include <classes/item_list.hpp>
 #include <classes/separator.hpp>
 #include <classes/h_separator.hpp>
 #include <classes/v_separator.hpp>
@@ -845,8 +849,8 @@ namespace jenova
 		constexpr char* VisualStudioWatchdogFile				= "Jenova.VisualStudio.jwd";
 		constexpr char* JenovaTemporaryBootScriptFile			= "Jenova.Temporary.Boot.ctron";
 		constexpr char* JenovaProfilerReportDatabaseFile		= "Jenova.Profiler.DBCache.json";
-		constexpr char* JenovaPackageDatabaseURL				= "https://raw.githubusercontent.com";
-		constexpr char* JenovaReleaseMetadataURL				= "https://raw.githubusercontent.com";
+		constexpr char* JenovaPackageDatabaseHostURL			= "https://raw.githubusercontent.com";
+		constexpr char* JenovaReleaseMetadataHostURL			= "https://raw.githubusercontent.com";
 		constexpr char* JenovaPackageRepositoryPath				= "res://Jenova/Packages";
 		constexpr char* JenovaScriptTemplatesPath				= "res://Jenova/Templates";
 
@@ -904,6 +908,7 @@ namespace jenova
 		constexpr char* ManagedSafeExecutionConfigPath                 = "jenova/managed_safe_execution";
 		constexpr char* UseBuiltinSDKConfigPath                        = "jenova/use_builtin_jenova_sdk";
 		constexpr char* RefreshTreeAfterBuildConfigPath                = "jenova/refresh_scene_tree_after_build";
+		constexpr char* CustomPackageDatabaseURLConfigPath             = "jenova/custom_package_database_url";
 		constexpr char* PackageRepositoryPathConfigPath                = "jenova/package_repository_path";
 		constexpr char* BuildToolButtonEditorConfigPath                = "jenova/build_tool_button_placement";
 	}

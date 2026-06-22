@@ -30,6 +30,9 @@
 // Helper Macros
 #define BIND_TOOL_ACTION(toolBtn, toolID) toolBtn->connect("pressed", callable_mp(pacmanEventManager, &PackmanEventManager::OnToolPressed).bind(String(toolID)));
 
+// Configuration
+constexpr const char* officialPackageDatabaseFileURL = "/Jenova-Framework/Jenova-Packages/refs/heads/main/Jenova.Package.Database.json";
+
 // Utilities
 static String GetPackageRepositoryPath(bool globalize = false)
 {
@@ -68,9 +71,18 @@ static String GetPackageDatabasePath()
 	// All Good
 	return pkgDatabasePath;
 }
+static std::string GetOnlinePackageDatabaseURL()
+{
+	// Prepare URLs
+	std::string fullURL = jenova::GlobalSettings::JenovaPackageDatabaseHostURL + std::string(officialPackageDatabaseFileURL);
 
-// Configuration
-constexpr const char* packageDatabaseFileURL = "/Jenova-Framework/Jenova-Packages/refs/heads/main/Jenova.Package.Database.json";
+	// Use Custom Package Datbase If Set
+	String customPackageDB = jenova::GetEditorSetting(jenova::JenovaSettings::CustomPackageDatabaseURLConfigPath);
+	if (!customPackageDB.is_empty() && customPackageDB != "Official") fullURL = AS_STD_STRING(customPackageDB);
+
+	// Return Final URL
+	return fullURL;
+}
 
 // Storages
 static jenova::PackageList onlinePackages;
@@ -118,7 +130,7 @@ JenovaPackageManager* JenovaPackageManager::get_singleton()
 }
 
 // Jenova Package Manager Implementation
-bool JenovaPackageManager::OpenPackageManager(const String& packageDatabaseURL)
+bool JenovaPackageManager::OpenPackageManager()
 {
 	// Prepare Package Manager
 	if (!PreparePackageManager())
@@ -195,6 +207,7 @@ bool JenovaPackageManager::OpenPackageManager(const String& packageDatabaseURL)
 	auto githubIcon = CREATE_SVG_MENU_ICON(JENOVA_RESOURCE(SVG_GITHUB_ICON));
 	auto downloadIcon = CREATE_SVG_MENU_ICON(JENOVA_RESOURCE(SVG_DOWNLOAD_ICON));
 	auto packageAddIcon = CREATE_SVG_MENU_ICON(JENOVA_RESOURCE(SVG_PACKAGE_ADD_ICON));
+	auto packageDBEIcon = CREATE_SVG_MENU_ICON(JENOVA_RESOURCE(SVG_PACKAGE_DB_EDITOR_ICON));
 	auto recycleIcon = CREATE_SVG_MENU_ICON(JENOVA_RESOURCE(SVG_RECYCLE_ICON));
 	auto editTextIcon = CREATE_SVG_MENU_ICON(JENOVA_RESOURCE(SVG_EDIT_TEXT_ICON));
 	auto directoryOpenIcon = CREATE_SVG_MENU_ICON(JENOVA_RESOURCE(SVG_DIRECTORY_OPEN_ICON));
@@ -202,6 +215,7 @@ bool JenovaPackageManager::OpenPackageManager(const String& packageDatabaseURL)
 	// Add Toolbar Items
 	Button* open_repository_tool = CreateToolbarItem("OpenRepositoryTool", githubIcon, "Open Packages Database GitHub Repository", toolbar);
 	Button* reload_database_tool = CreateToolbarItem("ReloadDatabaseTool", jenova::GetEditorIcon("PreviewRotate"), "Refresh Online Package Database", toolbar);
+	Button* open_database_editor = CreateToolbarItem("OpenDatabaseEditorWebApp", packageDBEIcon, "Open Packages Database Editor Web App", toolbar);
 	CreateToolbarSeparator(toolbar);
 	Button* install_custom_pkg_tool = CreateToolbarItem("InstallCustomPackage", packageAddIcon, "Install Custom Package...", toolbar);
 	Button* remove_unused_pkgs_tool = CreateToolbarItem("RemoveUnusedPackage", recycleIcon, "Remove Unused Packages", toolbar);
@@ -300,12 +314,16 @@ bool JenovaPackageManager::OpenPackageManager(const String& packageDatabaseURL)
 			// Download Package Database
 			if (toolID == "DownloadDatabase")
 			{
-				jenova::OpenURL("https://raw.githubusercontent.com/Jenova-Framework/Jenova-Packages/refs/heads/main/Jenova.Package.Database.json");
+				jenova::OpenURL(GetOnlinePackageDatabaseURL().c_str());
 			}
 			// Open GitHub Repository
 			if (toolID == "ReloadDatabase")
 			{
 				pkgManagerInstance->ReloadEntireDatabase();
+			}
+			if (toolID == "OpenDatabaseEditor")
+			{
+				jenova::OpenURL("https://jenova-framework.github.io/tools/PkgDBE/");
 			}
 			// Install Custom Package
 			if (toolID == "InstallCustomPackage")
@@ -393,6 +411,7 @@ bool JenovaPackageManager::OpenPackageManager(const String& packageDatabaseURL)
 	// Create & Assign Tool Button Actions
 	BIND_TOOL_ACTION(open_repository_tool, "OpenRepository");
 	BIND_TOOL_ACTION(reload_database_tool, "ReloadDatabase");
+	BIND_TOOL_ACTION(open_database_editor, "OpenDatabaseEditor");
 	BIND_TOOL_ACTION(install_custom_pkg_tool, "InstallCustomPackage");
 	BIND_TOOL_ACTION(remove_unused_pkgs_tool, "RemoveUnusedPackages");
 	BIND_TOOL_ACTION(edit_pkg_database_tool, "OpenPackageDatabase");
@@ -416,9 +435,6 @@ bool JenovaPackageManager::OpenPackageManager(const String& packageDatabaseURL)
 		return false;
 	}
 
-	// Set Current Package Database URL
-	currentDatabaseURL = AS_STD_STRING(packageDatabaseURL);
-
 	// Update Packages Database
 	this->FormatStatus("#ababab", "Obtaining Installed Packages...");
 	if (!ObtainInstalledPackages())
@@ -427,7 +443,7 @@ bool JenovaPackageManager::OpenPackageManager(const String& packageDatabaseURL)
 		return false;
 	}
 	this->FormatStatus("#ababab", "Fetching Online Packages...");
-	if (!FetchOnlinePackages(packageDatabaseURL))
+	if (!FetchOnlinePackages())
 	{
 		jenova::Error("Jenova Package Manager", "Unable to Fetch Online Packages. Verify Your Internet Connection.");
 		return false;
@@ -608,7 +624,7 @@ void JenovaPackageManager::ReloadEntireDatabase()
 		return;
 	}
 	this->FormatStatus("#ababab", "Fetching Online Packages...");
-	if (!FetchOnlinePackages(AS_GD_STRING(currentDatabaseURL)))
+	if (!FetchOnlinePackages())
 	{
 		FormatStatus("#ff1717", "Failed to Reload Database.");
 		return;
@@ -618,26 +634,23 @@ void JenovaPackageManager::ReloadEntireDatabase()
 	// Set Status
 	this->FormatStatus("#ababab", "%lld Online Packages Available", onlinePackages.size());
 }
-bool JenovaPackageManager::FetchOnlinePackages(const String& packageDatabaseURL)
+bool JenovaPackageManager::FetchOnlinePackages()
 {
 	// Clear Current List
 	onlinePackages.clear();
 
 	// Verbose
-	jenova::VerboseByID(__LINE__, "Downloading [%s%s]", AS_C_STRING(packageDatabaseURL), packageDatabaseFileURL);
+	jenova::VerboseByID(__LINE__, "Downloading Online Package Database [%s]", GetOnlinePackageDatabaseURL().c_str());
 
 	// Initialize cURL
 	CURL* curl = curl_easy_init();
 	if (!curl) { return false; }
 
-	// Prepare URLs
-	std::string fullURL = AS_C_STRING(packageDatabaseURL) + std::string(packageDatabaseFileURL);
-
 	// Response Buffer
 	std::string responseData;
 
 	// Configure cURL
-	curl_easy_setopt(curl, CURLOPT_URL, fullURL.c_str());
+	curl_easy_setopt(curl, CURLOPT_URL, GetOnlinePackageDatabaseURL().c_str());
 	curl_easy_setopt(curl, CURLOPT_USERAGENT, "JenovaPackageManager/1.0");
 	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
 	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
@@ -1275,10 +1288,31 @@ bool JenovaPackageManager::InstallCustomPackage(const jenova::CustomPackageInsta
 		file_dialog->set_size(Vector2i(SCALED(950), SCALED(580)));
 		file_dialog->set_force_native(false);
 
-		// Create Settings Panel
-		VBoxContainer* settingsPanel = memnew(VBoxContainer);
-		file_dialog->add_side_menu(settingsPanel);
+		// Create Settings Panel [Hacked Mode]
+		/*
+		 * Like always, Godot devs removed a perfectly working feature (add_side_menu) because they couldn't fix a minor issue.
+		 * Instead of a simple if-check or fallback, they nuked the entire feature and told devs to "just make another dialog".
+		 * So now we're manually ripping apart their internal layout just to get basic functionality back like it's 1995...
+		 * But hey, at least we have "platform parity" now. Keep improving the engine dudes. 
+		*/
+		VBoxContainer* mainVBox = file_dialog->get_vbox();
+		HSplitContainer* mainSplit = Object::cast_to<HSplitContainer>(mainVBox->get_child(1));
+		VBoxContainer* fileVBox = Object::cast_to<VBoxContainer>(mainSplit->get_child(1));
+		ItemList* fileList = Object::cast_to<ItemList>(fileVBox->get_child(1));
+		fileVBox->remove_child(fileList);
 
+		VBoxContainer* settingsPanel = memnew(VBoxContainer);
+		settingsPanel->set_custom_minimum_size(Size2(SCALED(300), 0));
+
+		HSplitContainer* newSplit = memnew(HSplitContainer);
+		newSplit->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+		newSplit->set_split_offset(100000.0); // This Will Push to Minimum Width of Panel
+		newSplit->add_child(fileList);
+		newSplit->add_child(settingsPanel);
+		fileVBox->add_child(newSplit);
+		fileVBox->move_child(newSplit, 1);
+
+		// Create Setting Panel Controls
 		Label* pkgSettingsTitle = memnew(Label);
 		pkgSettingsTitle->set_text("Package Configuration");
 		pkgSettingsTitle->add_theme_color_override("font_color", editorTheme->get_color("accent_color", "Editor"));

@@ -45,7 +45,7 @@
       <ConformanceMode>false</ConformanceMode>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <DebugInformationFormat>None</DebugInformationFormat>
-      <AdditionalIncludeDirectories>..\..\;..\..\Dependencies\libjenova\imgui;..\..\Dependencies\libjenova\MinHook</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\;..\..\Libs\imgui;..\..\Libs\MinHook</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4251</DisableSpecificWarnings>
       <Optimization>MaxSpeed</Optimization>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>

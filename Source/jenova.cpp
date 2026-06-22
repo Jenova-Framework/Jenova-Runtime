@@ -470,6 +470,7 @@ namespace jenova
 						if (!editor_settings->has_setting(ManagedSafeExecutionConfigPath)) editor_settings->set(ManagedSafeExecutionConfigPath, true);
 						if (!editor_settings->has_setting(UseBuiltinSDKConfigPath)) editor_settings->set(UseBuiltinSDKConfigPath, true);
 						if (!editor_settings->has_setting(RefreshTreeAfterBuildConfigPath)) editor_settings->set(RefreshTreeAfterBuildConfigPath, false);
+						if (!editor_settings->has_setting(CustomPackageDatabaseURLConfigPath)) editor_settings->set(CustomPackageDatabaseURLConfigPath, "Official");
 						if (!editor_settings->has_setting(PackageRepositoryPathConfigPath)) editor_settings->set(PackageRepositoryPathConfigPath, jenova::GlobalSettings::JenovaPackageRepositoryPath);
 						if (!editor_settings->has_setting(BuildToolButtonEditorConfigPath)) editor_settings->set(BuildToolButtonEditorConfigPath, int32_t(BuildToolButtonDefaultPlacement));
 
@@ -617,6 +618,12 @@ namespace jenova
 							PropertyHint::PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE, JenovaEditorSettingsCategory);
 						editor_settings->add_property_info(RefreshTreeAfterBuildProperty);
 						editor_settings->set_initial_value(RefreshTreeAfterBuildConfigPath, false, false);
+
+						// Custom Package Database URL Property
+						PropertyInfo CustomPackageDatabaseURLProperty(Variant::STRING, CustomPackageDatabaseURLConfigPath,
+							PropertyHint::PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE, JenovaEditorSettingsCategory);
+						editor_settings->add_property_info(CustomPackageDatabaseURLProperty);
+						editor_settings->set_initial_value(CustomPackageDatabaseURLConfigPath, "Official", false);
 
 						// Package Repository Path Property
 						PropertyInfo PackageRepositoryPathProperty(Variant::STRING, PackageRepositoryPathConfigPath,
@@ -1284,7 +1291,7 @@ namespace jenova
 				case jenova::EditorMenuID::OpenPackageManager:
 					if (JenovaPackageManager::get_singleton())
 					{
-						if (!JenovaPackageManager::get_singleton()->OpenPackageManager(String(jenova::GlobalSettings::JenovaPackageDatabaseURL)))
+						if (!JenovaPackageManager::get_singleton()->OpenPackageManager())
 						{
 							jenova::Error("Jenova Framework", "Package Manager Failed to Open.");
 						}
@@ -5725,26 +5732,18 @@ namespace jenova
 		// Suppress if Disabled
 		if (jenova::GlobalStorage::CurrentEditorVerboseOutput == jenova::EditorVerboseOutput::Disabled) return;
 
-		// Handle Verbose In Different Modes
-		if (QUERY_ENGINE_MODE(Editor))
+		// Jenova Terminal Log
+		if (jenova::GlobalStorage::CurrentEditorVerboseOutput == jenova::EditorVerboseOutput::JenovaTerminal)
 		{
-			// Jenova Terminal Log
-			if (jenova::GlobalStorage::CurrentEditorVerboseOutput == jenova::EditorVerboseOutput::JenovaTerminal)
+			if (jenova::plugin::JenovaEditorPlugin::get_singleton())
 			{
-				if (jenova::plugin::JenovaEditorPlugin::get_singleton())
-				{
-					jenova::plugin::JenovaEditorPlugin::get_singleton()->call_deferred("VerboseLog", String(" [color=#ed266c]>[/color] ") + String(buffer));
-					return;
-				}
+				jenova::plugin::JenovaEditorPlugin::get_singleton()->call_deferred("VerboseLog", String(" [color=#ed266c]>[/color] ") + String(buffer));
+				return;
 			}
+		}
 
-			// Standard Log
-			UtilityFunctions::print_rich("[b]" + SignatureText("[JENOVA]") + "[/b] [color=#ed266c]>[/color] " + String(buffer));
-		}
-		else
-		{
-			UtilityFunctions::print(String("[JENOVA] > ") + String(buffer));
-		}
+		// Standard Log
+		UtilityFunctions::print_rich("[b]" + SignatureText("[JENOVA]") + "[/b] [color=#ed266c]>[/color] " + String(buffer));
 	}
 	void Output(const wchar_t* fmt, ...)
 	{
@@ -5757,26 +5756,18 @@ namespace jenova
 		// Suppress if Disabled
 		if (jenova::GlobalStorage::CurrentEditorVerboseOutput == jenova::EditorVerboseOutput::Disabled) return;
 
-		// Handle Verbose In Different Modes
-		if (QUERY_ENGINE_MODE(Editor))
+		// Jenova Terminal Log
+		if (jenova::GlobalStorage::CurrentEditorVerboseOutput == jenova::EditorVerboseOutput::JenovaTerminal)
 		{
-			// Jenova Terminal Log
-			if (jenova::GlobalStorage::CurrentEditorVerboseOutput == jenova::EditorVerboseOutput::JenovaTerminal)
+			if (jenova::plugin::JenovaEditorPlugin::get_singleton())
 			{
-				if (jenova::plugin::JenovaEditorPlugin::get_singleton())
-				{
-					jenova::plugin::JenovaEditorPlugin::get_singleton()->call_deferred("VerboseLog", String(" [color=#ed266c]>[/color] ") + String(buffer));
-					return;
-				}
+				jenova::plugin::JenovaEditorPlugin::get_singleton()->call_deferred("VerboseLog", String(" [color=#ed266c]>[/color] ") + String(buffer));
+				return;
 			}
+		}
 
-			// Standard Log
-			UtilityFunctions::print_rich(String("[b][JENOVA][/b] [color=#ed266c]>[/color] ") + String(buffer));
-		}
-		else
-		{
-			UtilityFunctions::print(String("[JENOVA] > ") + String(buffer));
-		}
+		// Standard Log
+		UtilityFunctions::print_rich("[b]" + SignatureText("[JENOVA]") + "[/b] [color=#ed266c]>[/color] " + String(buffer));
 	}
 	void OutputColored(const char* colorHash, const char* fmt, ...)
 	{
@@ -5789,26 +5780,19 @@ namespace jenova
 		// Suppress if Disabled
 		if (jenova::GlobalStorage::CurrentEditorVerboseOutput == jenova::EditorVerboseOutput::Disabled) return;
 
-		// Handle Verbose In Different Modes
-		if (QUERY_ENGINE_MODE(Editor))
+		// Jenova Terminal Log
+		if (jenova::GlobalStorage::CurrentEditorVerboseOutput == jenova::EditorVerboseOutput::JenovaTerminal)
 		{
-			// Jenova Terminal Log
-			if (jenova::GlobalStorage::CurrentEditorVerboseOutput == jenova::EditorVerboseOutput::JenovaTerminal)
+			if (jenova::plugin::JenovaEditorPlugin::get_singleton())
 			{
-				if (jenova::plugin::JenovaEditorPlugin::get_singleton())
-				{
-					jenova::plugin::JenovaEditorPlugin::get_singleton()->call_deferred("VerboseLog", "[color=" + String(colorHash) + "] > " + String(buffer) + "[/color]");
-					return;
-				}
+				jenova::plugin::JenovaEditorPlugin::get_singleton()->call_deferred("VerboseLog", "[color=" + String(colorHash) + "] > " + String(buffer) + "[/color]");
+				return;
 			}
+		}
 
-			// Standard Log
-			UtilityFunctions::print_rich("[color=" + String(colorHash) + "][b][JENOVA][/b] > " + String(buffer) + "[/color]");
-		}
-		else
-		{
-			UtilityFunctions::print(String("[JENOVA] > ") + String(buffer));
-		}
+		// Standard Log
+		UtilityFunctions::print_rich("[color=" + String(colorHash) + "][b][JENOVA][/b] > " + String(buffer) + "[/color]");
+
 	}
 	void Verbose(const char* fmt, ...)
 	{
@@ -5822,26 +5806,18 @@ namespace jenova
 		// Suppress if Disabled
 		if (jenova::GlobalStorage::CurrentEditorVerboseOutput == jenova::EditorVerboseOutput::Disabled) return;
 
-		// Handle Verbose In Different Modes
-		if (QUERY_ENGINE_MODE(Editor))
+		// Jenova Terminal Log
+		if (jenova::GlobalStorage::CurrentEditorVerboseOutput == jenova::EditorVerboseOutput::JenovaTerminal)
 		{
-			// Jenova Terminal Log
-			if (jenova::GlobalStorage::CurrentEditorVerboseOutput == jenova::EditorVerboseOutput::JenovaTerminal)
+			if (jenova::plugin::JenovaEditorPlugin::get_singleton())
 			{
-				if (jenova::plugin::JenovaEditorPlugin::get_singleton())
-				{
-					jenova::plugin::JenovaEditorPlugin::get_singleton()->call_deferred("VerboseLog", String(" [color=#fcb603]^[/color] ") + String(buffer));
-					return;
-				}
+				jenova::plugin::JenovaEditorPlugin::get_singleton()->call_deferred("VerboseLog", String(" [color=#fcb603]^[/color] ") + String(buffer));
+				return;
 			}
+		}
 
-			// Standard Log
-			UtilityFunctions::print_rich(String("[b][JENOVA][/b] [color=#fcb603]^[/color] ") + String(buffer));
-		}
-		else
-		{
-			UtilityFunctions::print(String("[JENOVA] ^ ") + String(buffer));
-		}
+		// Standard Log
+		UtilityFunctions::print_rich(String("[b][JENOVA][/b] [color=#fcb603]^[/color] ") + String(buffer));
 	}
 	void VerboseByID(int id, const char* fmt, ...)
 	{
@@ -5885,26 +5861,18 @@ namespace jenova
 			<< std::setw(2) << std::setfill('0') << static_cast<int>(g * 255)
 			<< std::setw(2) << std::setfill('0') << static_cast<int>(b * 255);
 
-		// Handle Verbose In Different Modes
-		if (QUERY_ENGINE_MODE(Editor))
+		// Jenova Terminal Log
+		if (jenova::GlobalStorage::CurrentEditorVerboseOutput == jenova::EditorVerboseOutput::JenovaTerminal)
 		{
-			// Jenova Terminal Log
-			if (jenova::GlobalStorage::CurrentEditorVerboseOutput == jenova::EditorVerboseOutput::JenovaTerminal)
+			if (jenova::plugin::JenovaEditorPlugin::get_singleton())
 			{
-				if (jenova::plugin::JenovaEditorPlugin::get_singleton())
-				{
-					jenova::plugin::JenovaEditorPlugin::get_singleton()->call_deferred("VerboseLog", "[color=" + String(colorHash.str().c_str()) + String("] ^ ") + String(buffer) + "[/color]");
-					return;
-				}
+				jenova::plugin::JenovaEditorPlugin::get_singleton()->call_deferred("VerboseLog", "[color=" + String(colorHash.str().c_str()) + String("] ^ ") + String(buffer) + "[/color]");
+				return;
 			}
+		}
 
-			// Standard Log
-			UtilityFunctions::print_rich("[color=" + String(colorHash.str().c_str()) + String("][JENOVA] ^ ") + String(buffer) + "[/color]");
-		}
-		else
-		{
-			UtilityFunctions::print(String("[JENOVA] ^ ") + String(buffer));
-		}
+		// Standard Log
+		UtilityFunctions::print_rich("[color=" + String(colorHash.str().c_str()) + String("][JENOVA] ^ ") + String(buffer) + "[/color]");
 	}
 	void Error(const char* stageName, const char* fmt, ...)
 	{
@@ -10237,8 +10205,8 @@ namespace jenova
 		jenova::Output("Checking for the Latest Release...");
 
 		// Download Release Metadata
-		jenova::json_t releaseMetadata = 
-			DownloadAndParseSerializedContentFromURL(jenova::GlobalSettings::JenovaReleaseMetadataURL, "/Jenova-Framework/J.E.N.O.V.A/main/ReleaseMetadata.json");
+		jenova::json_t releaseMetadata = DownloadAndParseSerializedContentFromURL(jenova::GlobalSettings::JenovaReleaseMetadataHostURL, 
+			"/Jenova-Framework/J.E.N.O.V.A/main/ReleaseMetadata.json");
 
 		// Validate Release Metadata
 		if (releaseMetadata.contains("Invalid"))
