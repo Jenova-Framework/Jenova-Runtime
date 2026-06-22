@@ -69,6 +69,8 @@ sources = [
 # Global Options
 builder_version     = "3.2"
 deps_version        = "4.6"
+deps_pkg_sha256     = ""   # SHA-256 of Jenova-Runtime-Dependencies-Universal-{deps_version}.jnvpkg
+toolchain_pkg_sha256 = ""  # SHA-256 of merged GigaChad-Toolchain-v1.0-Win64.jnvpkg
 double_precision    = False
 static_build        = False
 skip_deps           = False
@@ -218,7 +220,7 @@ def generate_jnvsdk(output_file):
 
 # Generic Build Functions
 def compute_md5(file_path):
-    hasher = hashlib.md5()
+    hasher = hashlib.sha256()
     with open(file_path, "rb") as f:
         for chunk in iter(lambda: f.read(4096), b""):
             hasher.update(chunk)
@@ -262,6 +264,12 @@ def run_linker_command(command, linker):
     except subprocess.CalledProcessError as e:
         rgb_print("#e02626", f"[ x ] Failed to Link Object Files, Error : {e}")
         exit(1)    
+def verify_sha256(file_path, expected_hash):
+    hasher = hashlib.sha256()
+    with open(file_path, "rb") as f:
+        for chunk in iter(lambda: f.read(8192), b""):
+            hasher.update(chunk)
+    return hasher.hexdigest().lower() == expected_hash.lower()
 def install_dependencies():
     
     # Validate Dependencies
@@ -294,6 +302,10 @@ def install_dependencies():
 
     # Extracting Dependencies Package
     rgb_print("#367fff","[ ^ ] Installing Dependencies Package...")
+    if deps_pkg_sha256 and not verify_sha256("Jenova-Runtime-Dependencies-Universal.jnvpkg", deps_pkg_sha256):
+        rgb_print("#e02626", "[ x ] Error : Dependencies Package integrity check failed.")
+        os.remove("Jenova-Runtime-Dependencies-Universal.jnvpkg")
+        return
     with py7zr.SevenZipFile("Jenova-Runtime-Dependencies-Universal.jnvpkg", mode='r') as z: z.extractall(path="./Dependencies")
     rgb_print("#38f227", "[ √ ] Dependencies Package Installed.")
 
@@ -554,7 +566,7 @@ def build_linux(compilerBinary, linkerBinary, buildMode, buildSystem):
     outputName = "Jenova.Runtime.Linux64.so"
     mapFileName = "Jenova.Runtime.Linux64.map"
     cacheDir = f"{outputDir}/Cache"
-    sdkDir = f"{outputDir}/JenovaSDK"
+    sdkDir = os.path.abspath(f"{outputDir}/JenovaSDK")
     CacheDB = f"{cacheDir}/Build.db"
 
     # Ensure Required Directories Exist
@@ -621,7 +633,7 @@ def build_linux(compilerBinary, linkerBinary, buildMode, buildSystem):
     run_linker_command(link_command, linker)
 
     # Prepare Release
-    open(f"{sdkDir}/.gitignore", "w").write("*")
+    open(os.path.join(os.path.realpath(sdkDir), ".gitignore"), "w").write("*")
     shutil.copy2("./Source/JenovaSDK.h", f"{sdkDir}/JenovaSDK.h")
     shutil.copy2("./Jenova.Runtime.gdextension", f"{outputDir}/Jenova.Runtime.gdextension")
 
@@ -697,6 +709,11 @@ def initialize_toolchain_windows():
 
         # Extracting Gigachad Toolchain Package
         rgb_print("#367fff","[ ^ ] Installing GigaChad Toolchain Package...")
+        if toolchain_pkg_sha256 and not verify_sha256("GigaChad-Toolchain-v1.0-Win64.jnvpkg", toolchain_pkg_sha256):
+            rgb_print("#e02626", "[ x ] Error : Toolchain Package integrity check failed.")
+            for _f in ["GigaChad-Toolchain-v1.0-Win64.jnvpkg", "GigaChad-Toolchain-v1.0-Win64-U1.jnvpkg", "GigaChad-Toolchain-v1.0-Win64-U2.jnvpkg"]:
+                if os.path.exists(_f): os.remove(_f)
+            return
         with py7zr.SevenZipFile("GigaChad-Toolchain-v1.0-Win64.jnvpkg", mode='r') as z: z.extractall(path="./Toolchain")
         rgb_print("#38f227", "[ √ ] GigaChad Toolchain Package Installed.")
 
@@ -1137,7 +1154,7 @@ def build_windows(compilerBinary, linkerBinary, buildMode, buildSystem):
     mapFileName = "Jenova.Runtime.Win64.map"
     resourceFileName = "Jenova.Runtime.rc"
     cacheDir = f"{outputDir}/Cache"
-    sdkDir = f"{outputDir}/JenovaSDK"
+    sdkDir = os.path.abspath(f"{outputDir}/JenovaSDK")
     CacheDB = f"{cacheDir}/Build.db"
 
     # Create Output File
@@ -1436,7 +1453,7 @@ def build_windows(compilerBinary, linkerBinary, buildMode, buildSystem):
         run_linker_command(link_command, linker)
 
     # Prepare Release
-    open(f"{sdkDir}/.gitignore", "w").write("*")
+    open(os.path.join(os.path.realpath(sdkDir), ".gitignore"), "w").write("*")
     shutil.copy2("./Source/JenovaSDK.h", f"{sdkDir}/JenovaSDK.h")
     shutil.copy2("./Jenova.Runtime.gdextension", f"{outputDir}/Jenova.Runtime.gdextension")
 
