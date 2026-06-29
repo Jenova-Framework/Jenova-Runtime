@@ -67,8 +67,8 @@ sources = [
 ]
 
 # Global Options
-builder_version     = "3.2"
-deps_version        = "4.6"
+builder_version     = "3.3"
+deps_version        = "4.7"
 double_precision    = False
 static_build        = False
 skip_deps           = False
@@ -646,64 +646,37 @@ def initialize_toolchain_windows():
     # Validate Toolchain
     if not os.path.exists("./Toolchain"): 
 
-        # GigaChad Toolchain Package URL
-        gigachad_toolchain_pkg_pt1_url = "https://jenova-framework.github.io/download/development/GigaChad-Toolchain-v1.0-Win64-U1.jnvpkg"
-        gigachad_toolchain_pkg_pt2_url = "https://jenova-framework.github.io/download/development/GigaChad-Toolchain-v1.0-Win64-U2.jnvpkg"
+        # AiO Toolchain Package URL
+        aio_toolchain_pkg_url = "https://www.dropbox.com/scl/fi/z7i7w74qr4m5ur20b2mg9/AIO-Toolchain-v1.0-Win64.7z?rlkey=jk7lmbmg3z63zoo7dmk559w8f&st=s7lzdm79&dl=1"
 
-        # Downloading GigaChad Toolchain Package
-        rgb_print("#367fff", "[ ^ ] Downloading GigaChad Toolchain Package...")
-        response = requests.get(gigachad_toolchain_pkg_pt1_url, stream=True)
+        # Downloading AiO Toolchain Package
+        rgb_print("#367fff", "[ ^ ] Downloading AiO Toolchain Package...")
+        response = requests.get(aio_toolchain_pkg_url, stream=True)
         if response.status_code == 200:
             total_size = int(response.headers.get('content-length', 0))
             block_size = 1024
             max_bar_length = 50
             progress_length = 0
-            with open("GigaChad-Toolchain-v1.0-Win64-U1.jnvpkg", "wb") as f:
+            with open("AIO-Toolchain-v1.0-Win64.7z", "wb") as f:
                 for data in response.iter_content(block_size):
                     f.write(data)
                     progress_length += len(data)
                     done = progress_length
                     bar_length = int((done / total_size) * max_bar_length)
                     progress_bar = '[ ' + '=' * bar_length + ' ' * (max_bar_length - bar_length) + ' ]'
-                    if not deploy_mode: rgb_print("#367fff", f"[ + ] Downloading First Unit: {done/total_size:.2%} {progress_bar}", True)
-            rgb_print("#38f227", "\n[ √ ] GigaChad Toolchain Package First Unit Download Complete.")
+                    if not deploy_mode: rgb_print("#367fff", f"[ + ] Downloading: {done/total_size:.2%} {progress_bar}", True)
+            rgb_print("#38f227", "\n[ √ ] AiO Toolchain Package Download Complete.")
         else:
-            rgb_print("#e02626", "[ x ] Error : Failed to Download GigaChad Toolchain Package First Unit.")
-            return
-        response = requests.get(gigachad_toolchain_pkg_pt2_url, stream=True)
-        if response.status_code == 200:
-            total_size = int(response.headers.get('content-length', 0))
-            block_size = 1024
-            max_bar_length = 50
-            progress_length = 0
-            with open("GigaChad-Toolchain-v1.0-Win64-U2.jnvpkg", "wb") as f:
-                for data in response.iter_content(block_size):
-                    f.write(data)
-                    progress_length += len(data)
-                    done = progress_length
-                    bar_length = int((done / total_size) * max_bar_length)
-                    progress_bar = '[ ' + '=' * bar_length + ' ' * (max_bar_length - bar_length) + ' ]'
-                    if not deploy_mode: rgb_print("#367fff", f"[ + ] Downloading Second Unit : {done/total_size:.2%} {progress_bar}", True)
-            rgb_print("#38f227", "\n[ √ ] GigaChad Toolchain Package Second Unit Download Complete.")
-        else:
-            rgb_print("#e02626", "[ x ] Error : Failed to Download GigaChad Toolchain Package Second Unit.")
+            rgb_print("#e02626", "[ x ] Error : Failed to Download AiO Toolchain Package.")
             return
 
-        # Merge Gigachad Toolchain Package Units
-        parts = ["GigaChad-Toolchain-v1.0-Win64-U1.jnvpkg", "GigaChad-Toolchain-v1.0-Win64-U2.jnvpkg"]
-        with open("GigaChad-Toolchain-v1.0-Win64.jnvpkg", "wb") as merged_file:
-            for part in parts:
-                with open(part, "rb") as part_file: merged_file.write(part_file.read())
-
-        # Extracting Gigachad Toolchain Package
-        rgb_print("#367fff","[ ^ ] Installing GigaChad Toolchain Package...")
-        with py7zr.SevenZipFile("GigaChad-Toolchain-v1.0-Win64.jnvpkg", mode='r') as z: z.extractall(path="./Toolchain")
-        rgb_print("#38f227", "[ √ ] GigaChad Toolchain Package Installed.")
+        # Extracting AiO Toolchain Package
+        rgb_print("#367fff","[ ^ ] Installing AiO Toolchain Package...")
+        with py7zr.SevenZipFile("AIO-Toolchain-v1.0-Win64.7z", mode='r') as z: z.extractall(path="./Toolchain")
+        rgb_print("#38f227", "[ √ ] AiO Toolchain Package Installed.")
 
         # Delete Downloaded Package
-        os.remove("GigaChad-Toolchain-v1.0-Win64.jnvpkg")
-        os.remove("GigaChad-Toolchain-v1.0-Win64-U1.jnvpkg")
-        os.remove("GigaChad-Toolchain-v1.0-Win64-U2.jnvpkg")
+        os.remove("AIO-Toolchain-v1.0-Win64.7z")
 
     # Configuring Toolchain
     rgb_print("#367fff", "[ ^ ] Configuring Toolchain...")
@@ -1468,7 +1441,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=f"Jenova Runtime Build System {builder_version} Developed by Hamid.Memar")
     parser.add_argument('--compiler', type=str, help='Specify Compiler to Use.')
     parser.add_argument('--deploy-mode', action='store_true', help='Run As GitHub Action Deploy Mode')
-    parser.add_argument('--deps-version', default="4.6", help='Specify Dependencies Version (default: 4.6)')
+    parser.add_argument('--deps-version', default=deps_version, help=f'Specify Dependencies Version (default: {deps_version})')
     parser.add_argument('--double-precision', action='store_true', help='Build Jenova Runtime using Double Precision')
     parser.add_argument('--static-build', action='store_true', help='Build Jenova Runtime as Static Library')
     parser.add_argument('--skip-banner', action='store_true', help='Skip Printing Banner')

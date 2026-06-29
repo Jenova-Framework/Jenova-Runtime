@@ -229,7 +229,7 @@ namespace jenova
             if (bool(compilerSettings["cpp_debug_database"]) && bool(compilerSettings["cpp_generate_debug_info"]))
             {
                 compilerArgument += "/Zi ";
-                compilerArgument += "/Fd\"" + this->jenovaCachePath + AS_STD_STRING(String(compilerSettings["cpp_output_database"])) + "\" ";;
+                compilerArgument += "/Fd \"" + this->jenovaCachePath + AS_STD_STRING(String(compilerSettings["cpp_output_database"])) + "\" ";;
             }
             compilerArgument += bool(compilerSettings["cpp_conformance_mode"]) ? "/permissive- " : "/permissive ";
             if (int(compilerSettings["cpp_exception_handling"]) == 1) compilerArgument += "/EHsc ";
@@ -442,7 +442,7 @@ namespace jenova
 
                             CloseHandle(hStdOutWrite);
 
-                            std::vector<char> buffer(4096);
+                            std::vector<char> buffer(jenova::GlobalSettings::BuildOutputBufferSize);
                             DWORD bytesRead;
                             std::string compilerOutput;
                             while (ReadFile(hStdOutRead, buffer.data(), buffer.size(), &bytesRead, NULL) && bytesRead > 0)
@@ -467,7 +467,7 @@ namespace jenova
                         compilationTasks.push_back(taskID);
                     }
 
-                    // Wait for all tasks to complete
+                    // Wait for All Tasks to Complete
                     for (const auto& taskID : compilationTasks)
                     {
                         while (!JenovaTaskSystem::IsTaskComplete(taskID))
@@ -534,7 +534,7 @@ namespace jenova
             si.cb = sizeof(si);
             si.dwFlags |= STARTF_USESTDHANDLES;
 
-            // Create pipes for capturing output
+            // Create Pipes for Capturing Output
             HANDLE hStdOutRead, hStdOutWrite;
             SECURITY_ATTRIBUTES sa = { sizeof(SECURITY_ATTRIBUTES), NULL, TRUE };
             CreatePipe(&hStdOutRead, &hStdOutWrite, &sa, 0);
@@ -542,10 +542,8 @@ namespace jenova
             si.hStdOutput = hStdOutWrite;
             si.hStdError = hStdOutWrite;
 
-            // Convert command to wide string
+            // Execute the Compiler Command
             std::wstring wCompilerArgument(compilerArgument.begin(), compilerArgument.end());
-
-            // Execute the command
             if (!CreateProcessW(NULL, &wCompilerArgument[0], NULL, NULL, TRUE, CREATE_NO_WINDOW, NULL, NULL, &si, &pi))
             {
                 result.compileResult = false;
@@ -554,7 +552,7 @@ namespace jenova
                 return result;
             }
 
-            // Close write end of the pipe
+            // Close Pipe
             CloseHandle(hStdOutWrite);
 
             // Read And Filter Output
@@ -607,24 +605,24 @@ namespace jenova
                     resultOutput.append(line + "\n");
                 }
 
-                // Save the remaining output for the next read
+                // Save the Remaining Output for the Next Read
                 accumulatedOutput = remainingOutput;
             }
             if (!resultOutput.empty() && resultOutput.back() == '\n') resultOutput.pop_back();
 
-            // Wait for the process to finish
+            // Wait for the Process to Finish
             WaitForSingleObject(pi.hProcess, INFINITE);
 
-            // Get the exit code
+            // Get Exit Code
             DWORD exitCode;
             GetExitCodeProcess(pi.hProcess, &exitCode);
 
-            // Close handles
+            // Close Handles
             CloseHandle(pi.hProcess);
             CloseHandle(pi.hThread);
             CloseHandle(hStdOutRead);
 
-            // Set the compiler result
+            // Set the Compiler Result
             result.compileResult = (exitCode == 0);
             result.hasError = (exitCode != 0);
             result.compileError = AS_GD_STRING(resultOutput);
@@ -776,7 +774,7 @@ namespace jenova
             si.cb = sizeof(si);
             si.dwFlags |= STARTF_USESTDHANDLES;
 
-            // Create pipes for capturing output
+            // Create Pipes for Capturing Output
             HANDLE hStdOutRead, hStdOutWrite;
             SECURITY_ATTRIBUTES sa = { sizeof(SECURITY_ATTRIBUTES), NULL, TRUE };
             CreatePipe(&hStdOutRead, &hStdOutWrite, &sa, 0);
@@ -784,10 +782,8 @@ namespace jenova
             si.hStdOutput = hStdOutWrite;
             si.hStdError = hStdOutWrite;
 
-            // Convert linker command to wide string
+            // Execute the Linker Command
             std::wstring wLinkerArgument(linkerArgument.begin(), linkerArgument.end());
-
-            // Execute the linker command
             if (!CreateProcessW(NULL, &wLinkerArgument[0], NULL, NULL, TRUE, CREATE_NO_WINDOW, NULL, NULL, &si, &pi))
             {
                 result.buildResult = false;
@@ -796,37 +792,37 @@ namespace jenova
                 return result;
             }
 
-            // Close the write end of the pipe
+            // Close Pipe
             CloseHandle(hStdOutWrite);
 
-            // Read the linker output
+            // Read the Linker Output
             std::vector<char> buffer(jenova::GlobalSettings::BuildOutputBufferSize);
             DWORD bytesRead;
             std::string resultOutput;
             while (ReadFile(hStdOutRead, buffer.data(), buffer.size(), &bytesRead, NULL) && bytesRead > 0) resultOutput.append(buffer.data(), bytesRead);
 
-            // Wait for the process to finish
+            // Wait for the Process to Finish
             WaitForSingleObject(pi.hProcess, INFINITE);
 
-            // Get the exit code of the linker process
+            // Get the Exit Code
             DWORD exitCode;
             GetExitCodeProcess(pi.hProcess, &exitCode);
 
-            // Close handles
+            // Close Handles
             CloseHandle(pi.hProcess);
             CloseHandle(pi.hThread);
             CloseHandle(hStdOutRead);
 
-            // Set the build result
+            // Set the Build Result
             result.buildResult = (exitCode == 0);
             result.hasError = (exitCode != 0);
             result.buildError = AS_GD_STRING(resultOutput);
             result.buildVerbose = AS_GD_STRING(resultOutput);
 
-            // Return if There's error
+            // Return if There's Error
             if (!result.buildResult) return result;
 
-            // Read module to buffer
+            // Read Module to Buffer
             std::ifstream moduleReader(outputModule, std::ios::binary);
             result.builtModuleData = std::vector<uint8_t>(std::istreambuf_iterator<char>(moduleReader), {});
 
@@ -878,10 +874,7 @@ namespace jenova
         Variant ExecuteCommand(const String& commandName, const Dictionary& commandSettings)
         {
             // Process Commands
-            if (commandName == "Solve-Compiler-Settings")
-            {
-                return SolveCompilerSettings(internalDefaultSettings);
-            }
+            if (commandName == "Solve-Compiler-Settings") return SolveCompilerSettings(internalDefaultSettings);
 
             // Invalid Command
             return Variant::NIL;
@@ -1341,7 +1334,7 @@ namespace jenova
 
                     CloseHandle(hStdOutWrite);
 
-                    std::vector<char> buffer(4096);
+                    std::vector<char> buffer(jenova::GlobalSettings::BuildOutputBufferSize);
                     DWORD bytesRead;
                     std::string compilerOutput;
                     while (ReadFile(hStdOutRead, buffer.data(), buffer.size(), &bytesRead, NULL) && bytesRead > 0)
@@ -1366,7 +1359,7 @@ namespace jenova
                 compilationTasks.push_back(taskID);
             }
 
-            // Wait for all tasks to complete
+            // Wait for All Tasks to Complete
             for (const auto& taskID : compilationTasks)
             {
                 while (!JenovaTaskSystem::IsTaskComplete(taskID))
@@ -1543,7 +1536,7 @@ namespace jenova
             si.cb = sizeof(si);
             si.dwFlags |= STARTF_USESTDHANDLES;
 
-            // Create pipes for capturing output
+            // Create Pipes for Capturing Output
             HANDLE hStdOutRead, hStdOutWrite;
             SECURITY_ATTRIBUTES sa = { sizeof(SECURITY_ATTRIBUTES), NULL, TRUE };
             CreatePipe(&hStdOutRead, &hStdOutWrite, &sa, 0);
@@ -1551,10 +1544,8 @@ namespace jenova
             si.hStdOutput = hStdOutWrite;
             si.hStdError = hStdOutWrite;
 
-            // Convert linker command to wide string
+            // Execute the Linker Command
             std::wstring wLinkerArgument(linkerArgument.begin(), linkerArgument.end());
-
-            // Execute the linker command
             if (!CreateProcessW(NULL, &wLinkerArgument[0], NULL, NULL, TRUE, CREATE_NO_WINDOW, NULL, NULL, &si, &pi))
             {
                 result.buildResult = false;
@@ -1563,37 +1554,37 @@ namespace jenova
                 return result;
             }
 
-            // Close the write end of the pipe
+            // Close Pipe
             CloseHandle(hStdOutWrite);
 
-            // Read the linker output
+            // Read the Linker Output
             std::vector<char> buffer(jenova::GlobalSettings::BuildOutputBufferSize);
             DWORD bytesRead;
             std::string resultOutput;
             while (ReadFile(hStdOutRead, buffer.data(), buffer.size(), &bytesRead, NULL) && bytesRead > 0) resultOutput.append(buffer.data(), bytesRead);
 
-            // Wait for the process to finish
+            // Wait for the Process to Finish
             WaitForSingleObject(pi.hProcess, INFINITE);
 
-            // Get the exit code of the linker process
+            // Get the Exit Code
             DWORD exitCode;
             GetExitCodeProcess(pi.hProcess, &exitCode);
 
-            // Close handles
+            // Close Handles
             CloseHandle(pi.hProcess);
             CloseHandle(pi.hThread);
             CloseHandle(hStdOutRead);
 
-            // Set the build result
+            // Set the Build Result
             result.buildResult = (exitCode == 0);
             result.hasError = (exitCode != 0);
             result.buildError = AS_GD_STRING(resultOutput);
             result.buildVerbose = AS_GD_STRING(resultOutput);
 
-            // Return if There's error
+            // Return if There's Error
             if (!result.buildResult) return result;
 
-            // Read module to buffer
+            // Read Module to Buffer
             std::ifstream moduleReader(outputModule, std::ios::binary);
             result.builtModuleData = std::vector<uint8_t>(std::istreambuf_iterator<char>(moduleReader), {});
 
@@ -2014,11 +2005,11 @@ namespace jenova
                 size_t currentTaskIndex = taskIndex++;
                 taskIDs.push_back(JenovaTaskSystem::InitiateTask([compilerArgument, &taskResults, currentTaskIndex, scriptModule]()
                 {
-                    // Run the compiler command using a process and capture its output
+                    // Run the Compiler & Capture Output
                     int pipefd[2];
                     if (pipe(pipefd) == -1)
                     {
-                        taskResults[currentTaskIndex] = 1; // Non-zero indicates failure
+                        taskResults[currentTaskIndex] = 1;
                         jenova::Output("Failed to create pipe for capturing output.");
                         return;
                     }
@@ -2028,32 +2019,32 @@ namespace jenova
                     {
                         close(pipefd[0]);
                         close(pipefd[1]);
-                        taskResults[currentTaskIndex] = 1; // Non-zero indicates failure
+                        taskResults[currentTaskIndex] = 1;
                         jenova::Output("Failed to fork process for compilation.");
                         return;
                     }
 
                     if (pid == 0)
                     {
-                        // Child process: Redirect output to pipe
+                        // Child Process
                         dup2(pipefd[1], STDOUT_FILENO);
                         dup2(pipefd[1], STDERR_FILENO);
-                        close(pipefd[0]); // Close unused read end
+                        close(pipefd[0]);
                         close(pipefd[1]);
 
-                        // Execute compiler command
+                        // Execute Compiler Command
                         setenv("LANG", "C.UTF-8", 1);
                         setenv("LC_ALL", "C.UTF-8", 1);
                         execl("/bin/sh", "sh", "-c", compilerArgument.c_str(), nullptr);
                     }
                     else
                     {
-                        // Parent process: Capture output
-                        close(pipefd[1]); // Close unused write end
+                        // Parent Process
+                        close(pipefd[1]);
                         char buffer[128];
                         std::string resultOutput;
 
-                        // Read output from the pipe
+                        // Read Output from the Pipe
                         ssize_t bytesRead;
                         while ((bytesRead = read(pipefd[0], buffer, sizeof(buffer) - 1)) > 0)
                         {
@@ -2061,15 +2052,15 @@ namespace jenova
                             resultOutput += buffer;
                         }
 
-                        // Close the read end
+                        // Close the Read End
                         close(pipefd[0]); 
 
-                        // Wait for the child process to finish
+                        // Wait for the Child Process to Finish
                         int status;
                         waitpid(pid, &status, 0);
                         taskResults[currentTaskIndex] = WIFEXITED(status) ? WEXITSTATUS(status) : 1;
 
-                        // Log the output
+                        // Log the Output
                         if (!resultOutput.empty())
                         {
                             // Replace UTF-8 Smart Quotes With ASCII Equivalents
@@ -2123,10 +2114,10 @@ namespace jenova
             // Aggregate Results
             for (size_t i = 0; i < taskResults.size(); i++)
             {
-                // Skip tasks not executed (cached scripts)
+                // Skip Tasks not Executed
                 if (taskResults[i] == -1) continue;
 
-                // Check for failures
+                // Check for Failures
                 if (taskResults[i] != 0)
                 {
                     result.compileResult = false;
@@ -2284,46 +2275,46 @@ namespace jenova
 
             if (pid == 0)
             {
-                // Child process: Redirect output to pipe
+                // Child Process
                 dup2(pipefd[1], STDOUT_FILENO);
                 dup2(pipefd[1], STDERR_FILENO);
-                close(pipefd[0]); // Close unused read end
+                close(pipefd[0]);
                 close(pipefd[1]);
 
-                // Execute linker command
+                // Execute Linker Command
                 setenv("LANG", "C.UTF-8", 1);
                 setenv("LC_ALL", "C.UTF-8", 1);
                 execl("/bin/sh", "sh", "-c", linkerArgument.c_str(), nullptr);
 
-                // If execl fails
+                // If execl Fails
                 _exit(127);
             }
             else
             {
-                // Parent process: Capture output
-                close(pipefd[1]); // Close unused write end
+                // Parent Process
+                close(pipefd[1]);
                 char buffer[128];
                 std::string resultOutput;
 
-                // Read output from the pipe
+                // Read Output from the Pipe
                 ssize_t bytesRead;
                 while ((bytesRead = read(pipefd[0], buffer, sizeof(buffer) - 1)) > 0)
                 {
                     buffer[bytesRead] = '\0';
                     resultOutput += buffer;
                 }
-                close(pipefd[0]); // Close the read end
+                close(pipefd[0]);
 
-                // Wait for the child process to finish
+                // Wait for the Child Process to Finish
                 int status;
                 waitpid(pid, &status, 0);
                 result.buildResult = WIFEXITED(status) ? (WEXITSTATUS(status) == 0) : false;
                 result.hasError = !result.buildResult;
 
-                // Log the linker output
+                // Log the Linker Output
                 if (!resultOutput.empty())
                 {
-                    // Replace UTF-8 Smart Quotes With ASCII Equivalents
+                    // Replace UTF-8 Smart Quotes With ASCII Equivalents [Important!]
                     std::string sanitized;
                     for (size_t i = 0; i < resultOutput.size(); i++)
                     {
@@ -2502,7 +2493,7 @@ namespace jenova
         {
         }
 
-        // Override only specific functions
+        // Override Only Specific Functions
         bool InitializeCompiler(String compilerInstanceName = "<JenovaClangCompiler>") override
         {
             // Initialzie GNU Compiler Settings
