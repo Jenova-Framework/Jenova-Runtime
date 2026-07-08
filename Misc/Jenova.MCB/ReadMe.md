@@ -68,6 +68,9 @@ cl.exe /?
 ## Limitations
 Microsoft Compiler Bridge cannot be used for IntelliSense in **Visual Studio Code** or **Jenova Code IDE** due to missing header files. To resolve this, you must place the MSVC and Windows SDK header files in a folder named `Include` located alongside the `Bin` directory or manually add the required include paths in `c_cpp_properties.json` exported from Jenova Exporter.
 
+Alternatively, you can use the [Jenova MSVC Packer Wizard](https://jenova-framework.github.io/docs/pages/Misc/Auxiliaries#jenova-msvc-packer-wizard) to create your own **Jenova MSVC Compiler Package** from any MSVC installation.
+
+
 ## Troubleshooting
 
 | Error | Cause(s) | Fix |

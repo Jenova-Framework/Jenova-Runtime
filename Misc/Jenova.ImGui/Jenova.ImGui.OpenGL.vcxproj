@@ -44,19 +44,19 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;JENOVA_IMGUI_SDK_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <DebugInformationFormat>None</DebugInformationFormat>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <AdditionalIncludeDirectories>..\..\;..\..\Libs\imgui;..\..\Libs\MinHook</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4251</DisableSpecificWarnings>
       <Optimization>MaxSpeed</Optimization>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <AdditionalOptions>/Zi %(AdditionalOptions)</AdditionalOptions>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <GenerateDebugInformation>
-      </GenerateDebugInformation>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <DelayLoadDLLs>
       </DelayLoadDLLs>
       <AdditionalOptions>/DEBUG:FULL /Ignore:4098 %(AdditionalOptions)</AdditionalOptions>
@@ -68,20 +68,20 @@
       <Command>
 		  xcopy "$(ProjectDir)JenovaImGui.h" "$(OutDir)" /Y
 		  xcopy "$(ProjectDir)Addon-Config.json" "$(OutDir)" /Y
-		  xcopy "..\..\Dependencies\libjenova\imgui\imgui-jenova.h" "$(OutDir)" /Y
+		  xcopy "..\..\Libs\imgui\imgui-jenova.h" "$(OutDir)" /Y
 		  if exist "$(OutDir)imgui.h" del "$(OutDir)imgui.h"
 		  ren "$(OutDir)imgui-jenova.h" "imgui.h"
 	  </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Dependencies\libjenova\imgui\backends\imgui_impl_opengl3.cpp" />
-    <ClCompile Include="..\..\Dependencies\libjenova\imgui\backends\imgui_impl_win32.cpp" />
-    <ClCompile Include="..\..\Dependencies\libjenova\imgui\imgui.cpp" />
-    <ClCompile Include="..\..\Dependencies\libjenova\imgui\imgui_demo.cpp" />
-    <ClCompile Include="..\..\Dependencies\libjenova\imgui\imgui_draw.cpp" />
-    <ClCompile Include="..\..\Dependencies\libjenova\imgui\imgui_tables.cpp" />
-    <ClCompile Include="..\..\Dependencies\libjenova\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="..\..\Libs\imgui\backends\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="..\..\Libs\imgui\backends\imgui_impl_win32.cpp" />
+    <ClCompile Include="..\..\Libs\imgui\imgui.cpp" />
+    <ClCompile Include="..\..\Libs\imgui\imgui_demo.cpp" />
+    <ClCompile Include="..\..\Libs\imgui\imgui_draw.cpp" />
+    <ClCompile Include="..\..\Libs\imgui\imgui_tables.cpp" />
+    <ClCompile Include="..\..\Libs\imgui\imgui_widgets.cpp" />
     <ClCompile Include="jenova.imgui.opengl.cpp" />
   </ItemGroup>
   <ItemGroup>

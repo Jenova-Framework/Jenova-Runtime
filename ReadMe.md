@@ -72,7 +72,7 @@ Jenova Runtime can be built on Windows x64 and Linux x64 using **Jenova Builder*
 For detailed build instructions and more information, see the [Build Guide](https://jenova-framework.github.io/docs/pages/Advanced/Build-Guide).
 
 ## Godot Compatibility
-As of Jenova Runtime 0.4.0.0 LTS, **Godot 4.7 Stable** is the minimum required version due to breaking changes in [godot-cpp](https://github.com/godotengine/godot-cpp). While it is still possible to build 0.4.0.0+ for Godot 4.2–4.6 with minor modifications, the official builder is now fully migrated and fine-tuned for Godot 4.7 only.
+As of version 0.4.0.0 LTS, **Godot 4.7 Stable** is the minimum required version due to breaking changes in [godot-cpp](https://github.com/godotengine/godot-cpp). While it is still possible to build 0.4.0.0+ for Godot 4.2–4.6 with minor modifications, the official builder is now fully migrated and fine-tuned for Godot 4.7 only.
 
 ## Open Source vs Proprietary
 
