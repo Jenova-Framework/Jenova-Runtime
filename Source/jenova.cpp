@@ -8188,7 +8188,15 @@ namespace jenova
 		}
 		if (variantValue->get_type() == Variant::OBJECT)
 		{
-			return jenova::Format("(void*)0x%llx", (void*)variantValue);
+			if (jenova::GlobalSettings::UnwrapObjectVariantOnMeteora)
+			{
+				Object* obj = variantValue->operator Object*();
+				return jenova::Format("(void*)0x%llx", (void*)obj);
+			}
+			else
+			{
+				return jenova::Format("(void*)0x%llx", (void*)variantValue);
+			}
 		}
 		if (variantValue->get_type() == Variant::CALLABLE)
 		{

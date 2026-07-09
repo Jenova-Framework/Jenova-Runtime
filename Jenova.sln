@@ -4,9 +4,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.8.34330.188
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Jenova.Runtime", "Jenova.Runtime.vcxproj", "{8546F551-80FE-49B0-ABE2-9C8498C0B34E}"
-	ProjectSection(ProjectDependencies) = postProject
-		{D73AE6DF-B6B6-4C6A-8A90-D9F13988D386} = {D73AE6DF-B6B6-4C6A-8A90-D9F13988D386}
-	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Addons", "Addons", "{A7E91C83-0000-4261-96BC-C441CB33F622}"
 EndProject

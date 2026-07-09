@@ -244,11 +244,11 @@
 #include <variant/node_path.hpp>
 #include <variant/string_name.hpp>
 #include <variant/variant.hpp>
+#include <variant/variant_internal.hpp>
 #include <variant/dictionary.hpp>
 #include <variant/packed_string_array.hpp>
 #include <variant/string.hpp>
 #include <variant/typed_array.hpp>
-#include <variant/variant.hpp>
 #include <variant/utility_functions.hpp>
 
 // Godot SDK :: Editor
@@ -811,6 +811,7 @@ namespace jenova
 		constexpr bool UseNewFileSystemFeatures					= true;
 		constexpr bool ForceJenovaSDKHeader						= true;
 		constexpr bool CacheRuntimeConfiguration				= true;
+		constexpr bool UnwrapObjectVariantOnMeteora				= true;
 
 		constexpr size_t PrintOutputBufferSize					= 8192;
 		constexpr size_t BuildOutputBufferSize					= PrintOutputBufferSize;
