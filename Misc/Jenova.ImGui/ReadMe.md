@@ -3,7 +3,7 @@
 An addon for the Jenova Framework that integrates [Dear ImGui](https://github.com/ocornut/imgui) into the programmer's pipeline.    
 It is particularly useful for debugging and prototyping.
 
-> Currently supports only **Windows x64** with **Vulkan** and **OpenGL** backends.
+> Currently supports only **Windows x64** with **D3D12**, **Vulkan** and **OpenGL** backends.
 
 ## Usage :
 

@@ -36,9 +36,6 @@
 // Namespaces
 using namespace std;
 
-// Log Helpers
-#define log(fmt,...) printf("[Jenova-ImGui] ::> " fmt "\n", __VA_ARGS__);
-
 // Imports
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -136,6 +133,9 @@ static void InitializeJenovaImGui()
         log("[Error] Failed to Register Runtime Event Callback.");
         return;
     };
+
+    // Verbose
+    devlog("Jenova ImGui (Vulkan) Initialized Successfully.");
 }
 static void ReleaseJenovaImGui()
 {
@@ -151,6 +151,9 @@ static void ReleaseJenovaImGui()
     {
         log("[Error] Failed to Uninitialize Core.");
     };
+
+    // Verbose
+    devlog("Jenova ImGui (Vulkan) has been Released Gracefully.");
 }
 
 // Entrypoint
@@ -163,11 +166,6 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, ULONG fdwReason, LPVOID lpvReserved)
 		// Disable Thread Calls
 		DisableThreadLibraryCalls(hinstDLL);
 	}
-    if (fdwReason == DLL_PROCESS_DETACH)
-    {
-		// Release JenovaImGui
-		ReleaseJenovaImGui();
-    }
 
 	// All Good
 	return TRUE;
@@ -603,4 +601,9 @@ extern "C" JENOVAIMGUI_API void InitializeAddon(void* sdkSolver)
 
     // Initialize JenovaImGui
     InitializeJenovaImGui();
+}
+extern "C" JENOVAIMGUI_API void ShutdownAddon()
+{
+    // Release JenovaImGui
+    ReleaseJenovaImGui();
 }

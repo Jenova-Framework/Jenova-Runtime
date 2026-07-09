@@ -22,10 +22,15 @@
 // MinHook SDK
 #include <MinHook.h>
 
+// D3D12 SDK
+#include <d3d12.h>
+#include <dxgi.h>
+#include <dxgi1_4.h>
+
 // ImGui SDK
 #include "imgui.h"
 #include "backends/imgui_impl_win32.h"
-#include "backends/imgui_impl_opengl3.h"
+#include "backends/imgui_impl_dx12.h"
 
 // JenovaImGui SDK
 #include "JenovaImGui.h"
@@ -66,7 +71,7 @@ namespace JenovaRuntime
     // JenovaSDK Functions
     namespace JenovaSDK
     {
-        void* (*GetSDKFunction)(const char* sdkFunctionName) = nullptr;
+        void* (*GetSDKFunction)(const char* sdkFunctionName);
         HWND(*GetGameWindowHandle)() = nullptr;
         const char* (*GetRenderingDriverName)() = nullptr;
         void* (*GetRenderingDriverResource)(int) = nullptr;
@@ -78,7 +83,7 @@ namespace JenovaRuntime
     static bool SolveJenovaRuntimeSDKFunctions()
     {
         // Get SDK Function Solver
-        JenovaSDK::GetSDKFunction = (void* (*)(const char*))jenovaSDKFunctionSolver;
+        JenovaSDK::GetSDKFunction = (void*(*)(const char*))jenovaSDKFunctionSolver;
         if (!JenovaSDK::GetSDKFunction) return false;
 
         // Solve SDK Functions
@@ -115,10 +120,179 @@ namespace JenovaImGui
     LRESULT CALLBACK HookedWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 }
 
+// D3D12 Hook Helpers
+namespace D3D12Hooker
+{
+    /* Credits: Rebzzel + xMajdev for Method Table */
+
+    // Internal Objects
+    static WNDCLASSEX                   WindowClass;
+    static HWND                         WindowHwnd = nullptr;
+    static uint64_t*                    MethodsTable = nullptr;
+
+    // Function Table Offsets
+    const int PresentVTableIndex        = 140;
+
+    // DirectX 12 Interface
+    namespace D3D12Interface
+    {
+        ID3D12Device*                   Device = nullptr;
+        ID3D12DescriptorHeap*           DescriptorHeapBackBuffers = nullptr;
+        ID3D12DescriptorHeap*           DescriptorHeapImGuiRender = nullptr;
+        ID3D12GraphicsCommandList*      CommandList = nullptr;
+        ID3D12CommandQueue*             CommandQueue = nullptr;
+        ID3D12CommandAllocator*         CommandAllocator = nullptr;
+        ID3D12Fence*                    Fence = nullptr;
+        UINT64                          FenceValue = 0;
+        HANDLE                          FenceEvent = nullptr;
+    }
+
+    // Methods
+    static bool InitWindow()
+    {
+        WindowClass.cbSize = sizeof(WNDCLASSEX);
+        WindowClass.style = CS_HREDRAW | CS_VREDRAW;
+        WindowClass.lpfnWndProc = DefWindowProc;
+        WindowClass.cbClsExtra = 0;
+        WindowClass.cbWndExtra = 0;
+        WindowClass.hInstance = GetModuleHandle(NULL);
+        WindowClass.hIcon = NULL;
+        WindowClass.hCursor = NULL;
+        WindowClass.hbrBackground = NULL;
+        WindowClass.lpszMenuName = NULL;
+        WindowClass.lpszClassName = L"JNVIMGUI_D3D12_WND";
+        WindowClass.hIconSm = NULL;
+        RegisterClassEx(&WindowClass);
+        WindowHwnd = CreateWindowW(WindowClass.lpszClassName, L"GhostWindow", WS_OVERLAPPEDWINDOW, -1000, -1000, 100, 100, NULL, NULL, WindowClass.hInstance, NULL);
+        if (WindowHwnd == NULL) return false;
+        return true;
+    }
+    static bool DeleteWindow()
+    {
+        if (WindowHwnd) DestroyWindow(WindowHwnd);
+        UnregisterClass(WindowClass.lpszClassName, WindowClass.hInstance);
+        WindowHwnd = nullptr;
+        return true;
+    }
+    static bool InitializeMethodTable()
+    {
+        if (InitWindow() == false) return false;
+
+        // Use Godot's Device & Command Queue
+        ID3D12Device* Device = D3D12Interface::Device;
+        if (!Device)
+        {
+            DeleteWindow();
+            return false;
+        }
+        ID3D12CommandQueue* CommandQueue = D3D12Interface::CommandQueue;
+        if (!CommandQueue)
+        {
+            DeleteWindow();
+            return false;
+        }
+
+        // Create Temporary Objects for Hook
+        ID3D12CommandAllocator* CommandAllocator;
+        if (Device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, __uuidof(ID3D12CommandAllocator), (void**)&CommandAllocator) < 0)
+        {
+            DeleteWindow();
+            return false;
+        }
+        ID3D12GraphicsCommandList* CommandList;
+        if (Device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, CommandAllocator, NULL, __uuidof(ID3D12GraphicsCommandList), (void**)&CommandList) < 0)
+        {
+            DeleteWindow();
+            return false;
+        }
+
+        DXGI_RATIONAL RefreshRate;
+        RefreshRate.Numerator = 60;
+        RefreshRate.Denominator = 1;
+
+        DXGI_MODE_DESC BufferDesc;
+        BufferDesc.Width = 100;
+        BufferDesc.Height = 100;
+        BufferDesc.RefreshRate = RefreshRate;
+        BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
+        BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
+
+        DXGI_SAMPLE_DESC SampleDesc = {};
+        SampleDesc.Count = 1;
+        SampleDesc.Quality = 0;
+
+        DXGI_SWAP_CHAIN_DESC SwapChainDesc = {};
+        SwapChainDesc.BufferDesc = BufferDesc;
+        SwapChainDesc.SampleDesc = SampleDesc;
+        SwapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+        SwapChainDesc.BufferCount = 2;
+        SwapChainDesc.OutputWindow = WindowHwnd;
+        SwapChainDesc.Windowed = 1;
+        SwapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+        SwapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+
+        IDXGIFactory* Factory = NULL;
+        HMODULE DXGIModule = GetModuleHandleW(L"dxgi.dll");
+        if (DXGIModule)
+        {
+            void* CreateDXGIFactory = GetProcAddress(DXGIModule, "CreateDXGIFactory");
+            if (CreateDXGIFactory)
+            {
+                ((long(__stdcall*)(const IID&, void**))(CreateDXGIFactory))(__uuidof(IDXGIFactory), (void**)&Factory);
+            }
+        }
+
+        IDXGISwapChain* SwapChain;
+        if (!Factory || Factory->CreateSwapChain(CommandQueue, &SwapChainDesc, &SwapChain) < 0)
+        {
+            DeleteWindow();
+            return false;
+        }
+
+        // Build Method Table
+        MethodsTable = (uint64_t*)::calloc(150, sizeof(uint64_t));
+        if (!MethodsTable)
+        {
+            DeleteWindow();
+            return false;
+        }
+        memcpy(MethodsTable, *(uint64_t**)Device, 44 * sizeof(uint64_t));
+        memcpy(MethodsTable + 44, *(uint64_t**)CommandQueue, 19 * sizeof(uint64_t));
+        memcpy(MethodsTable + 44 + 19, *(uint64_t**)CommandAllocator, 9 * sizeof(uint64_t));
+        memcpy(MethodsTable + 44 + 19 + 9, *(uint64_t**)CommandList, 60 * sizeof(uint64_t));
+        memcpy(MethodsTable + 44 + 19 + 9 + 60, *(uint64_t**)SwapChain, 18 * sizeof(uint64_t));
+
+        // Release Temporary Objects
+        if (CommandAllocator) CommandAllocator->Release();
+        if (CommandList) CommandList->Release();
+        if (SwapChain) SwapChain->Release();
+        if (Factory) Factory->Release();
+        DeleteWindow();
+        return true;
+    }
+    static bool CreateHook(uint16_t Index, void** Original, void* Function)
+    {
+        void* target = (void*)MethodsTable[Index];
+        if (MH_CreateHook(target, Function, Original) != MH_OK || MH_EnableHook(target) != MH_OK) return false;
+        return true;
+    }
+    static void DisableHook(uint16_t Index)
+    {
+        assert(Index >= 0);
+        MH_DisableHook((void*)MethodsTable[Index]);
+    }
+    static void DisableAll()
+    {
+        MH_DisableHook(MH_ALL_HOOKS);
+        free(MethodsTable);
+        MethodsTable = NULL;
+    }
+}
+
 // Static Library API
 static void InitializeJenovaImGui()
 {
-    // Solve Runtime SDK Functions
     if (!JenovaRuntime::SolveJenovaRuntimeSDKFunctions())
     {
         log("[Error] Failed to Solve Runtime SDK Functions.");
@@ -133,7 +307,7 @@ static void InitializeJenovaImGui()
     };
 
     // Verbose
-    devlog("Jenova ImGui (OpenGL) Initialized Successfully.");
+    devlog("Jenova ImGui (D3D12) Initialized Successfully.");
 }
 static void ReleaseJenovaImGui()
 {
@@ -151,7 +325,7 @@ static void ReleaseJenovaImGui()
     };
 
     // Verbose
-    devlog("Jenova ImGui (OpenGL) has been Released Gracefully.");
+    devlog("Jenova ImGui (D3D12) has been Released Gracefully.");
 }
 
 // Entrypoint
@@ -170,8 +344,36 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, ULONG fdwReason, LPVOID lpvReserved)
 }
 #endif // _DLL
 
-// Type Definitions
-typedef BOOL(WINAPI* SwapBuffers_t)(HDC);
+// Enumerators
+enum GodotDriverResource 
+{
+    DRIVER_RESOURCE_LOGICAL_DEVICE = 0,
+    DRIVER_RESOURCE_PHYSICAL_DEVICE = 1,
+    DRIVER_RESOURCE_TOPMOST_OBJECT = 2,
+    DRIVER_RESOURCE_COMMAND_QUEUE = 3,
+    DRIVER_RESOURCE_QUEUE_FAMILY = 4,
+    DRIVER_RESOURCE_TEXTURE = 5,
+    DRIVER_RESOURCE_TEXTURE_VIEW = 6,
+    DRIVER_RESOURCE_TEXTURE_DATA_FORMAT = 7,
+    DRIVER_RESOURCE_SAMPLER = 8,
+    DRIVER_RESOURCE_UNIFORM_SET = 9,
+    DRIVER_RESOURCE_BUFFER = 10,
+    DRIVER_RESOURCE_COMPUTE_PIPELINE = 11,
+    DRIVER_RESOURCE_RENDER_PIPELINE = 12,
+    DRIVER_RESOURCE_VULKAN_DEVICE = 0,
+    DRIVER_RESOURCE_VULKAN_PHYSICAL_DEVICE = 1,
+    DRIVER_RESOURCE_VULKAN_INSTANCE = 2,
+    DRIVER_RESOURCE_VULKAN_QUEUE = 3,
+    DRIVER_RESOURCE_VULKAN_QUEUE_FAMILY_INDEX = 4,
+    DRIVER_RESOURCE_VULKAN_IMAGE = 5,
+    DRIVER_RESOURCE_VULKAN_IMAGE_VIEW = 6,
+    DRIVER_RESOURCE_VULKAN_IMAGE_NATIVE_TEXTURE_FORMAT = 7,
+    DRIVER_RESOURCE_VULKAN_SAMPLER = 8,
+    DRIVER_RESOURCE_VULKAN_DESCRIPTOR_SET = 9,
+    DRIVER_RESOURCE_VULKAN_BUFFER = 10,
+    DRIVER_RESOURCE_VULKAN_COMPUTE_PIPELINE = 11,
+    DRIVER_RESOURCE_VULKAN_RENDER_PIPELINE = 12,
+};
 
 // Storages
 static unordered_map<JenovaImGui::UIRenderEventID, JenovaImGui::UIRenderCallback> renderCallbacks;
@@ -180,28 +382,118 @@ static unordered_map<JenovaImGui::UIRenderEventID, JenovaImGui::UIRenderCallback
 static bool isImGuiInitialized      = false;
 static bool isRenderingAllowed      = true;
 
-// OpenGL Functions
-SwapBuffers_t                       original_SwapBuffers            = nullptr;
-SwapBuffers_t                       g_SwapBuffers                   = nullptr;
+// D3D12 Function Definitions
+typedef HRESULT(WINAPI* PresentFunc)(IDXGISwapChain*, UINT, UINT);
+
+// D3D12 Functions
+static PresentFunc                  original_Present                = nullptr;
 
 // Global Objects
 static HWND                         gameWindowHandle                = nullptr;
 static WNDPROC                      originalWndProc                 = nullptr;
 
 // Detoured Functions Implementations
-static BOOL WINAPI Detour_SwapBuffers(HDC hdc)
+static HRESULT WINAPI Detour_Present(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT Flags)
 {
-    // Skip Rendering If Disabled
-    if (!isRenderingAllowed) return original_SwapBuffers(hdc);
+    // Import Namespace
+    using namespace D3D12Hooker;
 
-    // Draw ImGui Draw Data If It's Ready
-    if (ImGui::GetDrawData() && ImGui::GetDrawData()->CmdListsCount > 0)
+    // Validation
+    if (!isRenderingAllowed) return original_Present(pSwapChain, SyncInterval, Flags);
+
+    // Get Swapchain (Version 3)
+    IDXGISwapChain3* pSwapChain3 = static_cast<IDXGISwapChain3*>(pSwapChain);
+
+    // Sync With GPU
+    if (D3D12Interface::FenceValue > 0)
     {
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        D3D12Interface::Fence->SetEventOnCompletion(D3D12Interface::FenceValue, D3D12Interface::FenceEvent);
+        WaitForSingleObject(D3D12Interface::FenceEvent, INFINITE);
     }
 
-    // Call Original SwapBuffers
-    return original_SwapBuffers(hdc);
+    // Render ImGui Overlay
+    if (ImGui::GetDrawData() && ImGui::GetDrawData()->CmdListsCount > 0)
+    {
+        static ID3D12DescriptorHeap* rtvHeap = nullptr;
+        static UINT rtvIncrement = 0;
+        static UINT bufferCount = 0;
+        static UINT lastWidth = 0;
+        static UINT lastHeight = 0;
+
+        DXGI_SWAP_CHAIN_DESC1 desc;
+        pSwapChain3->GetDesc1(&desc);
+
+        if (!rtvHeap || desc.Width != lastWidth || desc.Height != lastHeight)
+        {
+            if (rtvHeap)
+            {
+                rtvHeap->Release();
+                rtvHeap = nullptr;
+            }
+
+            lastWidth = desc.Width;
+            lastHeight = desc.Height;
+            bufferCount = desc.BufferCount;
+
+            D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
+            heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+            heapDesc.NumDescriptors = bufferCount;
+            D3D12Interface::Device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&rtvHeap));
+
+            rtvIncrement = D3D12Interface::Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+
+            for (UINT i = 0; i < bufferCount; i++)
+            {
+                ID3D12Resource* backbuffer = nullptr;
+                pSwapChain3->GetBuffer(i, IID_PPV_ARGS(&backbuffer));
+
+                D3D12_CPU_DESCRIPTOR_HANDLE h = rtvHeap->GetCPUDescriptorHandleForHeapStart();
+                h.ptr += i * rtvIncrement;
+
+                D3D12Interface::Device->CreateRenderTargetView(backbuffer, nullptr, h);
+                backbuffer->Release();
+            }
+        }
+
+        UINT index = pSwapChain3->GetCurrentBackBufferIndex();
+        ID3D12Resource* pBackBuffer = nullptr;
+        pSwapChain3->GetBuffer(index, IID_PPV_ARGS(&pBackBuffer));
+
+        D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = rtvHeap->GetCPUDescriptorHandleForHeapStart();
+        rtvHandle.ptr += index * rtvIncrement;
+
+        D3D12Interface::CommandAllocator->Reset();
+        D3D12Interface::CommandList->Reset(D3D12Interface::CommandAllocator, nullptr);
+
+        D3D12_RESOURCE_BARRIER Barrier = {};
+        Barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+        Barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+        Barrier.Transition.pResource = pBackBuffer;
+        Barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+        Barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
+        Barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+        D3D12Interface::CommandList->ResourceBarrier(1, &Barrier);
+
+        D3D12Interface::CommandList->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
+        D3D12Interface::CommandList->SetDescriptorHeaps(1, &D3D12Interface::DescriptorHeapImGuiRender);
+
+        ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), D3D12Interface::CommandList);
+
+        Barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
+        Barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
+        D3D12Interface::CommandList->ResourceBarrier(1, &Barrier);
+        D3D12Interface::CommandList->Close();
+
+        D3D12Interface::CommandQueue->ExecuteCommandLists(1, reinterpret_cast<ID3D12CommandList* const*>(&D3D12Interface::CommandList));
+
+        D3D12Interface::FenceValue++;
+        D3D12Interface::CommandQueue->Signal(D3D12Interface::Fence, D3D12Interface::FenceValue);
+
+        pBackBuffer->Release();
+    }
+
+    // Fallback to Original
+    return original_Present(pSwapChain, SyncInterval, Flags);
 }
 
 // JenovaImGui Implementation
@@ -210,23 +502,29 @@ namespace JenovaImGui
     // JenovaImGui :: Core
     bool InitializeImGuiCore()
     {
-        // Get OpenGL Module
-        HMODULE hMod = GetModuleHandle(L"opengl32.dll");
-        if (!hMod) return false;
+        // Import Namespace
+        using namespace D3D12Hooker;
 
-        // Get OpenGL Functions
-        g_SwapBuffers = (SwapBuffers_t)GetProcAddress(hMod, "wglSwapBuffers");
-        if (!g_SwapBuffers) return false;
+        // Get Godot Native D3D12 Objects
+        D3D12Interface::Device = (ID3D12Device*)JenovaRuntime::JenovaSDK::GetRenderingDriverResource(GodotDriverResource::DRIVER_RESOURCE_LOGICAL_DEVICE);
+        if (!D3D12Interface::Device) return false;
+
+        D3D12Interface::CommandQueue = (ID3D12CommandQueue*)JenovaRuntime::JenovaSDK::GetRenderingDriverResource(GodotDriverResource::DRIVER_RESOURCE_COMMAND_QUEUE);
+        if (!D3D12Interface::CommandQueue) return false;
 
         // Initialize Hook Engine
         MH_STATUS status = MH_Initialize();
         if (status != MH_STATUS::MH_OK && status != MH_STATUS::MH_ERROR_ALREADY_INITIALIZED) return false;
 
-        // Create Hooks
-        if (MH_CreateHook(g_SwapBuffers, Detour_SwapBuffers, reinterpret_cast<PVOID*>(&original_SwapBuffers)) != MH_STATUS::MH_OK) return false;
+        // Initialize D3D12 Method Table
+        if (!D3D12Hooker::InitializeMethodTable())
+        {
+            log("[Error] Failed to Initialize Direct3D 12 Method Table.");
+            return false;
+        }
 
-        // Enable Hooks
-        if (MH_EnableHook(g_SwapBuffers) != MH_STATUS::MH_OK) return false;
+        // Create Hooks
+        if (!D3D12Hooker::CreateHook(D3D12Hooker::PresentVTableIndex, reinterpret_cast<void**>(&original_Present), &Detour_Present)) return false;
 
         // Initialize ImGui
         ImGui::CreateContext();
@@ -237,12 +535,41 @@ namespace JenovaImGui
         // Set ImGui Style
         ConfigureImGuiStyle();
 
-        // Initialize ImGui for OpenGL3
-        ImGui_ImplOpenGL3_Init("#version 130");
-
         // Get Godot Game Window Handle
         gameWindowHandle = JenovaRuntime::JenovaSDK::GetGameWindowHandle();
         if (!gameWindowHandle) return false;
+
+        // Create Descriptor Heap for ImGui Texture Resource
+        D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
+        heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+        heapDesc.NumDescriptors = 2;
+        heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+        if (D3D12Interface::Device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&D3D12Interface::DescriptorHeapImGuiRender)) != S_OK) return false;
+
+        // Create Command Allocator
+        if (D3D12Interface::Device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&D3D12Interface::CommandAllocator)) != S_OK) return false;
+
+        // Create Command List
+        if (D3D12Interface::Device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, D3D12Interface::CommandAllocator, NULL, IID_PPV_ARGS(&D3D12Interface::CommandList)) != S_OK) return false;
+
+        // Create Fence for Synchronization
+        if (D3D12Interface::Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&D3D12Interface::Fence)) != S_OK) return false;
+        D3D12Interface::FenceEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+        if (!D3D12Interface::FenceEvent) return false;
+
+        // Initialize ImGui D3D12
+        ImGui_ImplDX12_InitInfo init_info = {};
+        init_info.Device = D3D12Interface::Device;
+        init_info.CommandQueue = D3D12Interface::CommandQueue;
+        init_info.NumFramesInFlight = 2;
+        init_info.RTVFormat = DXGI_FORMAT_UNKNOWN;
+        init_info.DSVFormat = DXGI_FORMAT_UNKNOWN;
+        init_info.SrvDescriptorHeap = D3D12Interface::DescriptorHeapImGuiRender;
+        init_info.SrvDescriptorAllocFn = nullptr;
+        init_info.SrvDescriptorFreeFn = nullptr;
+        init_info.LegacySingleSrvCpuDescriptor = D3D12Interface::DescriptorHeapImGuiRender->GetCPUDescriptorHandleForHeapStart();
+        init_info.LegacySingleSrvGpuDescriptor = D3D12Interface::DescriptorHeapImGuiRender->GetGPUDescriptorHandleForHeapStart();
+        if (!ImGui_ImplDX12_Init(&init_info)) return false;
 
         // Initialize ImGui Win32
         if (!ImGui_ImplWin32_Init(gameWindowHandle)) return false;
@@ -269,14 +596,41 @@ namespace JenovaImGui
             originalWndProc = nullptr;
         }
 
-        // Shutdown ImGui OpenGL Backend
-        ImGui_ImplOpenGL3_Shutdown();
+        // Disable Hooks
+        D3D12Hooker::DisableAll();
+        MH_Uninitialize();
+
+        // Shutdown ImGui Backends
+        ImGui_ImplDX12_Shutdown();
         ImGui_ImplWin32_Shutdown();
         ImGui::DestroyContext();
 
-        // Disable and Remove Hooks
-        if (MH_DisableHook(g_SwapBuffers) != MH_STATUS::MH_OK) return false;
-        if (MH_RemoveHook(g_SwapBuffers) != MH_STATUS::MH_OK) return false;
+        // Release D3D12 Resources
+        if (D3D12Hooker::D3D12Interface::CommandList)
+        {
+            D3D12Hooker::D3D12Interface::CommandList->Release();
+            D3D12Hooker::D3D12Interface::CommandList = nullptr;
+        }
+        if (D3D12Hooker::D3D12Interface::CommandAllocator)
+        {
+            D3D12Hooker::D3D12Interface::CommandAllocator->Release();
+            D3D12Hooker::D3D12Interface::CommandAllocator = nullptr;
+        }
+        if (D3D12Hooker::D3D12Interface::DescriptorHeapImGuiRender)
+        {
+            D3D12Hooker::D3D12Interface::DescriptorHeapImGuiRender->Release();
+            D3D12Hooker::D3D12Interface::DescriptorHeapImGuiRender = nullptr;
+        }
+        if (D3D12Hooker::D3D12Interface::Fence)
+        {
+            D3D12Hooker::D3D12Interface::Fence->Release();
+            D3D12Hooker::D3D12Interface::Fence = nullptr;
+        }
+        if (D3D12Hooker::D3D12Interface::FenceEvent)
+        {
+            CloseHandle(D3D12Hooker::D3D12Interface::FenceEvent);
+            D3D12Hooker::D3D12Interface::FenceEvent = nullptr;
+        }
 
         // All Good
         isImGuiInitialized = false;
@@ -394,7 +748,7 @@ namespace JenovaImGui
         if (runtimeEvent == JenovaRuntime::RuntimeEvent::FrameBegin)
         {
             // Create New ImGui Frame
-            ImGui_ImplOpenGL3_NewFrame();
+            ImGui_ImplDX12_NewFrame();
             ImGui_ImplWin32_NewFrame();
             ImGui::NewFrame();
         }

@@ -4565,6 +4565,9 @@ namespace jenova
 			}
 			void _exit_tree() override
 			{
+				// Unload Addon Modules (Must Be Called Here!)
+				jenova::UnloadRuntimeLoadedAddons();
+
 				// Rise Events
 				for (const auto& runtimeCallback : runtimeCallbacks) runtimeCallback(RuntimeEvent::ExitTree, nullptr, 0);
 			}
@@ -9829,15 +9832,15 @@ namespace jenova
 						};
 						jenova::Output("Runtime Addon Module '%s' Autoloaded.", addonBinary.c_str());
 
+						// Add Loaded Module to Loaded Addons
+						jenova::GetLoadedAddons().insert(std::make_pair(addonModule, addonConfig));
+
 						// Check for Module Initializer
 						typedef void(*InitializeAddon_t)(void* sdkSolver);
 						InitializeAddon_t InitializeAddon = (InitializeAddon_t)jenova::GetModuleFunction(addonModule, "InitializeAddon");
 
 						// If Addon has Initializer Call It
-						if (InitializeAddon)
-						{
-							InitializeAddon(jenova::GetJenovaSDKFunctionSolver());
-						}
+						if (InitializeAddon) InitializeAddon(jenova::GetJenovaSDKFunctionSolver());
 					}
 					else
 					{
@@ -9855,6 +9858,26 @@ namespace jenova
 			jenova::Error("Jenova Addon Loader", "Failed to Parse Runtime Configuration Data.");
 			return false;
 		}
+	}
+	bool UnloadRuntimeLoadedAddons()
+	{
+		// Iterate Over All Loaded Addons
+		for (const auto& loadedAddon : jenova::GetLoadedAddons())
+		{
+			// Check for Module Uninitializer
+			typedef void(*ShutdownAddon_t)();
+			ShutdownAddon_t ShutdownAddon = (ShutdownAddon_t)jenova::GetModuleFunction(loadedAddon.first, "ShutdownAddon");
+
+			// If Addon has Uninitializer Call It
+			if (ShutdownAddon) ShutdownAddon();
+		}
+		jenova::GetLoadedAddons().clear();
+		return true;
+	}
+	jenova::LoadedAddons& GetLoadedAddons()
+	{
+		static jenova::LoadedAddons loadedAddons;
+		return loadedAddons;
 	}
 	std::string CreateTemporaryModuleCache(const uint8_t* moduleDataPtr, const size_t moduleSize)
 	{

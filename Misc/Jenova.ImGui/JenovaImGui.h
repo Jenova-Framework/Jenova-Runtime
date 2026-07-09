@@ -27,6 +27,14 @@
 	#define JENOVAIMGUI_API	 __declspec(dllimport)
 #endif
 
+// Log Helpers
+#define log(fmt,...) printf("[Jenova-ImGui] ::> " fmt "\n", __VA_ARGS__);
+#ifdef JENOVAIMGUI_DEV
+	#define devlog(fmt,...) printf("[Jenova-ImGui] |> " fmt "\n", __VA_ARGS__);
+#else
+	#define devlog(fmt,...)
+#endif
+
 // Jenova-ImGui Namespace
 namespace JenovaImGui
 {

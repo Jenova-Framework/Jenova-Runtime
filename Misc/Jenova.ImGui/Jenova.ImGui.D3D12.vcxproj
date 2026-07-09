@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <ProjectGuid>{D73AE6DF-B6B6-4C6A-8A90-D9F13988D386}</ProjectGuid>
+    <RootNamespace>Application</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>..\..\Win64\Addons\JenovaImGui-D3D12\</OutDir>
+    <IntDir>..\..\Win64\Cache\JenovaImGui\D3D12\</IntDir>
+    <TargetName>Jenova.ImGui.x64</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;JENOVA_IMGUI_SDK_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>false</ConformanceMode>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalIncludeDirectories>..\..\;..\..\Libs\imgui;..\..\Libs\MinHook</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4251</DisableSpecificWarnings>
+      <Optimization>MaxSpeed</Optimization>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <AdditionalOptions>/Zi %(AdditionalOptions)</AdditionalOptions>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
+      <AdditionalDependencies>dxgi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <DelayLoadDLLs>
+      </DelayLoadDLLs>
+      <AdditionalOptions>/DEBUG:FULL /Ignore:4098 %(AdditionalOptions)</AdditionalOptions>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
+    <PostBuildEvent>
+      <Command>
+		  xcopy "$(ProjectDir)JenovaImGui.h" "$(OutDir)" /Y
+		  xcopy "$(ProjectDir)Addon-Config.json" "$(OutDir)" /Y
+		  xcopy "..\..\Libs\imgui\imgui-jenova.h" "$(OutDir)" /Y
+		  if exist "$(OutDir)imgui.h" del "$(OutDir)imgui.h"
+		  ren "$(OutDir)imgui-jenova.h" "imgui.h"
+	  </Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Libs\imgui\backends\imgui_impl_dx12.cpp" />
+    <ClCompile Include="..\..\Libs\imgui\backends\imgui_impl_win32.cpp" />
+    <ClCompile Include="..\..\Libs\imgui\imgui.cpp" />
+    <ClCompile Include="..\..\Libs\imgui\imgui_demo.cpp" />
+    <ClCompile Include="..\..\Libs\imgui\imgui_draw.cpp" />
+    <ClCompile Include="..\..\Libs\imgui\imgui_tables.cpp" />
+    <ClCompile Include="..\..\Libs\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="jenova.imgui.d3d12.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="JenovaImGui.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Jenova.ImGui.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Addon-Config.json" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
