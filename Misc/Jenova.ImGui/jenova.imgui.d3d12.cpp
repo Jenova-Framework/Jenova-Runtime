@@ -484,10 +484,14 @@ static HRESULT WINAPI Detour_Present(IDXGISwapChain* pSwapChain, UINT SyncInterv
         D3D12Interface::CommandList->ResourceBarrier(1, &Barrier);
         D3D12Interface::CommandList->Close();
 
-        D3D12Interface::CommandQueue->ExecuteCommandLists(1, reinterpret_cast<ID3D12CommandList* const*>(&D3D12Interface::CommandList));
-
+        // Ensure ImGui Commands Complete Before Presenting
         D3D12Interface::FenceValue++;
         D3D12Interface::CommandQueue->Signal(D3D12Interface::Fence, D3D12Interface::FenceValue);
+        D3D12Interface::CommandQueue->ExecuteCommandLists(1, reinterpret_cast<ID3D12CommandList* const*>(&D3D12Interface::CommandList));
+        D3D12Interface::FenceValue++;
+        D3D12Interface::CommandQueue->Signal(D3D12Interface::Fence, D3D12Interface::FenceValue);
+        D3D12Interface::Fence->SetEventOnCompletion(D3D12Interface::FenceValue, D3D12Interface::FenceEvent);
+        WaitForSingleObject(D3D12Interface::FenceEvent, INFINITE);
 
         pBackBuffer->Release();
     }

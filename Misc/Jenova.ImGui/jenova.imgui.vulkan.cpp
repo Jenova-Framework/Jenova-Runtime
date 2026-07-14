@@ -222,6 +222,7 @@ static VkQueue					    g_Queue							= VK_NULL_HANDLE;
 static VkCommandPool			    g_CommandPool					= VK_NULL_HANDLE;
 static VkCommandBuffer			    g_CommandBuffer					= VK_NULL_HANDLE;
 static VkDescriptorPool             g_DescriptorPool                = VK_NULL_HANDLE;
+static VkFence                      g_Fence                         = VK_NULL_HANDLE;
 
 // Global Objects
 static HWND                         gameWindowHandle                = nullptr;
@@ -236,7 +237,12 @@ static VKAPI_ATTR VkResult VKAPI_CALL Detour_vkQueuePresentKHR(VkQueue queue, co
     // Draw ImGui Draw Data If It's Ready
     if (ImGui::GetDrawData() && ImGui::GetDrawData()->CmdListsCount > 0)
     {
-        // Record ImGui draw commands
+        // Reset Buffer/Fence
+        vkWaitForFences(g_VkDevice, 1, &g_Fence, VK_TRUE, UINT64_MAX);
+        vkResetFences(g_VkDevice, 1, &g_Fence);
+        vkResetCommandBuffer(g_CommandBuffer, 0);
+
+        // Record ImGui Draw Commands
         VkCommandBufferBeginInfo beginInfo = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
@@ -248,7 +254,7 @@ static VKAPI_ATTR VkResult VKAPI_CALL Detour_vkQueuePresentKHR(VkQueue queue, co
         VkSubmitInfo submitInfo = { VK_STRUCTURE_TYPE_SUBMIT_INFO };
         submitInfo.commandBufferCount = 1;
         submitInfo.pCommandBuffers = &g_CommandBuffer;
-        vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE);
+        vkQueueSubmit(queue, 1, &submitInfo, g_Fence);
     }
 
     // Call Original Present
@@ -289,6 +295,11 @@ namespace JenovaImGui
         allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
         allocInfo.commandBufferCount = 1;
         if (vkAllocateCommandBuffers(g_VkDevice, &allocInfo, &g_CommandBuffer) != VK_SUCCESS) return false;
+
+        // Create Fence
+        VkFenceCreateInfo fenceInfo = { VK_STRUCTURE_TYPE_FENCE_CREATE_INFO };
+        fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+        if (vkCreateFence(g_VkDevice, &fenceInfo, nullptr, &g_Fence) != VK_SUCCESS) return false;
 
         // Solve Godot Vulkan Functions
         g_vkQueuePresentKHR = (PFN_vkQueuePresentKHR)vkGetDeviceProcAddr(g_VkDevice, "vkQueuePresentKHR");
@@ -397,6 +408,13 @@ namespace JenovaImGui
         {
             vkDestroyCommandPool(g_VkDevice, g_CommandPool, nullptr);
             g_CommandPool = VK_NULL_HANDLE;
+        }
+
+        // Destroy Vulkan Command Pool
+        if (g_Fence)
+        {
+            vkDestroyFence(g_VkDevice, g_Fence, nullptr);
+            g_Fence = VK_NULL_HANDLE;
         }
 
         // Disable and Remove Hooks
