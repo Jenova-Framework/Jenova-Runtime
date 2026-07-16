@@ -66,6 +66,7 @@ private:
 	void UpdatePackageList(const jenova::PackageType& packageType);
 	void ForceUpdatePackageList();
 	void RequestEditorRestart();
+	void PromptPackageDocumentation(const String& markdownFile);
 	void SetBusy(bool busyState, jenova::TaskID taskID = 0);
 	Window* GetWindow() { return currentWindow; }
 	bool CanClose() const;

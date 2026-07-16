@@ -181,7 +181,7 @@ namespace jenova
 			{ 
 				Vector2i iconSize(20, 20);
 				iconSize *= EditorInterface::get_singleton()->get_editor_scale();
-				return MAKE_IMAGE_FROM_BUFFER_EX(BUFFER_PTR_SIZE_PARAM(jenova::resources::PNG_JENOVA_ICON_64), iconSize, jenova::ImageFormat::PNG);
+				return MAKE_IMAGE_FROM_BUFFER_EX(BUFFER_PTR_SIZE_PARAM(JENOVA_RESOURCE(PNG_JENOVA_ICON_64)), iconSize, jenova::ImageFormat::PNG);
 			}
 			bool _has_main_screen() const override { return false; }
 			bool _handles(Object* p_object) const override { return false; }
@@ -784,7 +784,7 @@ namespace jenova
 					// Register C++ Script Icon
 					if (!editor_theme->has_icon(jenova::GlobalSettings::JenovaScriptType, "EditorIcons"))
 					{
-						Ref<ImageTexture> iconImage = MAKE_IMAGE_FROM_BUFFER_EX(BUFFER_PTR_SIZE_PARAM(jenova::resources::SVG_CPP_SCRIPT_ICON), Vector2i(SCALED(19), SCALED(18)));
+						Ref<ImageTexture> iconImage = MAKE_IMAGE_FROM_BUFFER_EX(BUFFER_PTR_SIZE_PARAM(JENOVA_RESOURCE(SVG_CPP_SCRIPT_ICON)), Vector2i(SCALED(19), SCALED(18)));
 
 						if (iconImage != nullptr)
 						{
@@ -800,7 +800,7 @@ namespace jenova
 					// Register C++ Header Icon
 					if (!editor_theme->has_icon(jenova::GlobalSettings::JenovaHeaderType, "EditorIcons"))
 					{
-						Ref<ImageTexture> iconImage = MAKE_IMAGE_FROM_BUFFER_EX(BUFFER_PTR_SIZE_PARAM(jenova::resources::SVG_CPP_HEADER_ICON), Vector2i(SCALED(18), SCALED(18)));
+						Ref<ImageTexture> iconImage = MAKE_IMAGE_FROM_BUFFER_EX(BUFFER_PTR_SIZE_PARAM(JENOVA_RESOURCE(SVG_CPP_HEADER_ICON)), Vector2i(SCALED(18), SCALED(18)));
 
 						if (iconImage != nullptr)
 						{
@@ -820,7 +820,7 @@ namespace jenova
 					// Register Console Icon
 					if (!editor_theme->has_icon("Console", "EditorIcons"))
 					{
-						Ref<ImageTexture> iconImage = MAKE_IMAGE_FROM_BUFFER_EX(BUFFER_PTR_SIZE_PARAM(jenova::resources::SVG_CONSOLE_ICON), Vector2i(SCALED(18), SCALED(18)));
+						Ref<ImageTexture> iconImage = MAKE_IMAGE_FROM_BUFFER_EX(BUFFER_PTR_SIZE_PARAM(JENOVA_RESOURCE(SVG_CONSOLE_ICON)), Vector2i(SCALED(18), SCALED(18)));
 
 						if (iconImage != nullptr)
 						{
@@ -836,7 +836,7 @@ namespace jenova
 					// Register Console Scheme Icon
 					if (!editor_theme->has_icon("ConsoleScheme", "EditorIcons"))
 					{
-						Ref<ImageTexture> iconImage = MAKE_IMAGE_FROM_BUFFER_EX(BUFFER_PTR_SIZE_PARAM(jenova::resources::SVG_CONSOLE_SCHEME_ICON), Vector2i(SCALED(18), SCALED(18)));
+						Ref<ImageTexture> iconImage = MAKE_IMAGE_FROM_BUFFER_EX(BUFFER_PTR_SIZE_PARAM(JENOVA_RESOURCE(SVG_CONSOLE_SCHEME_ICON)), Vector2i(SCALED(18), SCALED(18)));
 
 						if (iconImage != nullptr)
 						{
@@ -9968,14 +9968,14 @@ namespace jenova
 		std::string gitIgnoreFile = rootPath + ".gitignore";
 		if (!std::filesystem::exists(gitIgnoreFile))
 		{
-			std::string gitIgnoreTemplate = std::string(BUFFER_PTR_SIZE_PARAM(jenova::resources::JenovaGitIngoreTemplate));
+			std::string gitIgnoreTemplate = std::string(BUFFER_PTR_SIZE_PARAM(JENOVA_RESOURCE(JenovaGitIngoreTemplate)));
 			if (!jenova::WriteStdStringToFile(gitIgnoreFile, gitIgnoreTemplate)) return false;
 		}
 		else
 		{
 			// Check Ignore File Content
 			String currentIgnoreFileContentHash = jenova::ReadStringFromFile(String(gitIgnoreFile.c_str())).md5_text();
-			String jenovaIgnoreFileContentHash = String(jenova::resources::JenovaGitIngoreTemplate).md5_text();
+			String jenovaIgnoreFileContentHash = String(JENOVA_RESOURCE(JenovaGitIngoreTemplate)).md5_text();
 			if (currentIgnoreFileContentHash == jenovaIgnoreFileContentHash) return true;
 
 			// Request Overwrite (Windows Only)
@@ -9986,7 +9986,7 @@ namespace jenova
 			);
 			if (result == IDYES)
 			{
-				std::string gitIgnoreTemplate = std::string(BUFFER_PTR_SIZE_PARAM(jenova::resources::JenovaGitIngoreTemplate));
+				std::string gitIgnoreTemplate = std::string(BUFFER_PTR_SIZE_PARAM(JENOVA_RESOURCE(JenovaGitIngoreTemplate)));
 				if (!jenova::WriteStdStringToFile(gitIgnoreFile, gitIgnoreTemplate)) return false;
 				jenova::Output("GitHub Ignore file has been successfully updated.");
 				return true;

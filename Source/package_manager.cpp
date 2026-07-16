@@ -120,6 +120,7 @@ void JenovaPackageManager::_bind_methods()
     ClassDB::bind_method(D_METHOD("OpenPackageManager"), &JenovaPackageManager::OpenPackageManager);
 	ClassDB::bind_method(D_METHOD("UpdateStatus"), &JenovaPackageManager::UpdateStatus);
 	ClassDB::bind_method(D_METHOD("ForceUpdatePackageList"), &JenovaPackageManager::ForceUpdatePackageList);
+	ClassDB::bind_method(D_METHOD("PromptPackageDocumentation"), &JenovaPackageManager::PromptPackageDocumentation);
 	ClassDB::bind_method(D_METHOD("RequestEditorRestart"), &JenovaPackageManager::RequestEditorRestart);
 }
 
@@ -698,7 +699,15 @@ bool JenovaPackageManager::FetchOnlinePackages()
 			double scaleFactor = EditorInterface::get_singleton()->get_editor_scale();
 			Vector2 packageIconSize(SCALED(64), SCALED(64));
 			std::string packageIconBuffer = base64::base64_decode(packageItem["pkgImage"].get<std::string>());
-			newPackage.pkgImage = MAKE_IMAGE_FROM_BUFFER_EX((uint8_t*)packageIconBuffer.data(), packageIconBuffer.size(), packageIconSize, jenova::ImageFormat::PNG);
+			if (packageIconBuffer.size() != 0)
+			{
+				uint8_t* imageData = reinterpret_cast<uint8_t*>(packageIconBuffer.data());
+				newPackage.pkgImage = MAKE_IMAGE_FROM_BUFFER_EX(imageData, packageIconBuffer.size(), packageIconSize, jenova::ImageFormat::PNG);
+			}
+			else
+			{
+				newPackage.pkgImage = MAKE_IMAGE_FROM_BUFFER_EX(BUFFER_PTR_SIZE_PARAM(JENOVA_RESOURCE(SVG_PACKAGE_ICON)), packageIconSize);
+			}
 
 			// Add Package
 			onlinePackages.push_back(newPackage);
@@ -1003,8 +1012,8 @@ bool JenovaPackageManager::DownloadPackage(const String& packageFileURL, const S
 	curl_easy_setopt(curlHandle, CURLOPT_USERAGENT, "Jenova Package Downloader/1.0 (Microsoft Windows) (x64) English");
 	curl_easy_setopt(curlHandle, CURLOPT_VERBOSE, 0L);
 	curl_easy_setopt(curlHandle, CURLOPT_REDIR_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
-	// curl_easy_setopt(curlHandle, CURLOPT_TIMEOUT, 60L);
-	// curl_easy_setopt(curlHandle, CURLOPT_CONNECTTIMEOUT, 10L);
+	curl_easy_setopt(curlHandle, CURLOPT_TIMEOUT, 600L);
+	curl_easy_setopt(curlHandle, CURLOPT_CONNECTTIMEOUT, 10L);
 
 	// Set Progress Function
 	curl_easy_setopt(curlHandle, CURLOPT_XFERINFOFUNCTION, JenovaPackageManager::OnDownloadProgress);
@@ -1136,6 +1145,10 @@ bool JenovaPackageManager::InstallPackage(const String& packageHash)
 
 	// Request Build and Restart if Package is Sample Project
 	if (package.pkgType == jenova::PackageType::SampleProject) jenova::QueueProjectBuild(true, true);
+
+	// Prompt User to Open Documentation File If Exists
+	std::string readMeFilePath = AS_STD_STRING(installPath) + "/" + "ReadMe.md";
+	if (std::filesystem::exists(readMeFilePath)) this->call_deferred("PromptPackageDocumentation", String(readMeFilePath.c_str()));
 
 	// All Good
 	return true;
@@ -1700,6 +1713,25 @@ void JenovaPackageManager::RequestEditorRestart()
 	// Add Dialog to Engine & Show
 	GetWindow()->add_child(dialog);
 	dialog->popup_centered();
+}
+void JenovaPackageManager::PromptPackageDocumentation(const String& markdownFile)
+{
+	// Check If User Wants to Open Package Read Me File
+	if (jenova::GlobalSettings::PromptUserForPackageReadMe)
+	{
+		ConfirmationDialog* dialog = memnew(ConfirmationDialog);
+		dialog->set_title("[ Package Manager ]");
+		dialog->set_text("The installed package includes a documentation file. Would you like to view it now?");
+		dialog->get_ok_button()->set_text("I RTFM!");
+		dialog->get_cancel_button()->set_text(String::utf8("Fuck it, we ball \xF0\x9F\xA4\x99\xF0\x9F\x8F\xBB"));
+
+		//dialog->connect("confirmed", callable_mp((Node*)dialog, &ConfirmationDialog::queue_free));
+		//dialog->connect("confirmed", callable_mp((Node*)dialog, &ConfirmationDialog::queue_free));
+		//dialog->connect("canceled", callable_mp((Node*)dialog, &ConfirmationDialog::queue_free));
+
+		GetWindow()->add_child(dialog);
+		dialog->popup_centered();
+	}
 }
 void JenovaPackageManager::SetBusy(bool busyState, jenova::TaskID taskID)
 {

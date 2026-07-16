@@ -6170,7 +6170,7 @@ void BladePlugin::_enter_tree()
 	if (!editor_theme->has_icon(blade::BladeScriptType, "EditorIcons"))
 	{
 		Vector2 iconSize = Vector2i(18 * scaleFactor, 18 * scaleFactor);
-		Ref<ImageTexture> iconImage = CreateSVGFromByteArray(jenova::resources::SVG_BLADE_SCRIPT_ICON, sizeof jenova::resources::SVG_BLADE_SCRIPT_ICON, iconSize);
+		Ref<ImageTexture> iconImage = CreateSVGFromByteArray(BUFFER_PTR_SIZE_PARAM(JENOVA_RESOURCE(SVG_BLADE_SCRIPT_ICON)), iconSize);
 		if (iconImage != nullptr) editor_theme->set_icon(blade::BladeScriptType, "EditorIcons", iconImage);
 	}
 
