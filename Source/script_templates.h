@@ -17,9 +17,9 @@
 #include "Jenova.hpp"
 
 // Jenova Script Template Manager Difinition
-class JenovaTemplateManager : public RefCounted
+class JenovaTemplateManager : public Object
 {
-	GDCLASS(JenovaTemplateManager, RefCounted);
+	GDCLASS(JenovaTemplateManager, Object);
 
 public:
 	static JenovaTemplateManager* get_singleton();

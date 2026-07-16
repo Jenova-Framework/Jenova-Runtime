@@ -34,9 +34,9 @@ namespace jenova::AssetMonitor
 }
 
 // Jenova Asset Monitor Difinition
-class JenovaAssetMonitor : public RefCounted
+class JenovaAssetMonitor : public Object
 {
-	GDCLASS(JenovaAssetMonitor, RefCounted);
+	GDCLASS(JenovaAssetMonitor, Object);
 
 public:
 	static JenovaAssetMonitor* get_singleton();

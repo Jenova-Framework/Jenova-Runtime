@@ -17,9 +17,9 @@
 #include "Jenova.hpp"
 
 // Jenova Package Manager Difinition
-class JenovaPackageManager : public RefCounted
+class JenovaPackageManager : public Object
 {
-	GDCLASS(JenovaPackageManager, RefCounted);
+	GDCLASS(JenovaPackageManager, Object);
 
 public:
 	static JenovaPackageManager* get_singleton();

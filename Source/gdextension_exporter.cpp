@@ -182,7 +182,7 @@ void GDExtensionExporter::PickExportOutputFile()
 	file_dialog->set_filters(filters);
 
 	// Define Internal UI Callback
-	class FileDialogEvent : public RefCounted
+	class FileDialogEvent : public Object
 	{
 	private:
 		FileDialog* fileDialogInstance;

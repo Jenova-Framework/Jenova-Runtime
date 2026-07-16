@@ -339,7 +339,7 @@ bool JenovaPackageManager::OpenPackageManager()
 				dialog->get_ok_button()->set_visible(false);
 
 				// Define Internal UI Callback
-				class CustomPackageInstallerEvent : public RefCounted
+				class CustomPackageInstallerEvent : public Object
 				{
 				private:
 					JenovaPackageManager* pkgManagerInstance;
@@ -1384,7 +1384,7 @@ bool JenovaPackageManager::InstallCustomPackage(const jenova::CustomPackageInsta
 		};
 
 		// Define Internal UI Callback
-		class FileDialogEvent : public RefCounted
+		class FileDialogEvent : public Object
 		{
 		private:
 			FileDialogEventData eventData;
@@ -1688,9 +1688,8 @@ void JenovaPackageManager::RequestEditorRestart()
 	dialog->get_cancel_button()->set_text("I Need to Save My Work");
 
 	// Define Internal UI Callback
-	class OnConfirmedEvent : public RefCounted
+	class OnConfirmedEvent : public Object
 	{
-	private:
 	private:
 		JenovaPackageManager* pkgManagerInstance = nullptr;
 
@@ -1725,9 +1724,27 @@ void JenovaPackageManager::PromptPackageDocumentation(const String& markdownFile
 		dialog->get_ok_button()->set_text("I RTFM!");
 		dialog->get_cancel_button()->set_text(String::utf8("Fuck it, we ball \xF0\x9F\xA4\x99\xF0\x9F\x8F\xBB"));
 
-		//dialog->connect("confirmed", callable_mp((Node*)dialog, &ConfirmationDialog::queue_free));
-		//dialog->connect("confirmed", callable_mp((Node*)dialog, &ConfirmationDialog::queue_free));
-		//dialog->connect("canceled", callable_mp((Node*)dialog, &ConfirmationDialog::queue_free));
+		// Define Internal UI Callback
+		class OnConfirmedEvent : public Object
+		{
+		private:
+			String documentationFile;
+
+		public:
+			OnConfirmedEvent(const String& _markdownFile) : documentationFile(_markdownFile) { }
+
+		public:
+			void ProcessEvent()
+			{
+				jenova::RunFile(AS_C_STRING(documentationFile));
+				memdelete(this);
+			}
+		};
+
+		// Create & Assign UI Callback to Dialog
+		dialog->connect("confirmed", callable_mp(memnew(OnConfirmedEvent(markdownFile)), &OnConfirmedEvent::ProcessEvent));
+		dialog->connect("confirmed", callable_mp((Node*)dialog, &ConfirmationDialog::queue_free));
+		dialog->connect("canceled", callable_mp((Node*)dialog, &ConfirmationDialog::queue_free));
 
 		GetWindow()->add_child(dialog);
 		dialog->popup_centered();

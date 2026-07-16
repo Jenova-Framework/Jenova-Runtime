@@ -17,9 +17,9 @@
 #include "Jenova.hpp"
 
 // Jenova Clektron Script Engine Definition
-class Clektron : public RefCounted
+class Clektron : public Object
 {
-	GDCLASS(Clektron, RefCounted);
+	GDCLASS(Clektron, Object);
 
 protected:
 	static void _bind_methods();

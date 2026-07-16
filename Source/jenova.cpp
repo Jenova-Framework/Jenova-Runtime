@@ -1451,7 +1451,7 @@ namespace jenova
 						dialog->get_cancel_button()->set_text("Abort Build");
 
 						// Define Internal UI Callback
-						class OnConfirmedEvent : public RefCounted
+						class OnConfirmedEvent : public Object
 						{
 						private:
 							JenovaEditorPlugin* pluginInstance;
@@ -2768,7 +2768,7 @@ namespace jenova
 				window_surface->add_child(generate_button);
 
 				// Define Internal UI Callback Handler
-				class VSSelectorEventManager : public RefCounted
+				class VSSelectorEventManager : public Object
 				{
 				private:
 					JenovaEditorPlugin* pluginInstance = nullptr;
@@ -3796,7 +3796,7 @@ namespace jenova
 				window_surface->add_child(configure_button);
 
 				// Define Internal UI Callback Handler
-				class ConfigureBuildEventManager : public RefCounted
+				class ConfigureBuildEventManager : public Object
 				{
 				private:
 					JenovaEditorPlugin* pluginInstance = nullptr;
@@ -3919,7 +3919,7 @@ namespace jenova
 				window_surface->add_child(export_button);
 
 				// Define Internal UI Callback Handler
-				class ModuleExporterEventManager : public RefCounted
+				class ModuleExporterEventManager : public Object
 				{
 				private:
 					JenovaEditorPlugin* pluginInstance = nullptr;
@@ -4124,7 +4124,7 @@ namespace jenova
 				open_web_button->call_deferred("grab_focus");
 
 				// Define Internal UI Callback Handler
-				class AboutEventManager : public RefCounted
+				class AboutEventManager : public Object
 				{
 				private:
 					Window* window = nullptr;
@@ -5720,7 +5720,7 @@ namespace jenova
 		char buffer[jenova::GlobalSettings::FormatBufferSize];
 		va_list args;
 		va_start(args, fmt);
-		vsnprintf(buffer, sizeof(buffer), AS_STD_STRING(fmt).c_str(), args);
+		vsnprintf(buffer, sizeof(buffer), AS_C_STRING(fmt), args);
 		va_end(args);
 		return String(buffer);
 	}

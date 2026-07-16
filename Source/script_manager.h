@@ -17,9 +17,9 @@
 #include "Jenova.hpp"
 
 // Jenova Script Manager Definition
-class JenovaScriptManager : public RefCounted
+class JenovaScriptManager : public Object
 {
-    GDCLASS(JenovaScriptManager, RefCounted);
+    GDCLASS(JenovaScriptManager, Object);
 
 protected:
     static void _bind_methods();
