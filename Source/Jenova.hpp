@@ -813,6 +813,7 @@ namespace jenova
 		constexpr bool CacheRuntimeConfiguration				= true;
 		constexpr bool UnwrapObjectVariantOnMeteora				= true;
 		constexpr bool PromptUserForPackageReadMe				= true;
+		constexpr bool UseMarkovaForDocumentations				= true;
 
 		constexpr size_t PrintOutputBufferSize					= 8192;
 		constexpr size_t BuildOutputBufferSize					= PrintOutputBufferSize;

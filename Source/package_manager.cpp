@@ -26,6 +26,10 @@
 
 // Resources
 #include "IconDatabase.h"
+#include "FontDatabase.h"
+
+// Markdown Renderer (Code Fragment)
+#include "Fragments/Markova.Fragment.hpp"
 
 // Helper Macros
 #define BIND_TOOL_ACTION(toolBtn, toolID) toolBtn->connect("pressed", callable_mp(pacmanEventManager, &PackmanEventManager::OnToolPressed).bind(String(toolID)));
@@ -83,6 +87,61 @@ static std::string GetOnlinePackageDatabaseURL()
 	// Return Final URL
 	return fullURL;
 }
+static void CreatePackageDocumentationWindow(const String& docContext, Window* owner)
+{
+	// Get Scale Factor
+	double scaleFactor = EditorInterface::get_singleton()->get_editor_scale();
+
+	// Load Fonts
+	Ref<Font> spaceMonoRegularFont = jenova::CreateFontFileFromByteArray(BUFFER_PTR_SIZE_PARAM(JENOVA_RESOURCE(FONT_SPACEMONO_REGULAR)));
+	Ref<Font> spaceMonoItalicFont = jenova::CreateFontFileFromByteArray(BUFFER_PTR_SIZE_PARAM(JENOVA_RESOURCE(FONT_SPACEMONO_ITALIC)));
+	Ref<Font> spaceMonoBoldFont = jenova::CreateFontFileFromByteArray(BUFFER_PTR_SIZE_PARAM(JENOVA_RESOURCE(FONT_SPACEMONO_BOLD)));
+	Ref<Font> spaceMonoBoldItalicFont = jenova::CreateFontFileFromByteArray(BUFFER_PTR_SIZE_PARAM(JENOVA_RESOURCE(FONT_SPACEMONO_BOLD_ITALIC)));
+
+	// Create Window
+	Window* docWindow = memnew(Window);
+	docWindow->set_title("Package Documentation Viewer");
+	docWindow->set_name("DocumentationWindow");
+	docWindow->set_size(Vector2i(SCALED(820), SCALED(850)));
+	docWindow->set_min_size(Vector2i(SCALED(500), SCALED(500)));
+
+	// Show Window [Must Be Here]
+	owner->add_child(docWindow);
+	docWindow->hide();
+	docWindow->popup_centered();
+
+	// Create Content
+	Panel* backgroundPanel = memnew(Panel);
+	backgroundPanel->set_anchors_preset(Control::LayoutPreset::PRESET_FULL_RECT);
+	docWindow->add_child(backgroundPanel);
+
+	ScrollContainer* scrollContainer = memnew(ScrollContainer);
+	scrollContainer->set_anchors_preset(Control::LayoutPreset::PRESET_FULL_RECT);
+	backgroundPanel->add_child(scrollContainer);
+
+	MarginContainer* marginContainer = memnew(MarginContainer);
+	marginContainer->set_h_size_flags(Control::SizeFlags::SIZE_EXPAND_FILL);
+	marginContainer->set_v_size_flags(Control::SizeFlags::SIZE_EXPAND_FILL);
+	marginContainer->add_theme_constant_override("margin_left", SCALED(16));
+	marginContainer->add_theme_constant_override("margin_top", SCALED(16));
+	marginContainer->add_theme_constant_override("margin_right", SCALED(16));
+	marginContainer->add_theme_constant_override("margin_bottom", SCALED(16));
+	scrollContainer->add_child(marginContainer);
+
+	Markova* markova = memnew(Markova);
+	markova->set_h_size_flags(Control::SizeFlags::SIZE_EXPAND_FILL);
+	markova->set_v_size_flags(Control::SizeFlags::SIZE_EXPAND_FILL);
+	markova->RenderMarkdown(docContext);
+	markova->add_theme_font_override("normal_font", spaceMonoRegularFont);
+	markova->add_theme_font_override("bold_font", spaceMonoBoldFont);
+	markova->add_theme_font_override("bold_italics_font", spaceMonoBoldItalicFont);
+	markova->add_theme_font_override("italics_font", spaceMonoItalicFont);
+	markova->add_theme_font_override("mono_font", spaceMonoRegularFont);
+	marginContainer->add_child(markova);
+
+	// Connect Signals
+	docWindow->connect("close_requested", callable_mp((Node*)docWindow, &Window::queue_free));
+}
 
 // Storages
 static jenova::PackageList onlinePackages;
@@ -99,6 +158,9 @@ void JenovaPackageManager::init()
 
     // Initialize Singleton
 	jnvpm_singleton = memnew(JenovaPackageManager);
+
+	// Register Markdown Renderer
+	ClassDB::register_class<Markova>();
 
     // Verbose
     jenova::Output("Jenova Package Manager Initialized.");
@@ -1729,20 +1791,29 @@ void JenovaPackageManager::PromptPackageDocumentation(const String& markdownFile
 		{
 		private:
 			String documentationFile;
+			Window* pkgManWindow = nullptr;
 
 		public:
-			OnConfirmedEvent(const String& _markdownFile) : documentationFile(_markdownFile) { }
+			OnConfirmedEvent(const String& _markdownFile, Window* _pkgManWindow) : documentationFile(_markdownFile), pkgManWindow(_pkgManWindow) {}
 
 		public:
 			void ProcessEvent()
 			{
-				jenova::RunFile(AS_C_STRING(documentationFile));
+				// Open Documentation
+				if (jenova::GlobalSettings::UseMarkovaForDocumentations)
+				{
+					CreatePackageDocumentationWindow(jenova::ReadStringFromFile(documentationFile), pkgManWindow);
+				}
+				else
+				{
+					jenova::RunFile(AS_C_STRING(documentationFile));
+				}
 				memdelete(this);
 			}
 		};
 
 		// Create & Assign UI Callback to Dialog
-		dialog->connect("confirmed", callable_mp(memnew(OnConfirmedEvent(markdownFile)), &OnConfirmedEvent::ProcessEvent));
+		dialog->connect("confirmed", callable_mp(memnew(OnConfirmedEvent(markdownFile, GetWindow())), &OnConfirmedEvent::ProcessEvent));
 		dialog->connect("confirmed", callable_mp((Node*)dialog, &ConfirmationDialog::queue_free));
 		dialog->connect("canceled", callable_mp((Node*)dialog, &ConfirmationDialog::queue_free));
 
