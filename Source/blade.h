@@ -391,6 +391,7 @@ public:
 
 	// Events
 	void HandleAction(const String& action);
+	void OnEditorThemeChanged();
 
 private:
 	static inline BladePlugin* signleton = nullptr;

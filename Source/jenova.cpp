@@ -807,7 +807,7 @@ namespace jenova
 					// Register Console Icon
 					if (!editor_theme->has_icon("Console", "EditorIcons"))
 					{
-						Ref<ImageTexture> iconImage = MAKE_IMAGE_FROM_BUFFER_EX(RESOURCE_BUFFER(SVG_CONSOLE_ICON), Vector2i(SCALED(18), SCALED(18)));
+						Ref<ImageTexture> iconImage = MAKE_IMAGE_FROM_BUFFER_EX(RESOURCE_BUFFER(SVG_CONSOLE_ICON), Vector2i(SCALED(32), SCALED(32)));
 
 						if (iconImage != nullptr)
 						{
@@ -823,7 +823,7 @@ namespace jenova
 					// Register Console Scheme Icon
 					if (!editor_theme->has_icon("ConsoleScheme", "EditorIcons"))
 					{
-						Ref<ImageTexture> iconImage = MAKE_IMAGE_FROM_BUFFER_EX(RESOURCE_BUFFER(SVG_CONSOLE_SCHEME_ICON), Vector2i(SCALED(18), SCALED(18)));
+						Ref<ImageTexture> iconImage = MAKE_IMAGE_FROM_BUFFER_EX(RESOURCE_BUFFER(SVG_CONSOLE_SCHEME_ICON), Vector2i(SCALED(32), SCALED(32)));
 
 						if (iconImage != nullptr)
 						{
@@ -834,6 +834,21 @@ namespace jenova
 							jenova::Error("Jenova Plugin", "Cannot Load Console Icon.");
 							return false;
 						}
+					}
+				}
+
+				// Register Markova Class Icon
+				if (!editor_theme->has_icon("Markova", "EditorIcons"))
+				{
+					Ref<ImageTexture> iconImage = MAKE_IMAGE_FROM_BUFFER_EX(RESOURCE_BUFFER(SVG_MARKDOWN_ICON), Vector2i(SCALED(32), SCALED(32)));
+					if (iconImage.is_valid())
+					{
+						editor_theme->set_icon("Markova", "EditorIcons", iconImage);
+					}
+					else
+					{
+						jenova::Error("Jenova Plugin", "Cannot Load Markova Icon.");
+						return false;
 					}
 				}
 

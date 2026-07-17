@@ -59,19 +59,19 @@ class Markova : public RichTextLabel
 
 private:
 	// Properties
-	Color inlineCode				= Color("#42f5a4");
-	Color hyperLink					= Color("#22f5cc");
-	Color codeBlockBorder			= Color("#444444");
-	Color codeBlockBackground		= Color("#1e1e1e");
-	Color codeBlockText				= Color("#ff7a7a");
+	Color inlineCode				= Color("#42f5a4ff");
+	Color hyperLink					= Color("#22f5ccff");
+	Color codeBlockBorder			= Color("#444444a1");
+	Color codeBlockBackground		= Color("#1e1e1e8e");
+	Color codeBlockText				= Color("#f28862ff");
 	int codeBlockPadding			= 12;
-	Color blockquoteBorder			= Color("#666666");
-	Color blockquoteBackground		= Color("#2a2a2a");
-	Color blockquoteText			= Color("#cccccc");
+	Color blockquoteBorder			= Color("#666666a5");
+	Color blockquoteBackground		= Color("#2a2a2a9a");
+	Color blockquoteText			= Color("#ccccccff");
 	int blockquotePadding			= 10;
-	Color tableBorder				= Color("#ffffff");
-	Color tableBackground			= Color("#222222");
-	Color tableHeaderBackground		= Color("#444466");
+	Color tableBorder				= Color("#ffffff94");
+	Color tableBackground			= Color("#222222ad");
+	Color tableHeaderBackground		= Color("#444466e9");
 	int tablePadding				= 8;
 
 protected:

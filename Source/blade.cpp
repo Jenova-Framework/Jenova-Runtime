@@ -6159,18 +6159,8 @@ void BladePlugin::_enter_tree()
 	// Assign Singleton
 	this->signleton = this;
 
-	// Obtain Theme
-	Ref<Theme> editor_theme = get_editor_interface()->get_editor_theme();
-	double scaleFactor = get_editor_interface()->get_editor_scale();
-
-	// Register Blade Script Icon
-	if (!editor_theme->has_icon(blade::BladeScriptType, "EditorIcons"))
-	{
-		Vector2 iconSize = Vector2i(18 * scaleFactor, 18 * scaleFactor);
-		const jenova::MemoryBuffer& bladeScriptIcon = RESOURCE_BUFFER(SVG_BLADE_SCRIPT_ICON);
-		Ref<ImageTexture> iconImage = CreateSVGFromByteArray(bladeScriptIcon.data(), bladeScriptIcon.size(), iconSize);
-		if (iconImage != nullptr) editor_theme->set_icon(blade::BladeScriptType, "EditorIcons", iconImage);
-	}
+	// Rise Theme Changed Event
+	OnEditorThemeChanged();
 
 	// Register Debugger Plugin
 	BladeDebuggerPlugin::singleton.instantiate();
@@ -6179,6 +6169,9 @@ void BladePlugin::_enter_tree()
 	// Register Exporter Plugin
 	BladeExporterPlugin::singleton.instantiate();
 	add_export_plugin(BladeExporterPlugin::singleton);
+
+	// Connect Signals
+	get_editor_interface()->get_base_control()->connect("theme_changed", callable_mp(this, &BladePlugin::OnEditorThemeChanged));
 
 	// Add Tool Menus
 	add_tool_menu_item("Generate Blade Bindings Database", callable_mp(this, &BladePlugin::HandleAction).bind("GenHeaders"));
@@ -6222,6 +6215,21 @@ void BladePlugin::HandleAction(const String& action)
 		{
 			ErrorLog("Bindings Generator", "Failed to Generate Blade Bindings.");
 		};
+	}
+}
+void BladePlugin::OnEditorThemeChanged()
+{
+	// Obtain Theme
+	Ref<Theme> editor_theme = get_editor_interface()->get_editor_theme();
+	double scaleFactor = get_editor_interface()->get_editor_scale();
+
+	// Register Blade Script Icon
+	if (!editor_theme->has_icon(blade::BladeScriptType, "EditorIcons"))
+	{
+		Vector2 iconSize = Vector2i(18 * scaleFactor, 18 * scaleFactor);
+		const jenova::MemoryBuffer& bladeScriptIcon = RESOURCE_BUFFER(SVG_BLADE_SCRIPT_ICON);
+		Ref<ImageTexture> iconImage = CreateSVGFromByteArray(bladeScriptIcon.data(), bladeScriptIcon.size(), iconSize);
+		if (iconImage != nullptr) editor_theme->set_icon(blade::BladeScriptType, "EditorIcons", iconImage);
 	}
 }
 
