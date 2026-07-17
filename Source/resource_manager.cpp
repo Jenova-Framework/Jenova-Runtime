@@ -32,6 +32,9 @@ JenovaResourceManager* jnvrm_singleton = nullptr;
 // Initializer/Deinitializer
 void JenovaResourceManager::init()
 {
+	// Validation
+	if (jnvrm_singleton != nullptr) return;
+
     // Register Class
     ClassDB::register_internal_class<JenovaResourceManager>();
 
@@ -54,6 +57,7 @@ void JenovaResourceManager::deinit()
 	{
 		jnvrm_singleton->ReleaseDatabase();
 		memdelete(jnvrm_singleton);
+		jnvrm_singleton = nullptr;
 	}
 }
 
@@ -122,7 +126,9 @@ bool JenovaResourceManager::CreateDatabaseFromArchive(const uint8_t* archviePtr,
 				totalRead += buffSize;
 			}
 			String fullPath = String(archive_entry_pathname(entry));
-			String key = fullPath.get_file().get_basename();
+			String key = fullPath.get_file();
+			int dotPos = key.find(".");
+			if (dotPos != -1) key = key.substr(0, dotPos);
 			database[key] = std::move(buffer);
 		}
 		else
@@ -143,27 +149,31 @@ bool JenovaResourceManager::ReleaseDatabase() const
 	if (!areResourcesLoaded) return false;
 
 	// Release Buffers
-	for (auto& pair : database) jenova::MemoryBuffer().swap(pair.second);
+	for (auto& pair : database) jenova::ReleaseMemoryBuffer(pair.second);
 	database.clear();
 
 	// All Good
 	return true;
 }
+const jenova::MemoryBuffer& JenovaResourceManager::GetResourceRawBuffer(const String& dataID) const
+{
+	static const jenova::MemoryBuffer emptyBuffer;
+	if (!areResourcesLoaded) return emptyBuffer;
+	if (database.contains(dataID)) return database[dataID];
+	jenova::ErrorMessage("Jenova Resource Manager", "Invalid Resource '%s' Requested, Returning Empty Buffer.", AS_C_STRING(dataID));
+	return emptyBuffer;
+}
 const uint8_t* JenovaResourceManager::GetResourceRawFileData(const String& dataID) const
 {
 	if (!areResourcesLoaded) return nullptr;
 	if (database.contains(dataID)) return database[dataID].data();
+	jenova::ErrorMessage("Jenova Resource Manager", "Invalid Resource '%s' Requested, Returning Null.", AS_C_STRING(dataID));
 	return nullptr;
 }
 size_t JenovaResourceManager::GetResourceRawFileSize(const String& dataID) const
 {
 	if (!areResourcesLoaded) return 0;
 	if (database.contains(dataID)) return database[dataID].size();
+	jenova::ErrorMessage("Jenova Resource Manager", "Invalid Resource '%s' Requested, Returning Zero.", AS_C_STRING(dataID));
 	return 0;
-}
-const jenova::MemoryBuffer& JenovaResourceManager::GetResourceRawBuffer(const String& dataID) const
-{
-	if (!areResourcesLoaded) return jenova::MemoryBuffer();
-	if (database.contains(dataID)) return database[dataID];
-	return jenova::MemoryBuffer();
 }

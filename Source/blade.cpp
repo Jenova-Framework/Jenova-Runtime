@@ -31,9 +31,6 @@
 // Tiny C Compiler
 #include <TinyCC/libtcc.h>
 
-// Resources
-#include "IconDatabase.h"
-
 // Macros
 #define BLADESYSAPI 		extern "C"
 #define BLADEFUNCTION(f) 	(const void*)(f)
@@ -6170,7 +6167,8 @@ void BladePlugin::_enter_tree()
 	if (!editor_theme->has_icon(blade::BladeScriptType, "EditorIcons"))
 	{
 		Vector2 iconSize = Vector2i(18 * scaleFactor, 18 * scaleFactor);
-		Ref<ImageTexture> iconImage = CreateSVGFromByteArray(BUFFER_PTR_SIZE_PARAM(JENOVA_RESOURCE(SVG_BLADE_SCRIPT_ICON)), iconSize);
+		const jenova::MemoryBuffer& bladeScriptIcon = RESOURCE_BUFFER(SVG_BLADE_SCRIPT_ICON);
+		Ref<ImageTexture> iconImage = CreateSVGFromByteArray(bladeScriptIcon.data(), bladeScriptIcon.size(), iconSize);
 		if (iconImage != nullptr) editor_theme->set_icon(blade::BladeScriptType, "EditorIcons", iconImage);
 	}
 

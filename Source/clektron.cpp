@@ -878,7 +878,11 @@ void Clektron::init()
 void Clektron::deinit()
 {
     // Release Singleton
-    if (singleton) memdelete(singleton);
+    if (singleton)
+    {
+        memdelete(singleton);
+        singleton = nullptr;
+    }
 }
 
 // Bindings

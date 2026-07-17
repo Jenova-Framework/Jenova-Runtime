@@ -15,9 +15,6 @@
 // Jenova SDK
 #include "Jenova.hpp"
 
-// Resources
-#include "ExtensionHosts.h"
-
 // Jenova GDExtension Exporter Initializer
 GDExtensionExporter::GDExtensionExporter(GDExtensionTarget target, GDExtensionType type) : extensionTarget(target), extensionType(type) {}
 
@@ -71,8 +68,9 @@ bool GDExtensionExporter::Export()
 			memcpy(&sectionData.data()[sizeof(JenovaModuleEntity)], compressedData.data(), compressedData.size());
 
 			// Create Win64 Extension PE Clone
-			jenova::MemoryBuffer extensionHostWin64(sizeof(jenova::gdextension::hosts::GDEXTENSION_HOST_WIN64));
-			memcpy(extensionHostWin64.data(), jenova::gdextension::hosts::GDEXTENSION_HOST_WIN64, extensionHostWin64.size());
+			const jenova::MemoryBuffer& extensionHostWin64Base = RESOURCE_BUFFER(GDEXTENSION_HOST_WIN64);
+			jenova::MemoryBuffer extensionHostWin64(extensionHostWin64Base.size());
+			memcpy(extensionHostWin64.data(), extensionHostWin64Base.data(), extensionHostWin64.size());
 
 			// x64 PE Editing Functions
 			auto PE64_Align = [&](DWORD size, DWORD align, DWORD addr) -> DWORD
@@ -134,10 +132,10 @@ bool GDExtensionExporter::Export()
 			};
 
 			// Clean Up
-			jenova::MemoryBuffer().swap(sectionData);
-			jenova::MemoryBuffer().swap(compressedData);
-			jenova::MemoryBuffer().swap(jenovaModuleBuffer);
-			jenova::MemoryBuffer().swap(extensionHostWin64);
+			jenova::ReleaseMemoryBuffer(sectionData);
+			jenova::ReleaseMemoryBuffer(compressedData);
+			jenova::ReleaseMemoryBuffer(jenovaModuleBuffer);
+			jenova::ReleaseMemoryBuffer(extensionHostWin64);
 
 			// Create .gdextension File
 			std::string win64GDXTemplate;

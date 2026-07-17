@@ -24,10 +24,6 @@
 #define CURL_STATICLIB
 #include "Curl/curl.h"
 
-// Resources
-#include "IconDatabase.h"
-#include "FontDatabase.h"
-
 // Markdown Renderer (Code Fragment)
 #include "Fragments/Markova.Fragment.hpp"
 
@@ -93,10 +89,10 @@ static void CreatePackageDocumentationWindow(const String& docContext, Window* o
 	double scaleFactor = EditorInterface::get_singleton()->get_editor_scale();
 
 	// Load Fonts
-	Ref<Font> spaceMonoRegularFont = jenova::CreateFontFileFromByteArray(BUFFER_PTR_SIZE_PARAM(JENOVA_RESOURCE(FONT_SPACEMONO_REGULAR)));
-	Ref<Font> spaceMonoItalicFont = jenova::CreateFontFileFromByteArray(BUFFER_PTR_SIZE_PARAM(JENOVA_RESOURCE(FONT_SPACEMONO_ITALIC)));
-	Ref<Font> spaceMonoBoldFont = jenova::CreateFontFileFromByteArray(BUFFER_PTR_SIZE_PARAM(JENOVA_RESOURCE(FONT_SPACEMONO_BOLD)));
-	Ref<Font> spaceMonoBoldItalicFont = jenova::CreateFontFileFromByteArray(BUFFER_PTR_SIZE_PARAM(JENOVA_RESOURCE(FONT_SPACEMONO_BOLD_ITALIC)));
+	Ref<Font> spaceMonoRegularFont = jenova::CreateFontFileFromByteArray(RESOURCE_BUFFER(FONT_SPACEMONO_REGULAR));
+	Ref<Font> spaceMonoItalicFont = jenova::CreateFontFileFromByteArray(RESOURCE_BUFFER(FONT_SPACEMONO_ITALIC));
+	Ref<Font> spaceMonoBoldFont = jenova::CreateFontFileFromByteArray(RESOURCE_BUFFER(FONT_SPACEMONO_BOLD));
+	Ref<Font> spaceMonoBoldItalicFont = jenova::CreateFontFileFromByteArray(RESOURCE_BUFFER(FONT_SPACEMONO_BOLD_ITALIC));
 
 	// Create Window
 	Window* docWindow = memnew(Window);
@@ -267,13 +263,13 @@ bool JenovaPackageManager::OpenPackageManager()
 	currentWindow->add_child(toolbar);
 
 	// Create Toolbar Icons
-	auto githubIcon = CREATE_SVG_MENU_ICON(JENOVA_RESOURCE(SVG_GITHUB_ICON));
-	auto downloadIcon = CREATE_SVG_MENU_ICON(JENOVA_RESOURCE(SVG_DOWNLOAD_ICON));
-	auto packageAddIcon = CREATE_SVG_MENU_ICON(JENOVA_RESOURCE(SVG_PACKAGE_ADD_ICON));
-	auto packageDBEIcon = CREATE_SVG_MENU_ICON(JENOVA_RESOURCE(SVG_PACKAGE_DB_EDITOR_ICON));
-	auto recycleIcon = CREATE_SVG_MENU_ICON(JENOVA_RESOURCE(SVG_RECYCLE_ICON));
-	auto editTextIcon = CREATE_SVG_MENU_ICON(JENOVA_RESOURCE(SVG_EDIT_TEXT_ICON));
-	auto directoryOpenIcon = CREATE_SVG_MENU_ICON(JENOVA_RESOURCE(SVG_DIRECTORY_OPEN_ICON));
+	auto githubIcon = CREATE_SVG_MENU_ICON(SVG_GITHUB_ICON);
+	auto downloadIcon = CREATE_SVG_MENU_ICON(SVG_DOWNLOAD_ICON);
+	auto packageAddIcon = CREATE_SVG_MENU_ICON(SVG_PACKAGE_ADD_ICON);
+	auto packageDBEIcon = CREATE_SVG_MENU_ICON(SVG_PACKAGE_DB_EDITOR_ICON);
+	auto recycleIcon = CREATE_SVG_MENU_ICON(SVG_RECYCLE_ICON);
+	auto editTextIcon = CREATE_SVG_MENU_ICON(SVG_EDIT_TEXT_ICON);
+	auto directoryOpenIcon = CREATE_SVG_MENU_ICON(SVG_DIRECTORY_OPEN_ICON);
 
 	// Add Toolbar Items
 	Button* open_repository_tool = CreateToolbarItem("OpenRepositoryTool", githubIcon, "Open Packages Database GitHub Repository", toolbar);
@@ -763,12 +759,13 @@ bool JenovaPackageManager::FetchOnlinePackages()
 			std::string packageIconBuffer = base64::base64_decode(packageItem["pkgImage"].get<std::string>());
 			if (packageIconBuffer.size() != 0)
 			{
-				uint8_t* imageData = reinterpret_cast<uint8_t*>(packageIconBuffer.data());
-				newPackage.pkgImage = MAKE_IMAGE_FROM_BUFFER_EX(imageData, packageIconBuffer.size(), packageIconSize, jenova::ImageFormat::PNG);
+				jenova::MemoryBuffer imageData = jenova::CreateMemoryBuffer(packageIconBuffer.data(), packageIconBuffer.size());
+				newPackage.pkgImage = MAKE_IMAGE_FROM_BUFFER_EX(imageData, packageIconSize, jenova::ImageFormat::PNG);
+				jenova::ReleaseMemoryBuffer(imageData);
 			}
 			else
 			{
-				newPackage.pkgImage = MAKE_IMAGE_FROM_BUFFER_EX(BUFFER_PTR_SIZE_PARAM(JENOVA_RESOURCE(SVG_PACKAGE_ICON)), packageIconSize);
+				newPackage.pkgImage = MAKE_IMAGE_FROM_BUFFER_EX(RESOURCE_BUFFER(SVG_PACKAGE_ICON), packageIconSize);
 			}
 
 			// Add Package

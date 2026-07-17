@@ -7,9 +7,6 @@
 #include <Windows.h>
 #include <ntstatus.h>
 
-// Memory Module Shell Database
-#include "InternalModules.h"
-
 // Windows Loader Flags
 #define LOAD_FLAGS_NOT_MAP_DLL						0x10000000
 #define LOAD_FLAGS_USE_DLL_NAME						0x00000004
@@ -27,7 +24,8 @@ public:
 		DWORD pid = GetCurrentProcessId();
 		std::string modulePath = std::string(tempPath) + "Jenova.Loader." + std::to_string(pid) + ".jnv";
 		std::ofstream outFile(modulePath, std::ios::binary);
-		outFile.write(reinterpret_cast<const char*>(LIB_MEMORYMODULE_WIN64_SHELL), sizeof(LIB_MEMORYMODULE_WIN64_SHELL));
+		const jenova::MemoryBuffer& memoryModuleShellBuffer = RESOURCE_BUFFER(LIB_MEMORYMODULE_WIN64_SHELL);
+		outFile.write(reinterpret_cast<const char*>(memoryModuleShellBuffer.data()), memoryModuleShellBuffer.size());
 		outFile.close();
 
 		// Load Module Loader Shell
@@ -92,7 +90,10 @@ public:
 		// If Debug Mode Required Load From Disk
 		if ((loaderFlags & jenova::LoaderFlag::LoadInDebugMode) != 0)
 		{
-			return LoadLibraryA(jenova::CreateTemporaryModuleCache((uint8_t*)bufferPtr, bufferSize).c_str());
+			jenova::MemoryBuffer moduleBuffer = jenova::CreateMemoryBuffer(bufferPtr, bufferSize);
+			auto loadedModule = LoadLibraryA(jenova::CreateTemporaryModuleCache(moduleBuffer).c_str());
+			jenova::ReleaseMemoryBuffer(moduleBuffer);
+			return loadedModule;
 		}
 
 		// Load From Memory

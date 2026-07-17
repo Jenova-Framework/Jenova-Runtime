@@ -73,9 +73,6 @@
     <Filter Include="Misc">
       <UniqueIdentifier>{5a5b3670-1e7b-4168-9275-0726cfa49e0e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Resources\Storage">
-      <UniqueIdentifier>{2b4efd82-3d90-44ca-ab35-a9269625828f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Core">
       <UniqueIdentifier>{b60540e3-4a20-4dc2-bb38-7e5d4cb2b657}</UniqueIdentifier>
     </Filter>
@@ -115,32 +112,11 @@
     <ClInclude Include="Source\package_manager.h">
       <Filter>Core\Utilities</Filter>
     </ClInclude>
-    <ClInclude Include="Source\FontDatabase.h">
-      <Filter>Resources\Storage</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\CodeTemplates.h">
-      <Filter>Resources\Storage</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Documentation.h">
-      <Filter>Resources\Storage</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\IconDatabase.h">
-      <Filter>Resources\Storage</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\VisualStudioTemplates.h">
-      <Filter>Resources\Storage</Filter>
-    </ClInclude>
     <ClInclude Include="Source\task_system.h">
       <Filter>Core\Utilities</Filter>
     </ClInclude>
-    <ClInclude Include="Source\ExtensionHosts.h">
-      <Filter>Resources\Storage</Filter>
-    </ClInclude>
     <ClInclude Include="Source\gdextension_exporter.h">
       <Filter>Core\Exporters</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\InternalModules.h">
-      <Filter>Resources\Storage</Filter>
     </ClInclude>
     <ClInclude Include="Source\script_compiler.h">
       <Filter>Core\Engines\C++</Filter>
@@ -171,9 +147,6 @@
     </ClInclude>
     <ClInclude Include="Source\clektron.h">
       <Filter>Core\Engines\Clektron</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\InternalSources.h">
-      <Filter>Resources\Storage</Filter>
     </ClInclude>
     <ClInclude Include="Source\script_profiler.h">
       <Filter>Core\Engines\C++</Filter>

@@ -16,8 +16,8 @@
 #include "Jenova.hpp"
 
 // References
-static Ref<CPPScriptResourceLoader>		cpp_loader;
-static Ref<CPPScriptResourceSaver>		cpp_saver;
+static Ref<CPPScriptResourceLoader>		cpp_loader = nullptr;
+static Ref<CPPScriptResourceSaver>		cpp_saver = nullptr;
 
 // Script Resource Loader Implementation
 void CPPScriptResourceLoader::init()
@@ -114,8 +114,8 @@ bool CPPScriptResourceSaver::_recognize_path(const Ref<Resource>& p_resource, co
 }
 
 // References
-static Ref<CPPHeaderResourceLoader>		h_loader;
-static Ref<CPPHeaderResourceSaver>		h_saver;
+static Ref<CPPHeaderResourceLoader>		h_loader = nullptr;
+static Ref<CPPHeaderResourceSaver>		h_saver = nullptr;
 
 // Header Resource Loader Implementation
 void CPPHeaderResourceLoader::init()

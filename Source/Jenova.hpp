@@ -314,12 +314,13 @@ using namespace godot;
 #define EDITOR_MENU_ID(id)					int32_t(jenova::EditorMenuID::id)
 #define BUFFER_PTR_SIZE_PARAM(buffer)		buffer, sizeof(buffer)
 #define JENOVA_RESOURCE(key)				jenova::resources::key
-#define CODE_TEMPLATE(id)					String(std::string(jenova::templates::id, sizeof(jenova::templates::id)).c_str())
+#define RESOURCE_BUFFER(key)				JenovaResourceManager::get_singleton()->GetResourceRawBuffer(#key)
+#define CODE_TEMPLATE(id)					jenova::GetStringFromMemoryBuffer(RESOURCE_BUFFER(id))
 #define VALIDATE_FUNCTION(func)				if (!func) { jenova::Output("System Failure : %d", __LINE__); jenova::ExitWithCode(__LINE__); }
 #define MAKE_IMAGE_FROM_BUFFER				jenova::CreateImageTextureFromByteArray
 #define MAKE_IMAGE_FROM_BUFFER_EX			jenova::CreateImageTextureFromByteArrayEx
-#define CREATE_SVG_MENU_ICON(buffer)		jenova::CreateMenuItemIconFromByteArray(BUFFER_PTR_SIZE_PARAM(buffer), jenova::ImageFormat::SVG)
-#define CREATE_PNG_MENU_ICON(buffer)		jenova::CreateMenuItemIconFromByteArray(BUFFER_PTR_SIZE_PARAM(buffer), jenova::ImageFormat::PNG)
+#define CREATE_SVG_MENU_ICON(buffer)		jenova::CreateMenuItemIconFromByteArray(RESOURCE_BUFFER(buffer), jenova::ImageFormat::SVG)
+#define CREATE_PNG_MENU_ICON(buffer)		jenova::CreateMenuItemIconFromByteArray(RESOURCE_BUFFER(buffer), jenova::ImageFormat::PNG)
 #define CREATE_GLOBAL_TEMPLATE(a,b,c)		JenovaTemplateManager::get_singleton()->RegisterNewGlobalScriptTemplate(a, CODE_TEMPLATE(b), c);
 #define CREATE_CLASS_TEMPLATE(a,b,c,d)		JenovaTemplateManager::get_singleton()->RegisterNewClassScriptTemplate(a, b, CODE_TEMPLATE(c), d);
 #define QUERY_ENGINE_MODE(mode)				(jenova::GlobalStorage::CurrentEngineMode == jenova::EngineMode::mode)
@@ -937,7 +938,7 @@ namespace jenova
 	bool RunFile(const char* filePath);
 	bool OpenURL(const char* url);
 	void* AllocateMemory(size_t memorySize);
-	void* RelocateMemory(void* dest, const void* src, std::size_t count);
+	void* RelocateMemory(void* dest, const void* src, size_t count);
 	bool FreeMemory(void* memoryPtr);
 	const char* CloneString(const char* str);
 	const wchar_t* CloneWideString(const wchar_t* wstr);
@@ -977,15 +978,15 @@ namespace jenova
 	jenova::EngineMode GetCurrentEngineInstanceMode();
 	bool IsEngineRuntimeExport();
 	String GetCurrentEngineInstanceModeAsString();
-	Ref<ImageTexture> CreateImageTextureFromByteArray(const uint8_t* imageDataPtr, size_t imageDataSize, ImageFormat imageFormat = ImageFormat::SVG);
-	Ref<ImageTexture> CreateImageTextureFromByteArrayEx(const uint8_t* imageDataPtr, size_t imageDataSize, const Vector2i& imageSize = Vector2i(), ImageFormat imageFormat = ImageFormat::SVG);
-	Ref<ImageTexture> CreateMenuItemIconFromByteArray(const uint8_t* imageDataPtr, size_t imageDataSize, ImageFormat imageFormat = ImageFormat::SVG);
-	Ref<FontFile> CreateFontFileFromByteArray(const uint8_t* fontDataPtr, size_t fontDataSize);
+	Ref<ImageTexture> CreateImageTextureFromByteArray(const jenova::MemoryBuffer& dataBuffer, ImageFormat imageFormat = ImageFormat::SVG);
+	Ref<ImageTexture> CreateImageTextureFromByteArrayEx(const jenova::MemoryBuffer& dataBuffer, const Vector2i& imageSize = Vector2i(), ImageFormat imageFormat = ImageFormat::SVG);
+	Ref<ImageTexture> CreateMenuItemIconFromByteArray(const jenova::MemoryBuffer& dataBuffer, ImageFormat imageFormat = ImageFormat::SVG);
+	Ref<FontFile> CreateFontFileFromByteArray(const jenova::MemoryBuffer& dataBuffer);
 	Ref<Shader> CreateShaderFromString(const String& shaderCode);
 	Ref<ShaderMaterial> CreateShaderMaterialFromString(const String& shaderCode);
 	bool CollectResourcesFromFileSystem(const String& rootPath, const String& extensions, jenova::ResourceCollection& collectedResources, bool respectGDIgnore = true);
 	bool CollectScriptsFromFileSystemAndScenes(const String& rootPath, const String& extension, jenova::ResourceCollection& collectedResources, bool respectGDIgnore = true);
-	void RegisterDocumentationFromByteArray(const char* xmlDataPtr, size_t xmlDataSize);
+	void RegisterDocumentationFromByteArray(const std::string& xmlData);
 	void CopyStringToClipboard(const String& str);
 	String GetStringFromClipboard();
 	void CopyStdStringToClipboard(const std::string& str);
@@ -1025,6 +1026,8 @@ namespace jenova
 	Variant GetEditorSetting(const String& settingPath);
 	bool DumpThemeColors(const Ref<Theme> theme);
 	ArgumentsArray ProcessDeployerArguments(const std::string& cmdLine);
+	String GetStringFromMemoryBuffer(const jenova::MemoryBuffer& dataBuffer);
+	std::string GetStdStringFromMemoryBuffer(const jenova::MemoryBuffer& dataBuffer);
 	bool WriteStringToFile(const String& filePath, const String& str);
 	String ReadStringFromFile(const String& filePath);
 	bool WriteStdStringToFile(const std::string& filePath, const std::string& str);
@@ -1099,7 +1102,7 @@ namespace jenova
 	bool ResolveAndLoadAddonModulesAtRuntime();
 	bool UnloadRuntimeLoadedAddons();
 	jenova::LoadedAddons& GetLoadedAddons();
-	std::string CreateTemporaryModuleCache(const uint8_t* moduleDataPtr, const size_t moduleSize);
+	std::string CreateTemporaryModuleCache(const jenova::MemoryBuffer& dataBuffer);
 	bool ReleaseTemporaryModuleCache();
 	bool CreateSourceControlFiles(const std::string& rootPath);
 	std::string GetVisualStudioInstancesMetadata(const std::string& arguments);

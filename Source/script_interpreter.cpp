@@ -1892,8 +1892,8 @@ bool JenovaInterpreter::CreateModuleDatabase(const std::string& moduleDatabaseNa
     databaseWriter.close();
 
     // Release Buffers
-    jenova::MemoryBuffer().swap(databaseRawBuffer);
-    jenova::MemoryBuffer().swap(compressedData);
+    jenova::ReleaseMemoryBuffer(databaseRawBuffer);
+    jenova::ReleaseMemoryBuffer(compressedData);
 
     // Verbose
     jenova::VerboseByID(__LINE__, "Code Compression Ratio : %02f%%", moduleDatabaseHeader.compressionRatio);
@@ -2004,9 +2004,9 @@ bool JenovaInterpreter::DeployFromDatabase(const std::string& moduleDatabaseName
     }
 
     // Release Buffers
-    jenova::MemoryBuffer().swap(databaseRawData);
-    jenova::MemoryBuffer().swap(encodedRawBuffer);
-    jenova::MemoryBuffer().swap(decompressedData);
+    jenova::ReleaseMemoryBuffer(databaseRawData);
+    jenova::ReleaseMemoryBuffer(encodedRawBuffer);
+    jenova::ReleaseMemoryBuffer(decompressedData);
 
     // Verbose
     jenova::VerboseByID(__LINE__, "Jenova Compiled Module Deployed and Loaded from Database Cache.");

@@ -15,9 +15,6 @@
 // Jenova SDK
 #include "Jenova.hpp"
 
-// Code Templates
-#include "CodeTemplates.h"
-
 // Shared Values/Objects
 static jenova::SteadyTimePoint lastScriptReloadTime = std::chrono::steady_clock::now();
 

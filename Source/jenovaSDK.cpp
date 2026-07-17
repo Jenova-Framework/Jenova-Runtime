@@ -324,21 +324,33 @@ namespace jenova::sdk
 	}
 	godot::Ref<godot::Font> JenovaSDK::CreateFontFromBuffer(BufferPtr bufferPtr, size_t bufferSize)
 	{
-		return jenova::CreateFontFileFromByteArray(bufferPtr, bufferSize);
+		jenova::MemoryBuffer buffer = jenova::CreateMemoryBuffer(bufferPtr, bufferSize);
+		auto loadedFont = jenova::CreateFontFileFromByteArray(buffer);
+		jenova::ReleaseMemoryBuffer(buffer);
+		return loadedFont;
 	}
 	godot::Ref<godot::Texture2D> JenovaSDK::CreateImageFromBuffer(BufferPtr bufferPtr, size_t bufferSize, StringPtr format, ImageSize size)
 	{
 		if (godot::String(format).to_lower() == "png")
 		{
-			return jenova::CreateImageTextureFromByteArrayEx(bufferPtr, bufferSize, size, jenova::ImageFormat::PNG);
+			jenova::MemoryBuffer buffer = jenova::CreateMemoryBuffer(bufferPtr, bufferSize);
+			auto loadedImage = jenova::CreateImageTextureFromByteArrayEx(buffer, size, jenova::ImageFormat::PNG);
+			jenova::ReleaseMemoryBuffer(buffer);
+			return loadedImage;
 		}
 		if (godot::String(format).to_lower() == "jpg")
 		{
-			return jenova::CreateImageTextureFromByteArrayEx(bufferPtr, bufferSize, size, jenova::ImageFormat::JPG);
+			jenova::MemoryBuffer buffer = jenova::CreateMemoryBuffer(bufferPtr, bufferSize);
+			auto loadedImage = jenova::CreateImageTextureFromByteArrayEx(buffer, size, jenova::ImageFormat::JPG);
+			jenova::ReleaseMemoryBuffer(buffer);
+			return loadedImage;
 		}
 		if (godot::String(format).to_lower() == "svg")
 		{
-			return jenova::CreateImageTextureFromByteArrayEx(bufferPtr, bufferSize, size, jenova::ImageFormat::SVG);
+			jenova::MemoryBuffer buffer = jenova::CreateMemoryBuffer(bufferPtr, bufferSize);
+			auto loadedImage = jenova::CreateImageTextureFromByteArrayEx(buffer, size, jenova::ImageFormat::SVG);
+			jenova::ReleaseMemoryBuffer(buffer);
+			return loadedImage;
 		}
 		return nullptr;
 	}

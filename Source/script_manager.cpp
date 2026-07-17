@@ -15,10 +15,6 @@
 // Jenova SDK
 #include "Jenova.hpp"
 
-// Resources
-#include "IconDatabase.h"
-#include "FontDatabase.h"
-
 // Singleton Instance
 JenovaScriptManager* scriptManager = nullptr;
 
@@ -45,7 +41,11 @@ void JenovaScriptManager::init()
 void JenovaScriptManager::deinit()
 {
 	// Release Singleton
-	if (scriptManager) memdelete(scriptManager);
+	if (scriptManager)
+	{
+		memdelete(scriptManager);
+		scriptManager = nullptr;
+	}
 }
 JenovaScriptManager* JenovaScriptManager::get_singleton()
 {
@@ -338,23 +338,23 @@ private:
 		panelEmptyStyle.instantiate();
 
 		// Create Image Resources
-		arrowOpenedImage = MAKE_IMAGE_FROM_BUFFER(BUFFER_PTR_SIZE_PARAM(JENOVA_RESOURCE(SVG_FOLD_OPENED_ARROW_ICON)));
-		arrowClosedImage = MAKE_IMAGE_FROM_BUFFER(BUFFER_PTR_SIZE_PARAM(JENOVA_RESOURCE(SVG_FOLD_CLOSED_ARROW_ICON)));
-		connectionMiddleImage = MAKE_IMAGE_FROM_BUFFER(BUFFER_PTR_SIZE_PARAM(JENOVA_RESOURCE(SVG_CONNECTION_BEGIN_ICON)));
-		connectionLastImage = MAKE_IMAGE_FROM_BUFFER(BUFFER_PTR_SIZE_PARAM(JENOVA_RESOURCE(SVG_CONNECTION_END_ICON)));
+		arrowOpenedImage = MAKE_IMAGE_FROM_BUFFER(RESOURCE_BUFFER(SVG_FOLD_OPENED_ARROW_ICON));
+		arrowClosedImage = MAKE_IMAGE_FROM_BUFFER(RESOURCE_BUFFER(SVG_FOLD_CLOSED_ARROW_ICON));
+		connectionMiddleImage = MAKE_IMAGE_FROM_BUFFER(RESOURCE_BUFFER(SVG_CONNECTION_BEGIN_ICON));
+		connectionLastImage = MAKE_IMAGE_FROM_BUFFER(RESOURCE_BUFFER(SVG_CONNECTION_END_ICON));
 
 		// Create Toolbar Icon Image Resources
-		reloadToolbarImage = jenova::CreateMenuItemIconFromByteArray(BUFFER_PTR_SIZE_PARAM(JENOVA_RESOURCE(SVG_RELOAD_ICON)));
-		backwardFrameImage = jenova::CreateMenuItemIconFromByteArray(BUFFER_PTR_SIZE_PARAM(JENOVA_RESOURCE(SVG_BACKWARD_FRAME_ICON)));
-		forwardFrameImage = jenova::CreateMenuItemIconFromByteArray(BUFFER_PTR_SIZE_PARAM(JENOVA_RESOURCE(SVG_FORWARD_FRAME_ICON)));
-		foldAllImage = jenova::CreateMenuItemIconFromByteArray(BUFFER_PTR_SIZE_PARAM(JENOVA_RESOURCE(SVG_FOLD_ALL_ICON)));
+		reloadToolbarImage = jenova::CreateMenuItemIconFromByteArray(RESOURCE_BUFFER(SVG_RELOAD_ICON));
+		backwardFrameImage = jenova::CreateMenuItemIconFromByteArray(RESOURCE_BUFFER(SVG_BACKWARD_FRAME_ICON));
+		forwardFrameImage = jenova::CreateMenuItemIconFromByteArray(RESOURCE_BUFFER(SVG_FORWARD_FRAME_ICON));
+		foldAllImage = jenova::CreateMenuItemIconFromByteArray(RESOURCE_BUFFER(SVG_FOLD_ALL_ICON));
 
 		// Create Font Resources
-		cascadiaFont = jenova::CreateFontFileFromByteArray(BUFFER_PTR_SIZE_PARAM(JENOVA_RESOURCE(FONT_CASCADIACODE_REGULAR)));
-		spaceMonoRegularFont = jenova::CreateFontFileFromByteArray(BUFFER_PTR_SIZE_PARAM(JENOVA_RESOURCE(FONT_SPACEMONO_REGULAR)));
-		spaceMonoItalicFont = jenova::CreateFontFileFromByteArray(BUFFER_PTR_SIZE_PARAM(JENOVA_RESOURCE(FONT_SPACEMONO_ITALIC)));
-		spaceMonoBoldFont = jenova::CreateFontFileFromByteArray(BUFFER_PTR_SIZE_PARAM(JENOVA_RESOURCE(FONT_SPACEMONO_BOLD)));
-		spaceMonoBoldItalicFont = jenova::CreateFontFileFromByteArray(BUFFER_PTR_SIZE_PARAM(JENOVA_RESOURCE(FONT_SPACEMONO_BOLD_ITALIC)));
+		cascadiaFont = jenova::CreateFontFileFromByteArray(RESOURCE_BUFFER(FONT_CASCADIACODE_REGULAR));
+		spaceMonoRegularFont = jenova::CreateFontFileFromByteArray(RESOURCE_BUFFER(FONT_SPACEMONO_REGULAR));
+		spaceMonoItalicFont = jenova::CreateFontFileFromByteArray(RESOURCE_BUFFER(FONT_SPACEMONO_ITALIC));
+		spaceMonoBoldFont = jenova::CreateFontFileFromByteArray(RESOURCE_BUFFER(FONT_SPACEMONO_BOLD));
+		spaceMonoBoldItalicFont = jenova::CreateFontFileFromByteArray(RESOURCE_BUFFER(FONT_SPACEMONO_BOLD_ITALIC));
 	}
 	void InitializeUserInterface()
 	{

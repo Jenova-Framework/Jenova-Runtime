@@ -54,6 +54,8 @@
       <OpenMPSupport>true</OpenMPSupport>
       <ExceptionHandling>Async</ExceptionHandling>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|x64'">MinSpace</Optimization>
+      <FavorSizeOrSpeed Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Size</FavorSizeOrSpeed>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -117,16 +119,9 @@ ren "$(BuildPath)JenovaSDK\$(TargetName).lib" "Jenova.SDK.x64.lib"
     <ClInclude Include="Source\blade_instance.h" />
     <ClInclude Include="Source\clektron.h" />
     <ClInclude Include="Source\console.h" />
-    <ClInclude Include="Source\ExtensionHosts.h" />
     <ClInclude Include="Source\gdextension_exporter.h" />
-    <ClInclude Include="Source\InternalModules.h" />
-    <ClInclude Include="Source\InternalSources.h" />
-    <ClInclude Include="Source\FontDatabase.h" />
-    <ClInclude Include="Source\CodeTemplates.h" />
     <ClInclude Include="Source\script_profiler.h" />
     <ClInclude Include="Source\task_system.h" />
-    <ClInclude Include="Source\Documentation.h" />
-    <ClInclude Include="Source\IconDatabase.h" />
     <ClInclude Include="Source\Jenova.hpp" />
     <ClInclude Include="Source\JenovaSDK.h" />
     <ClInclude Include="Source\package_manager.h" />
@@ -140,7 +135,6 @@ ren "$(BuildPath)JenovaSDK\$(TargetName).lib" "Jenova.SDK.x64.lib"
     <ClInclude Include="Source\script_language.h" />
     <ClInclude Include="Source\script_templates.h" />
     <ClInclude Include="Source\tiny_profiler.h" />
-    <ClInclude Include="Source\VisualStudioTemplates.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Jenova.Runtime.gdextension" />

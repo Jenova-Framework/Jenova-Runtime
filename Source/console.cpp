@@ -15,13 +15,6 @@
 // Jenova SDK
 #include "Jenova.hpp"
 
-// Resources
-#include "IconDatabase.h"
-#include "FontDatabase.h"
-
-// Internal/Built-In Sources
-#include "InternalSources.h"
-
 // Macros
 #define JENOCON_VERSION         0.46f
 #define JENOCON_TOGGLE_ACTION   "ConsoleToggle"
@@ -314,11 +307,11 @@ void Console::InitializeConsole()
 	inputBox->set_corner_detail(1);
 
 	// Create Resources :: Console Font
-	Ref<Font> consoleFont = jenova::CreateFontFileFromByteArray(BUFFER_PTR_SIZE_PARAM(JENOVA_RESOURCE(FONT_SPACEMONO_REGULAR)));
+	Ref<Font> consoleFont = jenova::CreateFontFileFromByteArray(RESOURCE_BUFFER(FONT_SPACEMONO_REGULAR));
 
 	// Create Resources :: Console Panel Shader
-	using namespace jenova::resources;
-	String panelShaderCode = String(JenovaConsolePanelShader).replace("123.456", String::num(1.0 - GetConfiguration<float>("dark_shade_power"), 2));
+	String panelShaderCode = jenova::GetStringFromMemoryBuffer(RESOURCE_BUFFER(JenovaConsolePanelShader));
+	panelShaderCode = panelShaderCode.replace("123.456", String::num(1.0 - GetConfiguration<float>("dark_shade_power"), 2));
 	Ref<ShaderMaterial> panelShaderMaterial = jenova::CreateShaderMaterialFromString(panelShaderCode);
 
 	// Create User Interface :: Console Panel

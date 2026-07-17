@@ -61,7 +61,11 @@ void JenovaAssetMonitor::init()
 void JenovaAssetMonitor::deinit()
 {
     // Release Singleton
-    if (jnvam_singleton) memdelete(jnvam_singleton);
+	if (jnvam_singleton)
+	{
+		memdelete(jnvam_singleton);
+		jnvam_singleton = nullptr;
+	}
 }
 
 // Bindings

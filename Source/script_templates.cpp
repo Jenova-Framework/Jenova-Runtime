@@ -15,9 +15,6 @@
 // Jenova SDK
 #include "Jenova.hpp"
 
-// Internal/Built-In Sources
-#include "CodeTemplates.h"
-
 // Archive SDK
 #define LIBARCHIVE_STATIC
 #include "Archive/archive.h"
@@ -147,9 +144,10 @@ bool JenovaTemplateManager::InstallBuiltInScriptTemplates()
 		archive_write_disk_set_options(ext, flags);
 		archive_write_disk_set_standard_lookup(ext);
 
-		// Open Archive From memory
-		const void* buffer = jenova::templates::database::BUILTIN_TEMPLATES_ARCHIVE;
-		size_t bufferSize = sizeof(jenova::templates::database::BUILTIN_TEMPLATES_ARCHIVE);
+		// Open Archive From Memory
+		const jenova::MemoryBuffer& builtinTemplatesArchive = RESOURCE_BUFFER(BUILTIN_TEMPLATES_ARCHIVE);
+		const void* buffer = builtinTemplatesArchive.data();
+		size_t bufferSize = builtinTemplatesArchive.size();
 
 		if (archive_read_open_memory(a, buffer, bufferSize) != ARCHIVE_OK)
 		{

@@ -62,6 +62,7 @@ sources = [
     "Source/tiny_profiler.cpp",
     "Source/task_system.cpp",
     "Source/package_manager.cpp",
+    "Source/resource_manager.cpp",
     "Source/asset_monitor.cpp",
     "Source/gdextension_exporter.cpp"
 ]

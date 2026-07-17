@@ -30,6 +30,7 @@ void CPPScriptLanguage::deinit()
 {
 	Engine::get_singleton()->unregister_script_language(cpp_language);
 	memdelete(cpp_language);
+	cpp_language = nullptr;
 }
 String CPPScriptLanguage::_get_name() const
 {
@@ -390,6 +391,7 @@ void CPPHeaderLanguage::deinit()
 {
 	Engine::get_singleton()->unregister_script_language(header_language);
 	memdelete(header_language);
+	header_language = nullptr;
 }
 String CPPHeaderLanguage::_get_name() const
 {
