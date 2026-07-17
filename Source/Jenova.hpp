@@ -20,11 +20,11 @@
 #define APP_COMPANYNAME					"MemarDesign™ LLC."
 #define APP_DESCRIPTION					"Real-Time C++ Scripting System for Godot Engine, Developed By Hamid.Memar (Architect)."
 #define APP_COPYRIGHT					"Copyright MemarDesign™ LLC. (©) 2024-present, All Rights Reserved."
-#define APP_VERSION						"0.3.9.7"
+#define APP_VERSION						"0.3.9.8"
 #define APP_VERSION_MIDDLEFIX			" "
 #define APP_VERSION_POSTFIX				"Beta"
 #define APP_VERSION_SINGLECHAR			"b"
-#define APP_VERSION_DATA				0, 3, 9, 7
+#define APP_VERSION_DATA				0, 3, 9, 8
 #define APP_VERSION_BUILD				"0"
 #define APP_VERSION_NAME				"Forfeit"
 
@@ -377,6 +377,7 @@ namespace jenova
 	typedef std::unordered_map<std::string, void*> PointerStorage;
 	typedef std::unordered_map<ModuleHandle, ToolConfig> LoadedTools;
 	typedef std::unordered_map<ModuleHandle, json_t> LoadedAddons;
+	typedef std::map<String, MemoryBuffer> ResourceDatabase;
 	typedef Vector<Ref<Resource>> ResourceCollection;
 	typedef uint64_t LongWord;
 	typedef uint16_t TaskID;
@@ -1141,6 +1142,7 @@ namespace jenova
 #include "task_system.h"
 #include "asset_monitor.h"
 #include "package_manager.h"
+#include "resource_manager.h"
 
 // Jenova C++ Script Engine
 #include "script_object.h"

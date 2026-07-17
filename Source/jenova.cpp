@@ -4881,6 +4881,7 @@ namespace jenova
 				// Initialize Utility Classes
 				JenovaScriptManager::init();
 				JenovaAssetMonitor::init();
+				JenovaResourceManager::init();
 
 				// Initialzie Profiler
 				if (!JenovaProfiler::Initialize())
@@ -4952,6 +4953,7 @@ namespace jenova
 
 				// Uninitialize Utility Classes
 				JenovaScriptManager::deinit();
+				JenovaResourceManager::deinit();
 				JenovaAssetMonitor::deinit();
 
 				// Uninitialize Clektron Engine
