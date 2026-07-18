@@ -221,6 +221,9 @@ namespace jenova
 				// Register Asset Monitors
 				VALIDATE_FUNCTION(RegisterAssetMonitors());
 
+				// Register Editor Syntax Highlighters
+				VALIDATE_FUNCTION(RegisterEditorSyntaxHighlighters());
+
 				// Update Flag
 				isEditorPluginInitialized = true;
 
@@ -231,6 +234,9 @@ namespace jenova
 			{
 				// Unregister Editor Plugin Events
 				VALIDATE_FUNCTION(UnRegisterEditorPluginEvents());
+
+				// Unregister Editor Syntax Highlighters
+				VALIDATE_FUNCTION(UnRegisterEditorSyntaxHighlighters());
 
 				// Unregister Asset Monitors
 				VALIDATE_FUNCTION(UnRegisterAssetMonitors());
@@ -1175,6 +1181,22 @@ namespace jenova
 				}
 				return false;
 			}
+			bool RegisterEditorSyntaxHighlighters()
+			{
+				// Initialize C++ Syntax Highlighter
+				CPPSyntaxHighlighter::init();
+
+				// All Good
+				return true;
+			}
+			bool UnRegisterEditorSyntaxHighlighters()
+			{
+				// Release C++ Syntax Highlighter
+				CPPSyntaxHighlighter::deinit();
+
+				// All Good
+				return true;
+			}
 
 			// Instance Obtainers
 			Ref<JenovaExportPlugin> GetExportPluginInstance()
@@ -1875,7 +1897,8 @@ namespace jenova
 							"This error may be caused by one of the following:\n"
 							"  1. A Godot type is defined in global scope which is not allowed by Godot design.\n"
 							"  2. A required linked library is missing, Make sure all dependencies are placed beside engine.\n"
-							"  3. The engine version does not match the Godot Kit. Make sure you are using correct GodotSDK."
+							"  3. The engine version does not match the Godot Kit. Make sure you are using correct GodotSDK.\n"
+							"  4. The editor is launched with the --Enable-Debug-Mode argument, which disables hot-reloading."
 						);
 						DisposeCompiler();
 						return false;
@@ -1893,7 +1916,8 @@ namespace jenova
 							"This error may be caused by one of the following:\n"
 							"  1. A Godot type is defined in global scope which is not allowed by Godot design.\n"
 							"  2. A required linked library is missing, Make sure all dependencies are placed beside engine.\n"
-							"  3. The engine version does not match the Godot Kit. Make sure you are using correct GodotSDK."
+							"  3. The engine version does not match the Godot Kit. Make sure you are using correct GodotSDK.\n"
+							"  4. The editor is launched with the --Enable-Debug-Mode argument, which disables hot-reloading."
 						);
 						DisposeCompiler();
 						return false;
@@ -2162,7 +2186,8 @@ namespace jenova
 								"This error may be caused by one of the following:\n"
 								"  1. A Godot type is defined in global scope which is not allowed by Godot design.\n"
 								"  2. A required linked library is missing, Make sure all dependencies are placed beside engine.\n"
-								"  3. The engine version does not match the Godot Kit. Make sure you are using correct GodotSDK."
+								"  3. The engine version does not match the Godot Kit. Make sure you are using correct GodotSDK.\n"
+								"  4. The editor is launched with the --Enable-Debug-Mode argument, which disables hot-reloading."
 							);
 							return false;
 						}
@@ -2179,7 +2204,8 @@ namespace jenova
 								"This error may be caused by one of the following:\n"
 								"  1. A Godot type is defined in global scope which is not allowed by Godot design.\n"
 								"  2. A required linked library is missing, Make sure all dependencies are placed beside engine.\n"
-								"  3. The engine version does not match the Godot Kit. Make sure you are using correct GodotSDK."
+								"  3. The engine version does not match the Godot Kit. Make sure you are using correct GodotSDK.\n"
+								"  4. The editor is launched with the --Enable-Debug-Mode argument, which disables hot-reloading."
 							);
 							return false;
 						}
@@ -4828,11 +4854,11 @@ namespace jenova
 				if (QUERY_ENGINE_MODE(Editor)) OnEditorBoot();
 
 				// Register Editor Sub Plugins
-				GDREGISTER_INTERNAL_CLASS(JenovaExportPlugin);
-				GDREGISTER_INTERNAL_CLASS(JenovaDebuggerPlugin);
+				ClassDB::register_internal_class<JenovaExportPlugin>();
+				ClassDB::register_internal_class<JenovaDebuggerPlugin>();
 
 				// Register Editor Plugins
-				GDREGISTER_INTERNAL_CLASS(JenovaEditorPlugin);
+				ClassDB::register_internal_class<JenovaEditorPlugin>();
 				EditorPlugins::add_by_type<JenovaEditorPlugin>();
 
 				// Initialize Classes

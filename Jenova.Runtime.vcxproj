@@ -99,6 +99,7 @@ ren "$(BuildPath)JenovaSDK\$(TargetName).lib" "Jenova.SDK.x64.lib"
     <ClCompile Include="Source\package_manager.cpp" />
     <ClCompile Include="Source\resource_manager.cpp" />
     <ClCompile Include="Source\script_compiler.cpp" />
+    <ClCompile Include="Source\script_highlighters.cpp" />
     <ClCompile Include="Source\script_interpreter.cpp" />
     <ClCompile Include="Source\script_manager.cpp" />
     <ClCompile Include="Source\script_profiler.cpp" />
@@ -113,6 +114,7 @@ ren "$(BuildPath)JenovaSDK\$(TargetName).lib" "Jenova.SDK.x64.lib"
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\resource_manager.h" />
+    <ClInclude Include="Source\script_highlighters.h" />
     <ClInclude Include="Source\Storage.h" />
     <ClInclude Include="Source\asset_monitor.h" />
     <ClInclude Include="Source\blade.h" />

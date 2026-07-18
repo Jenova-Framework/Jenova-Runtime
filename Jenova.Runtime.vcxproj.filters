@@ -65,6 +65,9 @@
     <ClCompile Include="Source\resource_manager.cpp">
       <Filter>Core\Utilities</Filter>
     </ClCompile>
+    <ClCompile Include="Source\script_highlighters.cpp">
+      <Filter>Core\Engines\C++</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Resources">
@@ -165,6 +168,9 @@
     </ClInclude>
     <ClInclude Include="Source\resource_manager.h">
       <Filter>Core\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\script_highlighters.h">
+      <Filter>Core\Engines\C++</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

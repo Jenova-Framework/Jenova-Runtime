@@ -824,6 +824,7 @@ namespace jenova
 		constexpr size_t ScriptChangeCooldown					= 200;
 
 		constexpr char* JenovaRuntimeModuleName					= "Jenova.Runtime";
+		constexpr char* JenovaLanguageName						= "C++ Script";
 		constexpr char* JenovaScriptExtension					= "cpp";
 		constexpr char* JenovaHeaderExtension					= "hpp";
 		constexpr char* JenovaScriptType						= "CPPScript";
@@ -1153,6 +1154,7 @@ namespace jenova
 #include "script_templates.h"
 #include "script_language.h"
 #include "script_profiler.h"
+#include "script_highlighters.h"
 #include "script_interpreter.h"
 #include "script_instance_base.h"
 #include "script_instance.h"

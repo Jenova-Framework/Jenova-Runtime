@@ -1,4 +1,6 @@
-<img width="1200" height="208" alt="Jenova-Framework-Banner" src="https://github.com/user-attachments/assets/79c4bd1d-dfe3-48dc-925d-e8bbddcf28ca" />
+<picture>
+<img style="width: 100%; height: auto; display: block;" alt="Jenova-Framework-Banner" src="https://github.com/user-attachments/assets/79c4bd1d-dfe3-48dc-925d-e8bbddcf28ca" />
+</picture>
 
 # Jenova Runtime (Core)
 

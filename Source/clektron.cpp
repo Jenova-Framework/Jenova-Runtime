@@ -772,19 +772,19 @@ protected:
 
 public:
     // Define Clektron Highlighter Colors
-    Color keyword_color             = Color::html("#86e051");
-    Color type_color                = Color::html("#66e051");
-    Color boolean_color             = Color::html("#4cb8e6");
-    Color enum_color                = Color::html("#8484f5");
-    Color enum_value_color          = Color::html("#9dbef5");
-    Color preprocessor_color        = Color::html("#fa5293");
-    Color string_color              = Color::html("#f53854");
-    Color char_color                = Color::html("#f5386e");
-    Color comment_color             = Color::html("#96969696");
-    Color function_color            = Color::html("#45ff92");
-    Color number_color              = Color::html("#e0b83f");
-    Color symbol_color              = Color::html("#f75c40");
-    Color memeber_variable_color    = Color::html("#4f49c9");
+    Color clkt_keywordColor             = Color::html("#86e051");
+    Color clkt_typeColor                = Color::html("#66e051");
+    Color clkt_booleanColor             = Color::html("#4cb8e6");
+    Color clkt_enumColor                = Color::html("#8484f5");
+    Color clkt_enumValueColor           = Color::html("#9dbef5");
+    Color clkt_preprocessorColor        = Color::html("#fa5293");
+    Color clkt_stringColor              = Color::html("#f53854");
+    Color clkt_charColor                = Color::html("#f5386e");
+    Color clkt_commentColor             = Color::html("#96969696");
+    Color clkt_functionColor            = Color::html("#45ff92");
+    Color clkt_numberColor              = Color::html("#e0b83f");
+    Color clkt_symbolColor              = Color::html("#f75c40");
+    Color clkt_memberVariableColor      = Color::html("#4f49c9");
 
 public:
     ClektronHighlighter()
@@ -795,7 +795,7 @@ public:
             "auto", "break", "case", "const", "continue", "default", "do", "else", "enum", "extern", "for", "goto", "if", 
             "register", "return", "signed", "sizeof", "static", "struct", "switch", "typedef", "union", "unsigned", "volatile", "while", "jenova"
         };
-        for (const String& _keyword : keywords) add_keyword_color(_keyword, keyword_color);
+        for (const String& _keyword : keywords) add_keyword_color(_keyword, clkt_keywordColor);
 
         // Add Clektron Types
         const String types[] =
@@ -803,16 +803,16 @@ public:
             "void", "char", "float", "int", "long", "double", "short", 
             "bool", "Instance", "Buffer", "FunctionPtr", "String", "Size"
         };
-        for (const String& _type : types) add_keyword_color(_type, type_color);
-        add_keyword_color("true", boolean_color);
-        add_keyword_color("false", boolean_color);
+        for (const String& _type : types) add_keyword_color(_type, clkt_typeColor);
+        add_keyword_color("true", clkt_booleanColor);
+        add_keyword_color("false", clkt_booleanColor);
 
         // Add Clektron Enums
         const String enums[] =
         {
             "AlertType", "TaskIcon", "OperatingSystem"
         };
-        for (const String& _enum : enums) add_keyword_color(_enum, enum_color);
+        for (const String& _enum : enums) add_keyword_color(_enum, clkt_enumColor);
 
         // Add Clektron Enum Values
         const String enumValues[] =
@@ -821,20 +821,20 @@ public:
             "TaskIcon_Working", "TaskIcon_Warning", "TaskIcon_Error", "TaskIcon_Done", 
             "OS_Unsupported", "OS_Windows_x64", "OS_Linux_x64"
         };
-        for (const String& _enumval : enumValues) add_keyword_color(_enumval, enum_value_color);
+        for (const String& _enumval : enumValues) add_keyword_color(_enumval, clkt_enumValueColor);
 
         // Add Clektron Regions
-        add_color_region("#", "", preprocessor_color, true);
-        add_color_region("\"", "\"", string_color);
-        add_color_region("'", "'", char_color);
-        add_color_region("//", "", comment_color, true);
-        add_color_region("/*", "*/", comment_color);
+        add_color_region("#", "", clkt_preprocessorColor, true);
+        add_color_region("\"", "\"", clkt_stringColor);
+        add_color_region("'", "'", clkt_charColor);
+        add_color_region("//", "", clkt_commentColor, true);
+        add_color_region("/*", "*/", clkt_commentColor);
 
         // Add Clektron Function, Number and Symbol etc.
-        set_function_color(function_color);
-        set_number_color(number_color);
-        set_symbol_color(symbol_color);
-        set_member_variable_color(memeber_variable_color);
+        set_function_color(clkt_functionColor);
+        set_number_color(clkt_numberColor);
+        set_symbol_color(clkt_symbolColor);
+        set_member_variable_color(clkt_memberVariableColor);
     }
 
 public:
@@ -850,7 +850,7 @@ public:
 private:
     void UpdateFunctionSymbol(const String& symbolName)
     {
-        if (!this->has_keyword_color(symbolName)) this->add_keyword_color(symbolName, function_color);
+        if (!this->has_keyword_color(symbolName)) this->add_keyword_color(symbolName, clkt_functionColor);
     }
 };
 

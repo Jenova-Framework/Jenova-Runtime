@@ -34,7 +34,7 @@ void CPPScriptLanguage::deinit()
 }
 String CPPScriptLanguage::_get_name() const
 {
-	return "C++ Script";
+	return jenova::GlobalSettings::JenovaLanguageName;
 }
 void CPPScriptLanguage::_init() {}
 void CPPScriptLanguage::_finish() {}
@@ -50,69 +50,34 @@ PackedStringArray CPPScriptLanguage::_get_reserved_words() const
 {
 	static const PackedStringArray reserved_words
 	{
-		"alignas", "alignof", "and", "and_eq", "asm", "atomic_cancel", "atomic_commit", "atomic_noexcept",
-		"auto", "bitand", "bitor", "bool", "break", "case", "catch", "char", "char8_t", "char16_t", "char32_t",
-		"class", "compl", "concept", "const", "consteval", "constexpr", "const_cast", "continue", "co_await",
-		"co_return", "co_yield", "decltype", "default", "delete", "do", "double", "dynamic_cast", "else",
-		"enum", "explicit", "export", "extern", "false", "float", "for", "friend", "goto", "if", "inline",
-		"int", "int32_t", "int64_t", "uint32_t", "uint64_t", "long", "size_t", "mutable", "namespace", "new",
-		"noexcept", "not", "not_eq", "nullptr", "operator", "or", "or_eq", "private", "protected", "public",
-		"reflexpr", "register", "reinterpret_cast", "requires", "return", "short", "signed", "sizeof", "static",
-		"static_assert", "static_cast", "struct", "switch", "synchronized", "template", "this", "thread_local",
-		"throw", "true", "try", "typedef", "typeid","typename", "union", "unsigned", "using", "virtual", "void",
-		"volatile", "wchar_t", "while", "xor", "xor_eq", "jenova", "godot", "__int64", "__int32", "Caller", "Variant",
-		"include", "ifdef", "else", "endif", "pragma",
-		"GlobalGet", "GlobalSet", "GlobalPointer", "GlobalVariable", "GetNode", "FindNode", "GetSelf",
-		jenova::GlobalSettings::ScriptToolIdentifier,
-		jenova::GlobalSettings::ScriptBlockBeginIdentifier,
-		jenova::GlobalSettings::ScriptBlockEndIdentifier,
-		jenova::GlobalSettings::ScriptVMBeginIdentifier,
-		jenova::GlobalSettings::ScriptVMEndIdentifier,
-		jenova::GlobalSettings::ScriptSignalCallbackIdentifier,
-		jenova::GlobalSettings::ScriptPropertyIdentifier,
-		jenova::GlobalSettings::ScriptClassNameIdentifier,
-		jenova::GlobalSettings::ScriptActivatorIdentifier,
-		jenova::GlobalSettings::ScriptFunctionExportIdentifier
+		// Handled by C++ Syntax Highlighter
 	};
 	return reserved_words;
 }
 bool CPPScriptLanguage::_is_control_flow_keyword(const String& p_keyword) const
 {
-	static const std::unordered_set<std::string> control_flow_keywords{
-		"if", "else", "switch", "case", "default", "while", "do", "for", "break", "continue", "return", "goto", "try", "catch", "throw", "co_await",
-		"co_return", "co_yield", "jenova", "godot", "include", "ifdef", "else", "endif", "pragma",
-		jenova::GlobalSettings::ScriptToolIdentifier,
-		jenova::GlobalSettings::ScriptBlockBeginIdentifier,
-		jenova::GlobalSettings::ScriptBlockEndIdentifier,
-		jenova::GlobalSettings::ScriptVMBeginIdentifier,
-		jenova::GlobalSettings::ScriptVMEndIdentifier,
-		jenova::GlobalSettings::ScriptSignalCallbackIdentifier,
-		jenova::GlobalSettings::ScriptPropertyIdentifier,
-		jenova::GlobalSettings::ScriptClassNameIdentifier,
-		jenova::GlobalSettings::ScriptActivatorIdentifier,
-		jenova::GlobalSettings::ScriptFunctionExportIdentifier
+	static const std::unordered_set<std::string> control_flow_keywords
+	{
+		// Handled by C++ Syntax Highlighter
 	};
 	return control_flow_keywords.find(AS_STD_STRING(p_keyword)) != control_flow_keywords.end();
 }
 PackedStringArray CPPScriptLanguage::_get_comment_delimiters() const
 {
 	PackedStringArray comment_delimiters;
-	comment_delimiters.push_back("/* */");
-	comment_delimiters.push_back("//");
+	// Handled by C++ Syntax Highlighter
 	return comment_delimiters;
 }
 PackedStringArray CPPScriptLanguage::_get_doc_comment_delimiters() const
 {
 	PackedStringArray doc_comment_delimiters;
-	doc_comment_delimiters.push_back("///");
-	doc_comment_delimiters.push_back("/** */");
+	// Handled by C++ Syntax Highlighter
 	return doc_comment_delimiters;
 }
 PackedStringArray CPPScriptLanguage::_get_string_delimiters() const
 {
 	PackedStringArray string_delimiters;
-	string_delimiters.push_back("' '");
-	string_delimiters.push_back("\" \"");
+	// Handled by C++ Syntax Highlighter
 	return string_delimiters;
 }
 Ref<Script> CPPScriptLanguage::_make_template(const String& p_template, const String& p_class_name, const String& p_base_class_name) const

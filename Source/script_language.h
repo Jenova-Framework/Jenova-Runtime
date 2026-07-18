@@ -29,6 +29,7 @@ public:
 	static void deinit();
 	static CPPScriptLanguage* get_singleton();
 
+	virtual String _get_friendly_name() const { return "C++ Language (Jenova)"; }
 	virtual String _get_name() const override;
 	virtual void _init() override;
 	virtual String _get_type() const override;
@@ -92,6 +93,7 @@ public:
 	virtual bool _has_named_classes() const override;
 	#endif
 
+	// Initializer/Destructor
 	CPPScriptLanguage() {}
 	~CPPScriptLanguage() {}
 };
@@ -173,6 +175,7 @@ public:
 	virtual bool _has_named_classes() const override;
 	#endif
 
+	// Initializer/Destructor
 	CPPHeaderLanguage() {}
 	~CPPHeaderLanguage() {}
 };
