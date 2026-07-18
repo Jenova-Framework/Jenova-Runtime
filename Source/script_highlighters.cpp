@@ -35,7 +35,7 @@ void CPPSyntaxHighlighter::deinit()
 	EditorInterface::get_singleton()->get_script_editor()->unregister_syntax_highlighter(highlighter);
 }
 
-// Jenova Script Syntax Highlighter Implementation
+// Jenova Editor Syntax Highlighter Implementation
 String CPPSyntaxHighlighter::_get_name() const
 {
 	return CPPScriptLanguage::get_singleton()->_get_friendly_name();

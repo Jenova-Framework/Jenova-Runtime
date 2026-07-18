@@ -16,7 +16,7 @@
 // Jenova SDK
 #include "Jenova.hpp""
 
-// Jenova Script Syntax Highlighter Definition
+// Jenova Editor Syntax Highlighter Definition
 class CPPSyntaxHighlighter : public EditorSyntaxHighlighter
 {
 	GDCLASS(CPPSyntaxHighlighter, EditorSyntaxHighlighter)
@@ -29,19 +29,19 @@ private:
 
 public:
     // Define C++ Highlighter Colors
-	Color cpp_typeColor					= Color::html("#ffc9b4");
-	Color cpp_keywordColor				= Color::html("#ffa978");
+	Color cpp_typeColor					= Color::html("#8d74fc");
+	Color cpp_keywordColor				= Color::html("#6e9ffa");
 	Color cpp_controlFlowColor			= Color::html("#7cf0ff");
-	Color cpp_classColor				= Color::html("#ffd78b");
-	Color cpp_booleanColor				= Color::html("#4cb8e6");
-	Color cpp_preprocessorColor			= Color::html("#beacff");
-	Color cpp_stringColor				= Color::html("#ff3758");
+	Color cpp_classColor				= Color::html("#fcc762");
+	Color cpp_booleanColor				= Color::html("#3c6fe6");
+	Color cpp_preprocessorColor			= Color::html("#f0ac81");
+	Color cpp_stringColor				= Color::html("#ff3766");
 	Color cpp_functionColor				= Color::html("#a3ff9b");
-	Color cpp_numberColor				= Color::html("#ca88ff");
-	Color cpp_pointerColor				= Color::html("#ffbf47");
+	Color cpp_numberColor				= Color::html("#fff188");
+	Color cpp_pointerColor				= Color::html("#c4ff6b");
 	Color cpp_commentColor				= Color::html("#a6a6a6aa");
-	Color cpp_operatorColor				= Color::html("#d1fff0");
-	Color cpp_specialColor				= Color::html("#47ff6f");
+	Color cpp_operatorColor				= Color::html("#aefce3");
+	Color cpp_specialColor				= Color::html("#47ffaf");
 
 protected:
 	static void _bind_methods() {}
