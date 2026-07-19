@@ -3067,7 +3067,8 @@ namespace jenova
 
 				// Create Deployer Module If Exporting from Core Build
 				#ifdef JENOVA_STATIC_BUILD
-					auto deployerBuffer = jenova::CreateMemoryBuffer((void*)LIB_DEPLOYER_WIN64, sizeof LIB_DEPLOYER_WIN64);
+					const jenova::MemoryBuffer& libDeployerWin64 = RESOURCE_BUFFER(LIB_DEPLOYER_WIN64);
+					auto deployerBuffer = jenova::CreateMemoryBuffer((void*)libDeployerWin64.data(), libDeployerWin64.size());
 					if (!jenova::WriteMemoryBufferToFile(jenovaDeployer, deployerBuffer)) return false;
 					jenova::ReleaseMemoryBuffer(deployerBuffer);
 				#endif
