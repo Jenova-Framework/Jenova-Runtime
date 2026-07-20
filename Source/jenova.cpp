@@ -5230,7 +5230,13 @@ namespace jenova
 							std::string cacheDirectory = std::filesystem::absolute(program.get<std::string>("--cache")).string();
 
 							// Create Internal Source
-							if (!jenova::CreateFileFromInternalSource(cacheDirectory + "JenovaModuleLoader.cpp", jenova::GetStdStringFromMemoryBuffer(RESOURCE_BUFFER(JenovaModuleInitializerCPP))))
+							jenova::MemoryBuffer jnvModuleLoaderData = JenovaResourceManager::PullEntity(nullptr, 0, "JenovaModuleInitializerCPP");
+							if (jnvModuleLoaderData.size() == 0)
+							{
+								jenova_log("[Jenova Deployer] Error : %s", "Unable to Obtain Internal Jenova Module Loader Resource.");
+								jenova::ExitWithCode(EXIT_FAILURE);
+							}
+							if (!jenova::CreateFileFromInternalSource(cacheDirectory + "JenovaModuleLoader.cpp", jenova::GetStdStringFromMemoryBuffer(jnvModuleLoaderData)))
 							{
 								jenova_log("[Jenova Deployer] Error : %s", "Unable to Create Internal Script 'JenovaModuleLoader'");
 								jenova::ExitWithCode(EXIT_FAILURE);

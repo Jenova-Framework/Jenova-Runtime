@@ -42,7 +42,7 @@ void JenovaResourceManager::init()
 	jnvrm_singleton = memnew(JenovaResourceManager);
 
 	// Load Default Asset Package
-	if (!jnvrm_singleton->CreateDatabaseFromArchive(BUFFER_PTR_SIZE_PARAM(JENOVA_RESOURCE(JENOVA_ASSET_PACK_LZMA2))))
+	if (!jnvrm_singleton->CreateDatabaseFromArchive(nullptr, 0))
 	{
 		jenova::Warning("Jenova Resource Manager", "Failed to Load Default Asset Package.");
 	}
@@ -71,8 +71,15 @@ JenovaResourceManager* JenovaResourceManager::get_singleton()
 }
 
 // Jenova Resource Manager Implementation
-bool JenovaResourceManager::CreateDatabaseFromArchive(const uint8_t* archviePtr, const size_t archiveSize)
+bool JenovaResourceManager::CreateDatabaseFromArchive(const uint8_t* archivePtr, size_t archiveSize)
 {
+	// Default Package
+	if (archivePtr == nullptr || archiveSize == 0)
+	{
+		archivePtr = JENOVA_RESOURCE(JENOVA_ASSET_PACK_LZMA2);
+		archiveSize = sizeof(JENOVA_RESOURCE(JENOVA_ASSET_PACK_LZMA2));
+	}
+
     // Clear Database
 	areResourcesLoaded = false;
     ReleaseDatabase();
@@ -85,7 +92,7 @@ bool JenovaResourceManager::CreateDatabaseFromArchive(const uint8_t* archviePtr,
 	a = archive_read_new();
 	archive_read_support_format_all(a);
 	archive_read_support_filter_all(a);
-	if ((r = archive_read_open_memory(a, archviePtr, archiveSize))) return false;
+	if ((r = archive_read_open_memory(a, archivePtr, archiveSize))) return false;
 	for (;;)
 	{
 		// Read Next Header
@@ -107,9 +114,9 @@ bool JenovaResourceManager::CreateDatabaseFromArchive(const uint8_t* archviePtr,
 		{
 			jenova::MemoryBuffer buffer;
 			buffer.resize(fileSize);
-			const void* buff;
-			size_t buffSize;
-			la_int64_t offset;
+            const void* buff = nullptr;
+            size_t buffSize = 0;
+            la_int64_t offset = 0;
 			size_t totalRead = 0;
 			for (;;)
 			{
@@ -121,7 +128,6 @@ bool JenovaResourceManager::CreateDatabaseFromArchive(const uint8_t* archviePtr,
 					return false;
 				}
 				if (r < ARCHIVE_WARN) return false;
-
 				memcpy(buffer.data() + totalRead, buff, buffSize);
 				totalRead += buffSize;
 			}
@@ -131,10 +137,7 @@ bool JenovaResourceManager::CreateDatabaseFromArchive(const uint8_t* archviePtr,
 			if (dotPos != -1) key = key.substr(0, dotPos);
 			database[key] = std::move(buffer);
 		}
-		else
-		{
-			archive_read_data_skip(a);
-		}
+		else archive_read_data_skip(a);
 	}
 	archive_read_close(a);
 	archive_read_free(a);
@@ -176,4 +179,114 @@ size_t JenovaResourceManager::GetResourceRawFileSize(const String& dataID) const
 	if (database.contains(dataID)) return database[dataID].size();
 	jenova::ErrorMessage("Jenova Resource Manager", "Invalid Resource '%s' Requested, Returning Zero.", AS_C_STRING(dataID));
 	return 0;
+}
+
+// Standalone Extractor (For Resource Manager)
+jenova::MemoryBuffer JenovaResourceManager::PullEntity(const uint8_t* archivePtr, size_t archiveSize, const std::string& entityID)
+{
+    // Default Package
+    if (archivePtr == nullptr || archiveSize == 0)
+    {
+        archivePtr = JENOVA_RESOURCE(JENOVA_ASSET_PACK_LZMA2);
+        archiveSize = sizeof(JENOVA_RESOURCE(JENOVA_ASSET_PACK_LZMA2));
+    }
+
+    // Result Buffer
+    jenova::MemoryBuffer result;
+
+    // Unpack & Find Entity
+    struct archive* a;
+    struct archive_entry* entry;
+    int r;
+
+    a = archive_read_new();
+    archive_read_support_format_all(a);
+    archive_read_support_filter_all(a);
+    if ((r = archive_read_open_memory(a, archivePtr, archiveSize)))
+    {
+        jenova_log("[Jenova Resource Manager] Error : %s", "Failed to Open Archive");
+        return result;
+    }
+
+    for (;;)
+    {
+        // Read Next Header
+        r = archive_read_next_header(a, &entry);
+        if (r == ARCHIVE_EOF) break;
+        if (r < ARCHIVE_OK)
+        {
+            jenova_log("[Jenova Resource Manager] Error : Failed to Parse Archive, Reason [%d] : %s", __LINE__, archive_error_string(a));
+            archive_read_close(a);
+            archive_read_free(a);
+            return result;
+        }
+        if (r < ARCHIVE_WARN)
+        {
+            archive_read_close(a);
+            archive_read_free(a);
+            return result;
+        }
+
+        // Skip Directories
+        if (archive_entry_filetype(entry) == AE_IFDIR)
+        {
+            archive_read_data_skip(a);
+            continue;
+        }
+
+        // Prepare Entity File Name
+        std::string fullPath = archive_entry_pathname(entry);
+        std::string filename = fullPath;
+        size_t lastSlash = filename.find_last_of("/\\");
+        if (lastSlash != std::string::npos) filename = filename.substr(lastSlash + 1);
+        size_t dotPos = filename.find_last_of(".");
+        if (dotPos != std::string::npos) filename = filename.substr(0, dotPos);
+
+        // Entity ID Check
+        if (filename == entityID)
+        {
+            // Extract File Data
+            size_t fileSize = archive_entry_size(entry);
+            if (fileSize > 0)
+            {
+                result.resize(fileSize);
+                const void* buff = nullptr;
+                size_t buffSize = 0;
+                la_int64_t offset = 0;
+                size_t totalRead = 0;
+                for (;;)
+                {
+                    r = archive_read_data_block(a, &buff, &buffSize, &offset);
+                    if (r == ARCHIVE_EOF) break;
+                    if (r < ARCHIVE_OK)
+                    {
+                        jenova_log("[Jenova Resource Manager] Error : Failed to Read Data Block, Reason [%d] : %s", __LINE__, archive_error_string(a));
+                        result.clear();
+                        archive_read_close(a);
+                        archive_read_free(a);
+                        return result;
+                    }
+                    if (r < ARCHIVE_WARN)
+                    {
+                        result.clear();
+                        archive_read_close(a);
+                        archive_read_free(a);
+                        return result;
+                    }
+                    memcpy(result.data() + totalRead, buff, buffSize);
+                    totalRead += buffSize;
+                }
+            }
+            archive_read_close(a);
+            archive_read_free(a);
+            return result;
+        }
+        archive_read_data_skip(a);
+    }
+
+    // Entity Not Found
+    archive_read_close(a);
+    archive_read_free(a);
+    jenova_log("[Jenova Resource Manager] Error : Entity Not Found '%s'", entityID.c_str());
+    return result;
 }

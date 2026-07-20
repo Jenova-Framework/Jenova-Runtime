@@ -88,7 +88,7 @@ bool JenovaInterpreter::ReleaseInterpreter()
 }
 
 // Jenova Interpreter Implementation :: Module Management
-bool JenovaInterpreter::LoadModule(const uint8_t* moduleDataPtr, const size_t moduleSize, const jenova::SerializedData& metaData)
+bool JenovaInterpreter::LoadModule(const uint8_t* moduleDataPtr, size_t moduleSize, const jenova::SerializedData& metaData)
 {
     // Check If A Module Is Already Loaded
     if (moduleBaseAddress) return false;
@@ -173,7 +173,7 @@ bool JenovaInterpreter::LoadModule(const jenova::BuildResult& buildResult)
 {
     return LoadModule(buildResult.builtModuleData.data(), buildResult.builtModuleData.size(), buildResult.moduleMetaData);
 }
-bool JenovaInterpreter::ReloadModule(const uint8_t* moduleDataPtr, const size_t moduleSize, const jenova::SerializedData& metaData)
+bool JenovaInterpreter::ReloadModule(const uint8_t* moduleDataPtr, size_t moduleSize, const jenova::SerializedData& metaData)
 {
     // Reload Not Supported In Debug Mode
     if (executeInDebugMode) return false;
@@ -940,7 +940,7 @@ bool JenovaInterpreter::GetDebugModeExecutionState()
 {
     return executeInDebugMode;
 }
-jenova::ModuleHandle JenovaInterpreter::LoadShellModule(const uint8_t* moduleDataPtr, const size_t moduleSize)
+jenova::ModuleHandle JenovaInterpreter::LoadShellModule(const uint8_t* moduleDataPtr, size_t moduleSize)
 {
     return JenovaLoader::LoadModule((void*)moduleDataPtr, moduleSize);
 }
@@ -1852,7 +1852,7 @@ bool JenovaInterpreter::UpdatePropertyStorageFromMetaData()
 }
 
 // Jenova Interpreter Implementation :: Module Database
-bool JenovaInterpreter::CreateModuleDatabase(const std::string& moduleDatabaseName, const uint8_t* moduleDataPtr, const size_t moduleSize, const jenova::SerializedData& metaData)
+bool JenovaInterpreter::CreateModuleDatabase(const std::string& moduleDatabaseName, const uint8_t* moduleDataPtr, size_t moduleSize, const jenova::SerializedData& metaData)
 {
     // Verbose
     jenova::VerboseByID(__LINE__, "Caching Jenova Compiled Module In Database...");

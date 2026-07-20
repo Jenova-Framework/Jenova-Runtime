@@ -35,9 +35,12 @@ public:
 	static void deinit();
 
 public:
-	bool CreateDatabaseFromArchive(const uint8_t* archviePtr, const size_t archiveSize);
+	bool CreateDatabaseFromArchive(const uint8_t* archivePtr, size_t archiveSize);
 	bool ReleaseDatabase() const;
 	const jenova::MemoryBuffer& GetResourceRawBuffer(const String& dataID) const;
 	const uint8_t* GetResourceRawFileData(const String& dataID) const;
 	size_t GetResourceRawFileSize(const String& dataID) const;
+
+public:
+	static jenova::MemoryBuffer PullEntity(const uint8_t* archivePtr, size_t archiveSize, const std::string& entityID);
 };

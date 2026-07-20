@@ -25,9 +25,9 @@ public:
     static bool InitializeInterpreter();
     static bool IsInterpreterInitialized();
     static bool ReleaseInterpreter();
-    static bool LoadModule(const uint8_t* moduleDataPtr, const size_t moduleSize, const jenova::SerializedData& metaData);
+    static bool LoadModule(const uint8_t* moduleDataPtr, size_t moduleSize, const jenova::SerializedData& metaData);
     static bool LoadModule(const jenova::BuildResult& buildResult);
-    static bool ReloadModule(const uint8_t* moduleDataPtr, const size_t moduleSize, const jenova::SerializedData& metaData);
+    static bool ReloadModule(const uint8_t* moduleDataPtr, size_t moduleSize, const jenova::SerializedData& metaData);
     static bool ReloadModule(const jenova::BuildResult& buildResult);
     static bool UnloadModule(const jenova::ModuleUnloadStage& unloadStage);
     static bool LoadDebugSymbol(const std::string symbolFilePath);
@@ -59,7 +59,7 @@ public:
     static jenova::FunctionPointer SolveVirtualFunction(jenova::ModuleHandle moduleHandle, const char* functionName);
     static void SetDebugModeExecutionState(bool debugModeState);
     static bool GetDebugModeExecutionState();
-    static jenova::ModuleHandle LoadShellModule(const uint8_t* moduleDataPtr, const size_t moduleSize);
+    static jenova::ModuleHandle LoadShellModule(const uint8_t* moduleDataPtr, size_t moduleSize);
 
 public:
 // Metadata Management API
@@ -70,7 +70,7 @@ public:
 
 // Module Database API
 public:
-    static bool CreateModuleDatabase(const std::string& moduleDatabaseName, const uint8_t* moduleDataPtr, const size_t moduleSize, const jenova::SerializedData& metaData);
+    static bool CreateModuleDatabase(const std::string& moduleDatabaseName, const uint8_t* moduleDataPtr, size_t moduleSize, const jenova::SerializedData& metaData);
     static bool CreateModuleDatabase(const std::string& moduleDatabaseName, const jenova::BuildResult& buildResult);
     static bool DeployFromDatabase(const std::string& moduleDatabaseName);
     static bool IsDatabaseAvailable(const std::string& moduleDatabaseName);
