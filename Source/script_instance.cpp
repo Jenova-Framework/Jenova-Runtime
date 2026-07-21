@@ -134,7 +134,7 @@ bool CPPScriptInstance::set(const StringName& p_name, const Variant& p_value)
 	}
 	else
 	{
-		auto propContainer = JenovaInterpreter::GetPropertyContainer(AS_STD_STRING(this->scriptInstanceIdentity));
+		auto propContainer = JenovaInterpreter::GetPropertyContainer(AS_STD_STRING(GetIdentity()));
 		for (size_t i = 0; i < propContainer.scriptProperties.size(); i++)
 		{
 			if (p_name == propContainer.scriptProperties[i].propertyInfo.name)
@@ -175,7 +175,7 @@ bool CPPScriptInstance::get(const StringName& p_name, Variant& r_ret) const
 	}
 	else
 	{
-		auto propContainer = JenovaInterpreter::GetPropertyContainer(AS_STD_STRING(this->scriptInstanceIdentity));
+		auto propContainer = JenovaInterpreter::GetPropertyContainer(AS_STD_STRING(GetIdentity()));
 		for (size_t i = 0; i < propContainer.scriptProperties.size(); i++)
 		{
 			if (p_name == propContainer.scriptProperties[i].propertyInfo.name)
@@ -193,7 +193,7 @@ godot::String CPPScriptInstance::to_string(bool* r_is_valid)
 {
 	jenova::VerboseByID(__LINE__, "CPPScriptInstance::to_string");
 	*r_is_valid = true;
-	return String(jenova::Format("<JenovaScript:%s>", AS_C_STRING(get_identity())).c_str());
+	return String(jenova::Format("<JenovaScript:%s>", AS_C_STRING(GetIdentity())).c_str());
 }
 void CPPScriptInstance::notification(int p_notification, bool p_reversed)
 {
@@ -221,7 +221,7 @@ Variant CPPScriptInstance::callp(const StringName& p_method, const Variant** p_a
 		String script_name = this->script->get_path().get_file();
 		String owner_name = godot::Object::cast_to<godot::Node>(this->owner)->get_name();
 		jenova::VerboseByID(__LINE__, "Executing Script (%s | %s)[%s][%d] from (%s | %p) ...",
-			AS_C_STRING(script_name), AS_C_STRING(scriptInstanceIdentity), AS_C_STRING(p_method), p_argument_count, AS_C_STRING(owner_name), this->instance);
+			AS_C_STRING(script_name), AS_C_STRING(GetIdentity()), AS_C_STRING(p_method), p_argument_count, AS_C_STRING(owner_name), this->instance);
 	}
 
 	// Handle Internal Methods
@@ -251,7 +251,7 @@ Variant CPPScriptInstance::callp(const StringName& p_method, const Variant** p_a
 	// Initial Update for Properties
 	if (p_method == StringName("_enter_tree"))
 	{
-		auto propContainer = JenovaInterpreter::GetPropertyContainer(AS_STD_STRING(this->scriptInstanceIdentity));
+		auto propContainer = JenovaInterpreter::GetPropertyContainer(AS_STD_STRING(GetIdentity()));
 		for (size_t i = 0; i < propContainer.scriptProperties.size(); i++)
 		{
 			jenova::ScriptProperty scriptProperty = propContainer.scriptProperties[i];
@@ -269,28 +269,24 @@ Variant CPPScriptInstance::callp(const StringName& p_method, const Variant** p_a
 
 			// Set Initial Value of Property
 			Variant initialValue = this->instanceProperties[scriptProperty.propertyInfo.name];
-			JenovaInterpreter::SetPropertyValueFromVariant(scriptProperty.propertyInfo.name, initialValue, scriptInstanceIdentity);
+			JenovaInterpreter::SetPropertyValueFromVariant(scriptProperty.propertyInfo.name, initialValue, GetIdentity());
 		}
 	}
 
 	// Update Interpreter Properties
-	if (this->instanceProperties.size() != 0 && !JenovaInterpreter::IsExecutingFunction())
+	if (!this->instanceProperties.is_empty() && !JenovaInterpreter::IsExecutingFunction())
 	{
-		Array instancePropertiesKeys = this->instanceProperties.keys();
-		for (size_t i = 0; i < instancePropertiesKeys.size(); i++)
+		if (!ForcePushProperties())
 		{
-			if (!JenovaInterpreter::SetPropertyValueFromVariant(instancePropertiesKeys[i], this->instanceProperties[instancePropertiesKeys[i]], scriptInstanceIdentity))
-			{
-				jenova::Error("Jenova Interpreter", "Failed to Update Interpreter Property Storage Value!");
-				r_error.error = GDEXTENSION_CALL_ERROR_INVALID_ARGUMENT;
-				return Variant();
-			}
+			jenova::Error("Jenova Interpreter", "Failed to Update Interpreter Property Storage Value!");
+			r_error.error = GDEXTENSION_CALL_ERROR_INVALID_ARGUMENT;
+			return Variant();
 		}
 	}
 
 	// Call to Interpreter
 	bool hasMethod = false;
-	jenova::FunctionList jenovaMethods = JenovaInterpreter::GetFunctionsList(AS_STD_STRING(scriptInstanceIdentity));
+	jenova::FunctionList jenovaMethods = JenovaInterpreter::GetFunctionsList(AS_STD_STRING(GetIdentity()));
 	for (auto& function : jenovaMethods)
 	{
 		if (p_method == StringName(function.c_str()))
@@ -302,26 +298,19 @@ Variant CPPScriptInstance::callp(const StringName& p_method, const Variant** p_a
 	if (hasMethod)
 	{
 		// Invoke Function & Call
-		Variant callResult = JenovaInterpreter::CallFunction(this->owner, AS_STD_STRING(p_method), AS_STD_STRING(scriptInstanceIdentity), p_args, p_argument_count);
+		Variant callResult = JenovaInterpreter::CallFunction(this->owner, this, AS_STD_STRING(p_method), AS_STD_STRING(GetIdentity()), p_args, p_argument_count);
 
 		// Update Properties
 		if (jenova::GlobalSettings::UpdatePropertiesAfterCall)
 		{
 			// Update Interpreter Properties
-			if (this->instanceProperties.size() != 0)
+			if (!this->instanceProperties.is_empty())
 			{
-				Array instancePropertiesKeys = instanceProperties.keys();
-				for (size_t i = 0; i < instancePropertiesKeys.size(); i++)
+				if (!ForcePullProperties())
 				{
-					Variant variantValue = Variant::NIL;
-					jenova::PropertyPointer propertyPointer = JenovaInterpreter::GetPropertyPointer(instancePropertiesKeys[i], scriptInstanceIdentity);
-					if (!jenova::GetVariantFromPropertyPointer(propertyPointer, variantValue, instanceProperties[instancePropertiesKeys[i]].get_type()))
-					{
-						jenova::Error("Jenova Interpreter", "Failed to Update Property Storage Value From Interpreter Property!");
-						r_error.error = GDEXTENSION_CALL_ERROR_INVALID_ARGUMENT;
-						return Variant();
-					}
-					instanceProperties[instancePropertiesKeys[i]] = variantValue;
+					jenova::Error("Jenova Interpreter", "Failed to Update Property Storage Value From Interpreter Property!");
+					r_error.error = GDEXTENSION_CALL_ERROR_INVALID_ARGUMENT;
+					return Variant();
 				}
 			}
 		}
@@ -338,14 +327,14 @@ Variant CPPScriptInstance::callp(const StringName& p_method, const Variant** p_a
 void CPPScriptInstance::update_methods() const
 {
 	// Remove
-	jenova::VerboseByID(__LINE__, "CPPScriptInstance::update_methods (%s)", AS_C_STRING(scriptInstanceIdentity));
+	jenova::VerboseByID(__LINE__, "CPPScriptInstance::update_methods (%s)", AS_C_STRING(GetIdentity()));
 
 	// Validate Script
 	if (script.is_null()) return;
 
 	// Update Script Methods
 	methodsInfo.clear();
-	auto functionContainer = JenovaInterpreter::GetFunctionContainer(AS_STD_STRING(scriptInstanceIdentity));
+	auto functionContainer = JenovaInterpreter::GetFunctionContainer(AS_STD_STRING(GetIdentity()));
 	for (auto& scriptFunction : functionContainer.scriptFunctions)
 	{
 		this->methodsInfo.push_back(scriptFunction.methodInfo);
@@ -354,7 +343,7 @@ void CPPScriptInstance::update_methods() const
 const GDExtensionMethodInfo* CPPScriptInstance::get_method_list(uint32_t* r_count) const
 {
 	// Remove
-	jenova::VerboseByID(__LINE__, "CPPScriptInstance::get_method_list (%s)", AS_C_STRING(scriptInstanceIdentity));
+	jenova::VerboseByID(__LINE__, "CPPScriptInstance::get_method_list (%s)", AS_C_STRING(GetIdentity()));
 
 	// Validate Script
 	if (script.is_null())
@@ -410,7 +399,7 @@ const GDExtensionPropertyInfo* CPPScriptInstance::get_property_list(uint32_t* r_
 	}
 
 	// Add Jenova Script Interpreted Properties
-	auto propContainer = JenovaInterpreter::GetPropertyContainer(AS_STD_STRING(this->scriptInstanceIdentity));
+	auto propContainer = JenovaInterpreter::GetPropertyContainer(AS_STD_STRING(GetIdentity()));
 	for (size_t i = 0; i < propContainer.scriptProperties.size(); i++)
 	{
 		GDExtensionPropertyInfo sourceCodeProperty = {};
@@ -456,7 +445,7 @@ Variant::Type CPPScriptInstance::get_property_type(const StringName& p_name, boo
 	}
 
 	// Handle Interpreted Properties
-	auto propContainer = JenovaInterpreter::GetPropertyContainer(AS_STD_STRING(this->scriptInstanceIdentity));
+	auto propContainer = JenovaInterpreter::GetPropertyContainer(AS_STD_STRING(GetIdentity()));
 	for (size_t i = 0; i < propContainer.scriptProperties.size(); i++)
 	{
 		if (p_name == propContainer.scriptProperties[i].propertyInfo.name)
@@ -493,7 +482,7 @@ bool CPPScriptInstance::validate_property(GDExtensionPropertyInfo& p_property) c
 	}
 	else
 	{
-		auto propContainer = JenovaInterpreter::GetPropertyContainer(AS_STD_STRING(this->scriptInstanceIdentity));
+		auto propContainer = JenovaInterpreter::GetPropertyContainer(AS_STD_STRING(GetIdentity()));
 		for (size_t i = 0; i < propContainer.scriptProperties.size(); i++)
 		{
 			if (propertyName == propContainer.scriptProperties[i].propertyInfo.name) return true;
@@ -506,7 +495,7 @@ bool CPPScriptInstance::validate_property(GDExtensionPropertyInfo& p_property) c
 bool CPPScriptInstance::has_method(const StringName& p_name) const
 {
 	// Remove
-	jenova::VerboseByID(__LINE__, "CPPScriptInstance::has_method (%s) [%s]", AS_C_STRING(scriptInstanceIdentity), AS_C_STRING(p_name));
+	jenova::VerboseByID(__LINE__, "CPPScriptInstance::has_method (%s) [%s]", AS_C_STRING(GetIdentity()), AS_C_STRING(p_name));
 
 	// Validate Script
 	if (!script.is_valid()) return false;
@@ -527,7 +516,7 @@ bool CPPScriptInstance::has_method(const StringName& p_name) const
 	if (!result)
 	{
 		// Get Jenova Function List And Search Over User Defined Functions
-		jenova::FunctionList jenovaMethods = JenovaInterpreter::GetFunctionsList(AS_STD_STRING(scriptInstanceIdentity));
+		jenova::FunctionList jenovaMethods = JenovaInterpreter::GetFunctionsList(AS_STD_STRING(GetIdentity()));
 		for (auto& function : jenovaMethods)
 		{
 			if (p_name == StringName(function.c_str()))
@@ -542,7 +531,7 @@ bool CPPScriptInstance::has_method(const StringName& p_name) const
 	}
 
 	// Remove
-	jenova::VerboseByID(__LINE__, "CPPScriptInstance::has_method (%s) [%s] returned %s", AS_C_STRING(scriptInstanceIdentity), AS_C_STRING(p_name), result ? "TRUE" : "FALSE");
+	jenova::VerboseByID(__LINE__, "CPPScriptInstance::has_method (%s) [%s] returned %s", AS_C_STRING(GetIdentity()), AS_C_STRING(p_name), result ? "TRUE" : "FALSE");
 	return result;
 }
 int CPPScriptInstance::get_method_argument_count(const StringName& p_method, bool* r_is_valid) const
@@ -558,7 +547,7 @@ bool CPPScriptInstance::property_can_revert(const StringName& p_name) const
 	jenova::VerboseByID(__LINE__, "CPPScriptInstance::property_can_revert");
 
 	// Handle Interpreted Properties
-	auto propContainer = JenovaInterpreter::GetPropertyContainer(AS_STD_STRING(this->scriptInstanceIdentity));
+	auto propContainer = JenovaInterpreter::GetPropertyContainer(AS_STD_STRING(GetIdentity()));
 	for (size_t i = 0; i < propContainer.scriptProperties.size(); i++)
 	{
 		if (p_name == propContainer.scriptProperties[i].propertyInfo.name) return true;
@@ -573,7 +562,7 @@ bool CPPScriptInstance::property_get_revert(const StringName& p_name, Variant& r
 	jenova::VerboseByID(__LINE__, "CPPScriptInstance::property_get_revert");
 
 	// Handle Interpreted Properties
-	auto propContainer = JenovaInterpreter::GetPropertyContainer(AS_STD_STRING(this->scriptInstanceIdentity));
+	auto propContainer = JenovaInterpreter::GetPropertyContainer(AS_STD_STRING(GetIdentity()));
 	for (size_t i = 0; i < propContainer.scriptProperties.size(); i++)
 	{
 		if (p_name == propContainer.scriptProperties[i].propertyInfo.name)
@@ -643,9 +632,34 @@ ScriptLanguage* CPPScriptInstance::_get_language()
 
 	return CPPScriptLanguage::get_singleton();
 }
-String CPPScriptInstance::get_identity()
+String CPPScriptInstance::GetIdentity() const
 {
 	return scriptInstanceIdentity;
+}
+bool CPPScriptInstance::ForcePushProperties()
+{
+	Array instancePropertiesKeys = instanceProperties.keys();
+	for (size_t i = 0; i < instancePropertiesKeys.size(); i++)
+	{
+		if (!JenovaInterpreter::SetPropertyValueFromVariant(instancePropertiesKeys[i], instanceProperties[instancePropertiesKeys[i]], GetIdentity())) return false;
+	}
+
+	// All Good
+	return true;
+}
+bool CPPScriptInstance::ForcePullProperties()
+{
+	Array instancePropertiesKeys = instanceProperties.keys();
+	for (size_t i = 0; i < instancePropertiesKeys.size(); i++)
+	{
+		Variant variantValue = Variant::NIL;
+		jenova::PropertyPointer propertyPointer = JenovaInterpreter::GetPropertyPointer(instancePropertiesKeys[i], GetIdentity());
+		if (!jenova::GetVariantFromPropertyPointer(propertyPointer, variantValue, instanceProperties[instancePropertiesKeys[i]].get_type())) return false;
+		instanceProperties[instancePropertiesKeys[i]] = variantValue;
+	}
+
+	// All Good
+	return true;
 }
 
 // C++ Script Instance Initializer/Destructor
@@ -674,7 +688,7 @@ CPPScriptInstance::CPPScriptInstance(Object* p_owner, const Ref<CPPScript> p_scr
 CPPScriptInstance::~CPPScriptInstance() 
 {
 	// Remove
-	jenova::VerboseByID(__LINE__, "CPPScriptInstance::~CPPScriptInstance (%s)", AS_C_STRING(this->get_identity()));
+	jenova::VerboseByID(__LINE__, "CPPScriptInstance::~CPPScriptInstance (%s)", AS_C_STRING(this->GetIdentity()));
 
 	// Unregister Script Instance to Manager
 	JenovaScriptManager::get_singleton()->remove_script_instance(this);

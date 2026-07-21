@@ -382,6 +382,18 @@ namespace jenova::sdk
 		if (!JenovaAssetMonitor::get_singleton()->UnregisterCallback(jenova::AssetMonitor::AssetMonitorCallback(callbackPtr))) return false;
 		return true;
 	}
+	bool JenovaSDK::ForcePushProperties(Caller* caller)
+	{
+		CPPScriptInstance* instance = static_cast<CPPScriptInstance*>(caller->context);
+		if (instance) return instance->ForcePushProperties();
+		return false;
+	}
+	bool JenovaSDK::ForcePullProperties(Caller* caller)
+	{
+		CPPScriptInstance* instance = static_cast<CPPScriptInstance*>(caller->context);
+		if (instance) return instance->ForcePullProperties();
+		return false;
+	}
 	bool JenovaSDK::ReloadJenovaRuntime(RuntimeReloadMode reloadMode)
 	{
 		jenova::sdk::Output("ReloadJenovaRuntime is Not Implemented Yet");
@@ -771,6 +783,8 @@ namespace jenova
 		if (string(sdkFunctionName) == "CreateFileMonitor") return FunctionPtr(&CreateFileMonitor);
 		if (string(sdkFunctionName) == "RegisterFileMonitorCallback") return FunctionPtr(&RegisterFileMonitorCallback);
 		if (string(sdkFunctionName) == "UnregisterFileMonitorCallback") return FunctionPtr(&UnregisterFileMonitorCallback);
+		if (string(sdkFunctionName) == "ForcePushProperties") return FunctionPtr(&ForcePushProperties);
+		if (string(sdkFunctionName) == "ForcePullProperties") return FunctionPtr(&ForcePullProperties);
 		if (string(sdkFunctionName) == "ReloadJenovaRuntime") return FunctionPtr(&ReloadJenovaRuntime);
 		if (string(sdkFunctionName) == "CreateCheckpoint") return FunctionPtr(&CreateCheckpoint);
 		if (string(sdkFunctionName) == "GetCheckpointTime") return FunctionPtr(&GetCheckpointTime);

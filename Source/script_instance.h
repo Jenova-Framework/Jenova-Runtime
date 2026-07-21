@@ -22,11 +22,12 @@ class CPPScriptInstance : public jenova::ScriptInstanceExtension
 protected:
 	Object* owner = nullptr;
 	Ref<CPPScript> script;
-	mutable Dictionary instanceProperties;
-	mutable List<MethodInfo> methodsInfo;
+	Dictionary instanceProperties;
 	size_t refCount = 0;
 	String scriptInstanceIdentity = "";
 	bool isDeleting = false;
+
+	mutable List<MethodInfo> methodsInfo;
 
 private:
 	void update_methods() const;
@@ -64,7 +65,9 @@ public:
 
 public:
 	// Methods
-	String get_identity();
+	String GetIdentity() const;
+	bool ForcePushProperties();
+	bool ForcePullProperties();
 
 	// Initializer/Destructor
 	CPPScriptInstance(Object* p_owner, const Ref<CPPScript> p_script);

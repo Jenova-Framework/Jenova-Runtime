@@ -41,7 +41,7 @@ public:
     static bool IsFunctionReturnable(const std::string& returnType);
     static jenova::ScriptFunctionContainer GetFunctionContainer(const std::string& scriptUID);
     static jenova::ScriptPropertyContainer GetPropertyContainer(const std::string& scriptUID);
-    static Variant CallFunction(const godot::Object* objectPtr, const std::string& functionName, std::string& scriptUID, const Variant** functionParameters, const int functionParametersCount);
+    static Variant CallFunction(const godot::Object* objectPtr, void* instance, const std::string& functionName, std::string& scriptUID, const Variant** functionParameters, const int functionParametersCount);
     static void SetExecutionPermission(bool executionState);
     static void SetExecutionState(bool executionState);
     static bool IsExecutingFunction();

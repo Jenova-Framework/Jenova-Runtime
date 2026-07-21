@@ -701,9 +701,10 @@ namespace jenova
 	struct ScriptCaller
 	{
 		const void* self;
+		const void* context;
 
 		// Initializer
-		ScriptCaller(const void* _self) : self(_self) {}
+		ScriptCaller(const void* _self, const void* _context) : self(_self), context(_context) {}
 	};
 	struct ExtensionInitializerData
 	{

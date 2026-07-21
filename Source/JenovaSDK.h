@@ -179,7 +179,8 @@ namespace jenova::sdk
 	struct Caller
 	{
 		// Script Caller
-		const godot::Object* self;
+		const godot::Object* self = nullptr;
+		const NativePtr context = nullptr;
 	};
 
 	// Class Wrappers
@@ -238,6 +239,8 @@ namespace jenova::sdk
 		JNVAPI_INTERNAL(bool CreateFileMonitor(const godot::String& filePath));
 		JNVAPI_INTERNAL(bool RegisterFileMonitorCallback(FileSystemCallback callbackPtr));
 		JNVAPI_INTERNAL(bool UnregisterFileMonitorCallback(FileSystemCallback callbackPtr));
+		JNVAPI_INTERNAL(bool ForcePushProperties(Caller* caller));
+		JNVAPI_INTERNAL(bool ForcePullProperties(Caller* caller));
 		JNVAPI_INTERNAL(bool ReloadJenovaRuntime(RuntimeReloadMode reloadMode));
 		JNVAPI_INTERNAL(void CreateCheckpoint(const godot::String& checkPointName));
 		JNVAPI_INTERNAL(double GetCheckpointTime(const godot::String& checkPointName));
@@ -466,6 +469,16 @@ namespace jenova::sdk
 	{
 		if (!JenovaSDK::ValidateInterface(bridge)) return false;
 		return bridge->UnregisterFileMonitorCallback(callbackPtr);
+	}
+	JNVAPI_WRAPPER bool ForcePushProperties(Caller* caller)
+	{
+		if (!JenovaSDK::ValidateInterface(bridge)) return false;
+		return bridge->ForcePushProperties(caller);
+	}
+	JNVAPI_WRAPPER bool ForcePullProperties(Caller* caller)
+	{
+		if (!JenovaSDK::ValidateInterface(bridge)) return false;
+		return bridge->ForcePullProperties(caller);
 	}
 	JNVAPI_WRAPPER bool ReloadJenovaRuntime(RuntimeReloadMode reloadMode)
 	{

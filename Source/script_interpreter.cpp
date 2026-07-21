@@ -441,7 +441,7 @@ jenova::ScriptPropertyContainer JenovaInterpreter::GetPropertyContainer(const st
         return jenova::ScriptPropertyContainer();
     }
 }
-Variant JenovaInterpreter::CallFunction(const godot::Object* objectPtr, const std::string& functionName, std::string& scriptUID, const Variant** functionParameters, const int functionParametersCount)
+Variant JenovaInterpreter::CallFunction(const godot::Object* objectPtr, void* instance, const std::string& functionName, std::string& scriptUID, const Variant** functionParameters, const int functionParametersCount)
 {
     // Validate Module
     if (!allowExecution) return GenerateFunctionCallError(functionName, "ERROR::EXECUTION_DENIED");
@@ -478,7 +478,7 @@ Variant JenovaInterpreter::CallFunction(const godot::Object* objectPtr, const st
     std::shared_ptr<jenova::ScriptCaller> scriptHandle = nullptr;
     if (needsPassingOwner)
     {
-        scriptHandle = std::make_shared<jenova::ScriptCaller>(objectPtr);
+        scriptHandle = std::make_shared<jenova::ScriptCaller>(objectPtr, instance);
         resolvedParameters.push_back(reinterpret_cast<uintptr_t>(scriptHandle.get()));
     }
 
