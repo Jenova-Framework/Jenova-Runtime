@@ -4586,6 +4586,9 @@ namespace jenova
 
 				// Call Idle Frame
 				this->call_deferred("OnFrameIdle");
+
+				// Execute Future Functions
+				ProgressFutureFunctions();
 			}
 			void _physics_process(double p_delta) override
 			{
@@ -4673,7 +4676,27 @@ namespace jenova
 			void StartNetworkPeer(const Dictionary& peerSettings)
 			{
 			}
-			
+			void ProgressFutureFunctions()
+			{
+				SteadyTimePoint now = std::chrono::steady_clock::now();
+				for (auto it = futureFunctions.begin(); it != futureFunctions.end();)
+				{
+					auto& [uid, qf] = *it;
+					if (std::chrono::duration_cast<std::chrono::milliseconds>(now - qf.lastExecution) >= qf.interval)
+					{
+						if (qf.function) qf.function();
+						qf.lastExecution = now;
+						qf.callCount++;
+						if (!qf.repeat || (qf.maxCalls > 0 && qf.callCount >= qf.maxCalls))
+						{
+							it = futureFunctions.erase(it);
+							continue;
+						}
+					}
+					++it;
+				}
+			}
+
 		private:
 			static bool RegisterRuntimeProfiler()
 			{
@@ -4698,7 +4721,11 @@ namespace jenova
 						jenova::Warning("Jenova Runtime", "Module Cache Cannot Be Deployed, Possible Corruption.");
 						return false;
 					}
+					return true; // <- Exclude The Message From Event
 				}
+
+				// Rise Events [Needs Improvement]
+				for (const auto& runtimeCallback : runtimeCallbacks) runtimeCallback(RuntimeEvent::ReceivedDebuggerMessage, (void*)AS_C_STRING(msgCommand), msgCommand.length());
 
 				// All Good
 				return true;
@@ -4730,6 +4757,7 @@ namespace jenova
 			inline static bool isStarted = false;
 			inline static bool enteredSceneTree = false;
 			inline static std::vector<RuntimeCallback> runtimeCallbacks;
+			inline static FutureQueue futureFunctions;
 		};
 
 		// Callbacks
@@ -6099,6 +6127,11 @@ namespace jenova
 		variationFactor = MIN(variationFactor, 30);
 		initColor.set_hsv(Math::fmod((1.0f / float(variationFactor)) * float(variationSeed++), 0.9f), initColor.get_s() * 0.9f, initColor.get_v() * 1.4f, 0.8f);
 		return initColor;
+	}
+	jenova::UniqueID ObtainGlobalUniqueID()
+	{
+		static std::atomic<uint64_t> nextID{ 1 };
+		return nextID.fetch_add(1);
 	}
 	jenova::EngineMode GetCurrentEngineInstanceMode()
 	{
@@ -9752,20 +9785,58 @@ namespace jenova
 	}
 	bool RegisterRuntimeEventCallback(jenova::FunctionPointer runtimeCallback)
 	{
-		auto callback = (jenova::plugin::JenovaRuntime::RuntimeCallback)runtimeCallback;
 		auto& callbacks = jenova::plugin::JenovaRuntime::runtimeCallbacks;
+		auto callback = (jenova::plugin::JenovaRuntime::RuntimeCallback)runtimeCallback;
 		if (std::find(callbacks.begin(), callbacks.end(), callback) != callbacks.end()) return false;
 		callbacks.push_back(callback);
 		return true;
 	}
 	bool UnregisterRuntimeEventCallback(jenova::FunctionPointer runtimeCallback)
 	{
-		auto callback = (jenova::plugin::JenovaRuntime::RuntimeCallback)runtimeCallback;
 		auto& callbacks = jenova::plugin::JenovaRuntime::runtimeCallbacks;
+		auto callback = (jenova::plugin::JenovaRuntime::RuntimeCallback)runtimeCallback;
 		auto it = std::find(callbacks.begin(), callbacks.end(), callback);
 		if (it != callbacks.end())
 		{
 			callbacks.erase(it);
+			return true;
+		}
+		return false;
+	}
+	jenova::UniqueID RegisterFutureFunction(jenova::FutureFunction futureFunction, int milliseconds)
+	{
+		auto& functions = jenova::plugin::JenovaRuntime::futureFunctions;
+		
+		// Obtain New UID
+		jenova::UniqueID uid = ObtainGlobalUniqueID();
+
+		// Create Queued Function
+		jenova::QueuedFunction queueFunction;
+		queueFunction.function = std::move(futureFunction);
+		queueFunction.interval = std::chrono::milliseconds(milliseconds);
+		queueFunction.lastExecution = std::chrono::steady_clock::now();
+
+		// Store in Queue & Return
+		functions[uid] = std::move(queueFunction);
+		return uid;
+	}
+	jenova::UniqueID RegisterFutureFunction(jenova::FutureFunction futureFunction, double seconds)
+	{
+		int milliseconds = static_cast<int>(seconds * 1000.0);
+		return RegisterFutureFunction(std::move(futureFunction), milliseconds);
+	}
+	bool FutureFunctionExists(jenova::UniqueID functionID)
+	{
+		auto& functions = jenova::plugin::JenovaRuntime::futureFunctions;
+		return functions.find(functionID) != functions.end();
+	}
+	bool UnRegisterFutureFunction(jenova::UniqueID functionID)
+	{
+		auto& functions = jenova::plugin::JenovaRuntime::futureFunctions;
+		auto it = functions.find(functionID);
+		if (it != functions.end())
+		{
+			functions.erase(it);
 			return true;
 		}
 		return false;

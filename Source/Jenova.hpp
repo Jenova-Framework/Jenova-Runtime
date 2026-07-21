@@ -20,11 +20,11 @@
 #define APP_COMPANYNAME					"MemarDesign™ LLC."
 #define APP_DESCRIPTION					"Real-Time C++ Scripting System for Godot Engine, Developed By Hamid.Memar (Architect)."
 #define APP_COPYRIGHT					"Copyright MemarDesign™ LLC. (©) 2024-present, All Rights Reserved."
-#define APP_VERSION						"0.3.9.8"
+#define APP_VERSION						"0.3.9.9"
 #define APP_VERSION_MIDDLEFIX			" "
 #define APP_VERSION_POSTFIX				"Beta"
 #define APP_VERSION_SINGLECHAR			"b"
-#define APP_VERSION_DATA				0, 3, 9, 8
+#define APP_VERSION_DATA				0, 3, 9, 9
 #define APP_VERSION_BUILD				"0"
 #define APP_VERSION_NAME				"Forfeit"
 
@@ -340,12 +340,18 @@ namespace jenova
 	struct JenovaPackage;
 	struct AddonConfig;
 	struct ToolConfig;
+	struct QueuedFunction;
 
 	// Type Definitions
+	typedef uint64_t LongWord;
+	typedef uint16_t TaskID;
+	typedef uint64_t UniqueID;
 	typedef void* GenericHandle;
 	typedef void* ModuleHandle;
 	typedef void* WindowHandle;
 	typedef void* FileHandle;
+	typedef void* FunctionPointer;
+	typedef void* PropertyPointer;
 	typedef intptr_t ModuleAddress;
 	typedef intptr_t FunctionAddress;
 	typedef intptr_t PropertyAddress;
@@ -357,7 +363,7 @@ namespace jenova
 	typedef std::string EncodedData;
 	typedef std::string DecodedData;
 	typedef std::string SerializedData;
-	typedef std::vector<jenova::ScriptModule> ModuleList;
+	typedef std::vector<ScriptModule> ModuleList;
 	typedef PackedStringArray HeaderList;
 	typedef std::vector<std::string> ArgumentsArray;
 	typedef std::vector<std::string> FunctionList;
@@ -376,22 +382,20 @@ namespace jenova
 	typedef std::vector<ToolConfig> InstalledTools;
 	typedef std::string StringBuffer;
 	typedef std::unordered_map<std::string, void*> PointerStorage;
-	typedef std::unordered_map<ModuleHandle, ToolConfig> LoadedTools;
 	typedef std::unordered_map<ModuleHandle, json_t> LoadedAddons;
+	typedef std::unordered_map<ModuleHandle, ToolConfig> LoadedTools;
+	typedef std::unordered_map<UniqueID, QueuedFunction> FutureQueue;
 	typedef std::map<String, MemoryBuffer> ResourceDatabase;
 	typedef Vector<Ref<Resource>> ResourceCollection;
-	typedef uint64_t LongWord;
-	typedef uint16_t TaskID;
+	typedef std::function<void()> FutureFunction;
 	typedef std::function<void()> TaskFunction;
-	typedef void(*VoidFunc_t)();
 	typedef std::chrono::steady_clock::time_point SteadyTimePoint;
 	typedef std::chrono::system_clock::time_point SystemTimePoint;
 	typedef struct { uint32_t LowDateTime, HighDateTime; } FileTime;
 	typedef struct SmartString { std::string* str; ~SmartString() { if (str) delete str; }} SmartString;
 	typedef struct SmartWstring { std::wstring* wstr; ~SmartWstring() { if (wstr) delete wstr; }} SmartWstring;
-	typedef void* FunctionPointer;
-	typedef void* PropertyPointer;
 	typedef void* JenovaSDKInterface;
+	typedef void(*VoidFunc_t)();
 
 	// Enumerators
 	enum class TargetPlatform
@@ -784,6 +788,17 @@ namespace jenova
 		// Serialized Data
 		SerializedData Data;
 	};
+	struct QueuedFunction
+	{
+		FutureFunction				function;
+		std::chrono::milliseconds	interval;
+		SteadyTimePoint				lastExecution;
+		
+		// Reserved
+		bool						repeat = false;
+		int							callCount = 0;
+		int							maxCalls = 1;
+	};
 
 	// Global Settings
 	namespace GlobalSettings
@@ -977,6 +992,7 @@ namespace jenova
 	std::string GenerateTerminalLogTime();
 	int GenerateHashFromString(const char* str);
 	Color GenerateColorVariation(Color initColor, int variationFactor);
+	jenova::UniqueID ObtainGlobalUniqueID();
 	jenova::EngineMode GetCurrentEngineInstanceMode();
 	bool IsEngineRuntimeExport();
 	String GetCurrentEngineInstanceModeAsString();
@@ -1099,6 +1115,10 @@ namespace jenova
 	std::string FindScriptPathFromPreprocessedFile(const std::string& preprocessedFile);
 	bool RegisterRuntimeEventCallback(jenova::FunctionPointer runtimeCallback);
 	bool UnregisterRuntimeEventCallback(jenova::FunctionPointer runtimeCallback);
+	jenova::UniqueID RegisterFutureFunction(jenova::FutureFunction futureFunction, int milliseconds);
+	jenova::UniqueID RegisterFutureFunction(jenova::FutureFunction futureFunction, double seconds);
+	bool FutureFunctionExists(jenova::UniqueID functionID);
+	bool UnRegisterFutureFunction(jenova::UniqueID functionID);
 	jenova::SerializedData GenerateRuntimeModuleConfiguration();
 	jenova::SerializedData ObtainRuntimeModuleConfiguration();
 	bool ResolveAndLoadAddonModulesAtRuntime();

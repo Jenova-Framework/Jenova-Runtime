@@ -509,6 +509,24 @@ namespace jenova::sdk
 		globalVariables.clear();
 	}
 
+	// Runtime Dispatcher Utilities
+	UniqueID JenovaSDK::QueueFunction(FutureFunction function, int milliseconds)
+	{
+		return jenova::RegisterFutureFunction(function, milliseconds);
+	}
+	UniqueID JenovaSDK::QueueFunction(FutureFunction function, double seconds)
+	{
+		return jenova::RegisterFutureFunction(function, seconds);
+	}
+	bool JenovaSDK::IsFunctionInQueue(UniqueID functionID)
+	{
+		return jenova::FutureFunctionExists(functionID);
+	}
+	bool JenovaSDK::AbortQueuedFunction(UniqueID functionID)
+	{
+		return jenova::UnRegisterFutureFunction(functionID);
+	}
+
 	// Task System Utilities
 	TaskID JenovaSDK::InitiateTask(TaskFunction function)
 	{
@@ -817,6 +835,12 @@ namespace jenova
 		if (string(sdkFunctionName) == "SetGlobalVariable") return FunctionPtr(&SetGlobalVariable);
 		if (string(sdkFunctionName) == "ClearGlobalVariables") return FunctionPtr(&ClearGlobalVariables);
 
+		// Solve Runtime Dispatcher Utilities Functions
+		if (string(sdkFunctionName) == "QueueFunctionByInterval") return FunctionPtr((UniqueID(*)(FutureFunction, int))&QueueFunction);
+		if (string(sdkFunctionName) == "QueueFunctionByTime") return FunctionPtr((UniqueID(*)(FutureFunction, double))&QueueFunction);
+		if (string(sdkFunctionName) == "IsFunctionInQueue") return FunctionPtr(&IsFunctionInQueue);
+		if (string(sdkFunctionName) == "AbortQueuedFunction") return FunctionPtr(&AbortQueuedFunction);
+
 		// Solve Task System Utilities Functions
 		if (string(sdkFunctionName) == "InitiateTask") return FunctionPtr(&InitiateTask);
 		if (string(sdkFunctionName) == "IsTaskComplete") return FunctionPtr(&IsTaskComplete);
@@ -826,6 +850,11 @@ namespace jenova
 		if (string(sdkFunctionName) == "ExecuteScript") return FunctionPtr((bool(*)(StringPtr, bool))(&clektron::ExecuteScript));
 		if (string(sdkFunctionName) == "ExecuteScriptFromFile") return FunctionPtr((bool(*)(StringPtr, bool))(&clektron::ExecuteScriptFromFile));
 		if (string(sdkFunctionName) == "BindSymbol") return FunctionPtr((bool(*)(FunctionPtr, StringPtr, StringPtr, int, ...))(&clektron::BindSymbol));
+
+		// Solve Profiling Utilities (Sentinel) Functions
+		if (string(sdkFunctionName) == "IsProfilerEnabled") return FunctionPtr(&sentinel::IsProfilerEnabled);
+		if (string(sdkFunctionName) == "CommitRecord") return FunctionPtr(&sentinel::CommitRecord);
+		if (string(sdkFunctionName) == "CommitScriptRecord") return FunctionPtr(&sentinel::CommitScriptRecord);
 
 		// Invalid Function
 		return nullptr;

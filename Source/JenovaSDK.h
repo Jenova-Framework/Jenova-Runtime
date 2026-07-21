@@ -167,7 +167,9 @@ namespace jenova::sdk
 	typedef const char*					MemoryID;
 	typedef const char*					VariableID;
 	typedef unsigned short				TaskID;
+	typedef int64_t						UniqueID;
 	typedef int short					DriverResourceID;
+	typedef std::function<void()>		FutureFunction;
 	typedef std::function<void()>		TaskFunction;
 	typedef void*						JenovaSDKInterface;
 
@@ -272,6 +274,12 @@ namespace jenova::sdk
 		JNVAPI_INTERNAL(godot::Variant GetGlobalVariable(VariableID id));
 		JNVAPI_INTERNAL(void SetGlobalVariable(VariableID id, godot::Variant var));
 		JNVAPI_INTERNAL(void ClearGlobalVariables());
+
+		// Runtime Dispatcher Utilities
+		JNVAPI_INTERNAL(UniqueID QueueFunction(FutureFunction function, int milliseconds));
+		JNVAPI_INTERNAL(UniqueID QueueFunction(FutureFunction function, double seconds));
+		JNVAPI_INTERNAL(bool IsFunctionInQueue(UniqueID functionID));
+		JNVAPI_INTERNAL(bool AbortQueuedFunction(UniqueID functionID));
 
 		// Task System Utilities
 		JNVAPI_INTERNAL(TaskID InitiateTask(TaskFunction function));
@@ -605,6 +613,28 @@ namespace jenova::sdk
 	{
 		if (!JenovaSDK::ValidateInterface(bridge)) return;
 		bridge->ClearGlobalVariables();
+	}
+
+	// Runtime Dispatcher Utilities :: Wrappers
+	JNVAPI_WRAPPER UniqueID QueueFunction(FutureFunction function, int milliseconds)
+	{
+		if (!JenovaSDK::ValidateInterface(bridge)) return 0;
+		return bridge->QueueFunction(function, milliseconds);
+	}
+	JNVAPI_WRAPPER UniqueID QueueFunction(FutureFunction function, double seconds)
+	{
+		if (!JenovaSDK::ValidateInterface(bridge)) return 0;
+		return bridge->QueueFunction(function, seconds);
+	}
+	JNVAPI_WRAPPER bool IsFunctionInQueue(UniqueID functionID)
+	{
+		if (!JenovaSDK::ValidateInterface(bridge)) return false;
+		return bridge->IsFunctionInQueue(functionID);
+	}
+	JNVAPI_WRAPPER bool AbortQueuedFunction(UniqueID functionID)
+	{
+		if (!JenovaSDK::ValidateInterface(bridge)) return false;
+		return bridge->AbortQueuedFunction(functionID);
 	}
 
 	// Task System Utilities :: Wrappers
