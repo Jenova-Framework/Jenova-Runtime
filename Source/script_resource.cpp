@@ -33,6 +33,7 @@ void CPPScriptResourceLoader::deinit()
 Variant CPPScriptResourceLoader::_load(const String& p_path, const String& original_path, bool use_sub_threads, int32_t cache_mode) const
 {
 	Ref<CPPScript> cppScript = memnew(CPPScript);
+	cppScript->set_path(p_path);
 	cppScript->_set_source_code(FileAccess::get_file_as_string(p_path));
 
 	// Verbose

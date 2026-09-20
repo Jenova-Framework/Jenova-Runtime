@@ -268,6 +268,7 @@ intptr_t JenovaInterpreter::GetModuleBaseAddress()
 }
 std::string JenovaInterpreter::GetScriptPath(const std::string& scriptUID)
 {
+    /* Todo : Use Cache for This Like Rest */
     try
     {
         return moduleMetaData["Scripts"][scriptUID]["path"].get<std::string>();
@@ -275,6 +276,18 @@ std::string JenovaInterpreter::GetScriptPath(const std::string& scriptUID)
     catch (const std::exception&)
     {
         return "Unknown";
+    }
+}
+bool JenovaInterpreter::HasScriptFeature(const std::string& scriptUID, const std::string& feature)
+{
+    try
+    {
+        if (!moduleMetaData["Scripts"][scriptUID].contains(feature)) return false;
+        return moduleMetaData["Scripts"][scriptUID][feature].get<bool>();
+    }
+    catch (const std::exception& e)
+    {
+        return false;
     }
 }
 jenova::FunctionList JenovaInterpreter::GetFunctionsList(const std::string& scriptUID)
@@ -931,10 +944,10 @@ Variant JenovaInterpreter::CallFunction(const godot::Object* objectPtr, void* in
         // Resolve Each Parameter
         for (size_t i = paramIndex; i < resolvedParameters.size(); i++)
         {
-            // Get parameter type from metadata
+            // Get Parameter Type from Metadata
             std::string paramType = functionParametersType[i];
 
-            // Resolve parameter value to pointer
+            // Resolve Parameter Value to Pointer
             int funcParamIndex = i - (needsPassingOwner ? 1 : 0);
             uintptr_t ptr = jenova::ResolveVariantValueAsPointer(functionParameters[funcParamIndex], paramType, ptrList);
             paramPtrs.push_back(reinterpret_cast<void*>(ptr));
@@ -1070,6 +1083,9 @@ bool JenovaInterpreter::BuildExecutionCache()
             std::string returnType = returnIt->second;
             auto paramTypes = paramsIt->second;
             jenova::FunctionAddress address = addrIt->second;
+
+            // Strip Empty Entries
+            paramTypes.erase(std::remove_if(paramTypes.begin(), paramTypes.end(), [](const std::string& t) { return t.empty() || t == "void"; }), paramTypes.end());
 
             // Get Unique Function Signature
             std::string uniqueName = GetFunctionUniqueSignature(scriptUID, functionName);
@@ -1406,6 +1422,7 @@ jenova::SerializedData JenovaInterpreter::GenerateModuleMetadata(const std::stri
                 if (scriptModule.scriptFilename == "JenovaModuleLoader") continue;
                 serializer["Scripts"][AS_STD_STRING(scriptModule.scriptUID)] = jenova::json_t::object();
                 serializer["Scripts"][AS_STD_STRING(scriptModule.scriptUID)]["path"] = AS_STD_STRING(scriptModule.scriptFilename);
+                serializer["Scripts"][AS_STD_STRING(scriptModule.scriptUID)]["is_carbon"] = scriptModule.scriptType == jenova::ScriptModuleType::CarbonScript;
             }
 
             // Open Map File
@@ -1457,7 +1474,7 @@ jenova::SerializedData JenovaInterpreter::GenerateModuleMetadata(const std::stri
                         uint64_t functionOffset = std::stoull(functionOffsetStr, nullptr, 16);
                         uint64_t actualOffset = functionOffset - imageBaseAddress;
 
-                        // Check for duplicate function names under the same script UID
+                        // Check for Duplicate Function Names under the Same Script UID
                         if (serializer["Scripts"].contains(scriptUID) && serializer["Scripts"][scriptUID].contains(functionName))
                         {
                             jenova::Error("Jenova Interpreter", "Duplicate Function Detected : [%s] Under Script UID: [%s]", functionName.c_str(), scriptUID.c_str());
@@ -1541,7 +1558,7 @@ jenova::SerializedData JenovaInterpreter::GenerateModuleMetadata(const std::stri
                         uint64_t propertyOffset = std::stoull(propertyOffsetStr, nullptr, 16);
                         uint64_t actualOffset = propertyOffset - imageBaseAddress;
 
-                        // Check for duplicate property names under the same script UID
+                        // Check for Duplicate Property Names under the Same Script UID
                         if (serializer["Scripts"].contains(scriptUID) && serializer["Scripts"][scriptUID].contains(propertyName))
                         {
                             jenova::Error("Jenova Interpreter", "Duplicate Property Detected : [%s] Under Script UID: [%s]", propertyName.c_str(), scriptUID.c_str());
@@ -1583,15 +1600,9 @@ jenova::SerializedData JenovaInterpreter::GenerateModuleMetadata(const std::stri
                             jenova::VerboseByID(__LINE__, "[Map-Parser] Demangled Property Name: [%s], UID: [%s]", demangledPropertySignature.c_str(), scriptUID.c_str());
                         }
 
-                        // Store property name and metadata in the serializer
-                        if (serializer["Scripts"].contains(scriptUID))
-                        {
-                            serializer["Scripts"][scriptUID]["properties"][propertyName] = propSerializer;
-                        }
-                        else
-                        {
-                            serializer["Scripts"][scriptUID]["properties"] = { { propertyName, propSerializer } };
-                        }
+                        // Store Property Name and Metadata in the Serializer
+                        if (serializer["Scripts"].contains(scriptUID)) serializer["Scripts"][scriptUID]["properties"][propertyName] = propSerializer;
+                        else serializer["Scripts"][scriptUID]["properties"] = { { propertyName, propSerializer } };
 
                         // Verbose
                         jenova::VerboseByID(__LINE__, "[Map-Parser] Property Name & Offset Extracted > Name: %s, UID: %s, Offset: %llx", propertyName.c_str(), scriptUID.c_str(), actualOffset);
@@ -1638,7 +1649,7 @@ jenova::SerializedData JenovaInterpreter::GenerateModuleMetadata(const std::stri
                             uint64_t propertyOffset = std::stoull(propertyOffsetStr, nullptr, 16);
                             uint64_t actualOffset = propertyOffset - imageBaseAddress;
 
-                            // Check for duplicate property names under the same script UID
+                            // Check for Duplicate Property Names Under the Same Script UID
                             if (serializer["Scripts"].contains(scriptUID) && serializer["Scripts"][scriptUID].contains(propertyName))
                             {
                                 jenova::Error("Jenova Interpreter", "Duplicate Property Detected : [%s] Under Script UID: [%s]", propertyName.c_str(), scriptUID.c_str());
@@ -1680,15 +1691,9 @@ jenova::SerializedData JenovaInterpreter::GenerateModuleMetadata(const std::stri
                                 jenova::VerboseByID(__LINE__, "[Map-Parser] Demangled Property Name: [%s], UID: [%s]", demangledPropertySignature.c_str(), scriptUID.c_str());
                             }
 
-                            // Store property name and metadata in the serializer
-                            if (serializer["Scripts"].contains(scriptUID))
-                            {
-                                serializer["Scripts"][scriptUID]["properties"][propertyName] = propSerializer;
-                            }
-                            else
-                            {
-                                serializer["Scripts"][scriptUID]["properties"] = { { propertyName, propSerializer } };
-                            }
+                            // Store Property Name and Metadata in the Serializer
+                            if (serializer["Scripts"].contains(scriptUID)) serializer["Scripts"][scriptUID]["properties"][propertyName] = propSerializer;
+                            else serializer["Scripts"][scriptUID]["properties"] = { { propertyName, propSerializer } };
 
                             // Verbose
                             jenova::VerboseByID(__LINE__, "[Map-Parser] Property Name & Offset Extracted > Name: %s, UID: %s, Offset: %llx", propertyName.c_str(), scriptUID.c_str(), actualOffset);
@@ -1766,15 +1771,10 @@ jenova::SerializedData JenovaInterpreter::GenerateModuleMetadata(const std::stri
                                 jenova::VerboseByID(__LINE__, "[Map-Parser] Demangled Function Name: [%s], UID: [%s]", demangledFunctionSignature.c_str(), scriptUID.c_str());
                             }
 
-                            // Store function name and metadata in the serializer
-                            if (serializer["Scripts"].contains(scriptUID))
-                            {
-                                serializer["Scripts"][scriptUID]["methods"][functionName] = funcSerializer;
-                            }
-                            else
-                            {
-                                serializer["Scripts"][scriptUID]["methods"] = { { functionName, funcSerializer } };
-                            }
+                            // Store Function Name and Metadata in the Serializer
+                            if (serializer["Scripts"].contains(scriptUID)) serializer["Scripts"][scriptUID]["methods"][functionName] = funcSerializer;
+                            else serializer["Scripts"][scriptUID]["methods"] = { { functionName, funcSerializer } };
+    
 
                             // Verbose
                             jenova::VerboseByID(__LINE__, "[Map-Parser] Function Name & Offset Extracted > Name: %s, UID: %s, Offset: %llx", functionName.c_str(), scriptUID.c_str(), actualOffset);
@@ -1829,6 +1829,7 @@ jenova::SerializedData JenovaInterpreter::GenerateModuleMetadata(const std::stri
                 if (scriptModule.scriptFilename == "JenovaModuleLoader") continue;
                 serializer["Scripts"][AS_STD_STRING(scriptModule.scriptUID)] = jenova::json_t::object();
                 serializer["Scripts"][AS_STD_STRING(scriptModule.scriptUID)]["path"] = AS_STD_STRING(scriptModule.scriptFilename);
+                serializer["Scripts"][AS_STD_STRING(scriptModule.scriptUID)]["is_carbon"] = scriptModule.scriptType == jenova::ScriptModuleType::CarbonScript;
             }
 
             // Generate Extra Paths
@@ -2005,6 +2006,7 @@ jenova::SerializedData JenovaInterpreter::GenerateModuleMetadata(const std::stri
                 if (scriptModule.scriptFilename == "JenovaModuleLoader") continue;
                 serializer["Scripts"][AS_STD_STRING(scriptModule.scriptUID)] = jenova::json_t::object();
                 serializer["Scripts"][AS_STD_STRING(scriptModule.scriptUID)]["path"] = AS_STD_STRING(scriptModule.scriptFilename);
+                serializer["Scripts"][AS_STD_STRING(scriptModule.scriptUID)]["is_carbon"] = scriptModule.scriptType == jenova::ScriptModuleType::CarbonScript;
             }
 
             // Generate Extra Paths

@@ -1706,6 +1706,9 @@ namespace jenova
 						// Detect Embedded Built-In Scripts
 						if (scriptResource->is_built_in()) scriptModule.scriptType = jenova::ScriptModuleType::BuiltinScript;
 
+						// Detect Carbon Scripts
+						if (scriptResource->is_carbon()) scriptModule.scriptType = jenova::ScriptModuleType::CarbonScript;
+
 						// Generate Script Cache and Object Filenames
 						scriptModule.scriptCacheFile = jenova::GetJenovaCacheDirectory() + scriptResource->get_path().get_file().get_basename() + "_" + scriptResource->GetScriptIdentity() + ".cpp";
 						scriptModule.scriptObjectFile = jenova::GetJenovaCacheDirectory() + scriptResource->get_path().get_file().get_basename() + "_" + scriptResource->GetScriptIdentity() + ".obj";
@@ -4802,7 +4805,7 @@ namespace jenova
 			// Set Engine Mode
 			if (QUERY_ENGINE_MODE(Unknown))
 			{
-				if (OS::get_singleton()->is_debug_build()) jenova::GlobalStorage::CurrentEngineMode = jenova::EngineMode::Debug;
+				if (OS::get_singleton()->is_debug_build() && !jenova::IsEngineRuntimeExport()) jenova::GlobalStorage::CurrentEngineMode = jenova::EngineMode::Debug;
 				else jenova::GlobalStorage::CurrentEngineMode = jenova::EngineMode::Runtime;
 				if (Engine::get_singleton()->is_editor_hint()) jenova::GlobalStorage::CurrentEngineMode = jenova::EngineMode::Editor;
 
@@ -9312,7 +9315,7 @@ namespace jenova
 				AS_C_STRING(cppScript->get_path().get_file()), AS_C_STRING(cppScript->GetScriptIdentity()), TP_CHECKPOINT_GET("CarbonAnalzye"));
 			
 			// Perform Code Generation
-			jenova::Output("[color=#9eb3f0]CGenerating Carbon Script Code ([color=#70a9d4]%s[/color]) [[color=#91b553]%s[/color]]...[/color]",
+			jenova::Output("[color=#9eb3f0]Generating Carbon Script Code ([color=#70a9d4]%s[/color]) [[color=#91b553]%s[/color]]...[/color]",
 				AS_C_STRING(cppScript->get_path()), AS_C_STRING(cppScript->GetScriptIdentity()));
 			analyzerResult["ScriptBlockBeginIdentifier"] = String(jenova::GlobalSettings::ScriptBlockBeginIdentifier);
 			analyzerResult["ScriptBlockEndIdentifier"] = String(jenova::GlobalSettings::ScriptBlockEndIdentifier);

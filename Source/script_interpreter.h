@@ -33,6 +33,7 @@ public:
     static bool LoadDebugSymbol(const std::string symbolFilePath);
     static intptr_t GetModuleBaseAddress();
     static std::string GetScriptPath(const std::string& scriptUID);
+    static bool HasScriptFeature(const std::string& scriptUID, const std::string& feature);
     static jenova::FunctionList GetFunctionsList(const std::string& scriptUID);
     static jenova::FunctionAddress GetFunctionAddress(const std::string& functionName, const std::string& scriptUID);
     static jenova::ParameterTypeList GetFunctionParameters(const std::string& functionName, const std::string& scriptUID);

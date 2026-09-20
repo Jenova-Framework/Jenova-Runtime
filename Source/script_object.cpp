@@ -88,12 +88,17 @@ void CPPScript::_set_source_code(const String& p_code)
 	if (!this->get_path().is_empty()) jenova::VerboseByID(__LINE__, "Set C++ Script Source (%s) [%p]", AS_C_STRING(this->get_path()), this);
 	source_code = p_code;
 
-	// Detect Tool Macro
+	// Detect Tool Macro [Editor Only]
 	String cleanedSource = jenova::RemoveCommentsFromSource(p_code);
 	this->IsTool = jenova::ContainsExactString(cleanedSource, jenova::GlobalSettings::ScriptToolIdentifier);
 
 	// Detect Carbon Macro
-	this->IsCarbon = jenova::ContainsExactString(cleanedSource, jenova::GlobalSettings::ScriptCarbonIdentifier);
+	if (jenova::IsEngineRuntimeExport() && !get_path().is_empty())
+	{
+		/* In Runtime Export There's No Source, So We Use Metadata */
+		this->IsCarbon = JenovaInterpreter::HasScriptFeature(AS_STD_STRING(GetScriptIdentity()), "is_carbon");
+	}
+	else this->IsCarbon = jenova::ContainsExactString(cleanedSource, jenova::GlobalSettings::ScriptCarbonIdentifier);
 }
 Error CPPScript::_reload(bool p_keep_state)
 {
