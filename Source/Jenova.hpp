@@ -509,6 +509,7 @@ namespace jenova
 		EntityScript,
 		BuiltinEntityScript,
 		BootstrapScript,
+		CarbonScript,
 		EmbeddedScript // Reserved
 	};
 	enum class EditorMenuID
