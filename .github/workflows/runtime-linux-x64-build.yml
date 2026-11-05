@@ -8,7 +8,7 @@ on: [push]
 jobs:
   linux-gcc:
     name: Runtime Build (GCC)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -77,7 +77,7 @@ jobs:
           retention-days: 30
   linux-clang:
     name: Runtime Build (LLVM)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4

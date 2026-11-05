@@ -121,7 +121,9 @@ bool CPPScriptLanguage::_is_using_templates()
 }
 Dictionary CPPScriptLanguage::_validate(const String& p_script, const String& p_path, bool p_validate_functions, bool p_validate_errors, bool p_validate_warnings, bool p_validate_safe_lines) const
 {
-	return Dictionary();
+	Dictionary result;
+	result["valid"] = true;
+	return result;
 }
 String CPPScriptLanguage::_validate_path(const String& p_path) const
 {
@@ -400,7 +402,9 @@ bool CPPHeaderLanguage::_is_using_templates()
 }
 Dictionary CPPHeaderLanguage::_validate(const String& p_script, const String& p_path, bool p_validate_functions, bool p_validate_errors, bool p_validate_warnings, bool p_validate_safe_lines) const
 {
-	return Dictionary();
+	Dictionary result;
+	result["valid"] = true;
+	return result;
 }
 String CPPHeaderLanguage::_validate_path(const String& p_path) const
 {
